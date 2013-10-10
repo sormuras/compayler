@@ -1,7 +1,7 @@
 package org.prevayler.contrib.compayler;
 
 /**
- * Execution (read transaction) styles.
+ * Prevalent execution types.
  * 
  * @author Christian Stein
  */
@@ -15,7 +15,7 @@ public enum PrevalentType {
   QUERY,
 
   /**
-   * Transation that is journaled for system recovery.
+   * Transaction that is journaled for system recovery.
    * 
    * @see org.prevayler.Transaction
    * @see org.prevayler.TransactionWithQuery
