@@ -7,7 +7,7 @@ import org.prevayler.Prevayler;
  * 
  * @author Christian Stein
  */
-public interface PrevaylerDecorator<P> {
+public interface PrevaylerDecorator<P> extends AutoCloseable {
 
   Prevayler<P> prevayler();
 

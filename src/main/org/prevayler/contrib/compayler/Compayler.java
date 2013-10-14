@@ -103,6 +103,11 @@ public class Compayler<PI> {
     lines.add("  }");
     lines.add("");
     lines.add("  @Override");
+    lines.add("  public void close() throws java.io.IOException {");
+    lines.add("    prevayler.close();");
+    lines.add("  }");
+    lines.add("");
+    lines.add("  @Override");
     lines.add("  public org.prevayler.Prevayler<" + piName + "> prevayler() {");
     lines.add("    return prevayler;");
     lines.add("  }");

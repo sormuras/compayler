@@ -24,7 +24,7 @@ public class CompaylerTest {
     configuration.setPackageName("ab.cd");
     configuration.setDecoratorClassName("Deco");
     configuration.setPrevalentSystemClass(StringBuilder.class);
-    
+
     Compayler<Appendable> compayler = new Compayler<>(configuration);
     GenerateSourcesTask<Appendable> generateSourcesTask = compayler.generateSourcesTask();
     String a1 = generateSourcesTask.getTag("append", char.class).setParameterNames("character").setDirect(true).getClassName();
@@ -66,19 +66,18 @@ public class CompaylerTest {
 
   @Test
   public void testStringBuilderAsAppendable() throws Exception {
-    final String prevalenceBase = temporaryFolder.newFolder("testStringBuilderAsAppendable").toString();
-    final StringBuilder builder = new StringBuilder();
+    String prevalenceBase = temporaryFolder.newFolder("testStringBuilderAsAppendable").toString();
+    StringBuilder builder = new StringBuilder();
     assertEquals(0, builder.length());
+    int oldLength = builder.length();
 
     PrevaylerCreator<Appendable> creator = new PrevaylerCreator.DefaultPrevaylerCreator<>((Appendable) builder, prevalenceBase);
-    PrevaylerDecorator<Appendable> decorator = new Compayler<>(Appendable.class).toDecorator(creator);
-
-    int oldLength = builder.length();
-    Appendable a = (Appendable) decorator;
-    Appendable b = a.append('x').append('y').append("-z-", 1, 2).append("123");
-    assertSame(a, b);
-    assertEquals(oldLength + 6, builder.length());
-    decorator.prevayler().close();
+    try (PrevaylerDecorator<Appendable> decorator = new Compayler<>(Appendable.class).toDecorator(creator)) {
+      Appendable a = (Appendable) decorator;
+      Appendable b = a.append('x').append('y').append("-z-", 1, 2).append("123");
+      assertSame(a, b);
+      assertEquals(oldLength + 6, builder.length());
+    }
 
     // now load prevalent system without compayler, just plain prevayler!
     builder.setLength(0);
