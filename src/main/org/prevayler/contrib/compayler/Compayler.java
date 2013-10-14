@@ -168,8 +168,10 @@ public class Compayler<PI> {
           lines.add(innerIndent + "return result;");
       }
       if (catchException) {
-        lines.add("    " + "} catch (" + tag.getMethodExceptionTypes("|").trim() + " e) {");
-        lines.add("    " + "  throw e;");
+        if (tag.getMethod().getExceptionTypes().length > 0) {
+          lines.add("    " + "} catch (" + tag.getMethodExceptionTypes("|").trim() + " e) {");
+          lines.add("    " + "  throw e;");
+        }
         if (!Arrays.asList(tag.getMethod().getExceptionTypes()).contains(Exception.class)) {
           lines.add("    " + "} catch (Exception e) {");
           lines.add("    " + "  throw new RuntimeException(e);");
