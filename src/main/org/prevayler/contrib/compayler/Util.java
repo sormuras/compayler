@@ -10,7 +10,9 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.file.Files;
 import java.security.SecureClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.tools.FileObject;
@@ -89,7 +91,9 @@ public final class Util {
   public static ClassLoader compile(Iterable<Source> sources, ClassLoader parent) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     JavaFileManager fileManager = new JavaFileManager(compiler.getStandardFileManager(null, null, null), parent);
-    compiler.getTask(null, fileManager, null, null, null, sources).call();
+    List<String> options = new ArrayList<>();
+    options.add("-Xlint:all");
+    compiler.getTask(null, fileManager, null, options, null, sources).call();
     return fileManager.getClassLoader(null);
   }
 
