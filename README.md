@@ -1,4 +1,4 @@
 Compayler
 =========
 
-Prevaler Decorator Compiler
+Prevayler Decorator Compiler
