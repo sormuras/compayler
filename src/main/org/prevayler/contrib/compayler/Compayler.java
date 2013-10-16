@@ -85,15 +85,14 @@ public class Compayler<PI, P extends PI> {
   }
 
   public Decorator<PI, P> decorate(P prevalentSystem) throws Exception {
-    return decorate(prevalentSystem, "Prevalence");
+    return decorate(prevalentSystem, new File("Prevalence"), generateSourcesTask());
   }
 
-  public Decorator<PI, P> decorate(P prevalentSystem, File file) throws Exception {
-    return decorate(prevalentSystem, file.toString());
+  public Decorator<PI, P> decorate(P prevalentSystem, File prevalenceDirectory) throws Exception {
+    return decorate(prevalentSystem, prevalenceDirectory, generateSourcesTask());
   }
 
-  public Decorator<PI, P> decorate(P prevalentSystem, String prevalenceDirectory) throws Exception {
-    GenerateSourcesTask<PI, P> task = generateSourcesTask();
+  public Decorator<PI, P> decorate(P prevalentSystem, File prevalenceDirectory, GenerateSourcesTask<PI, P> task) throws Exception {
     ClassLoader loader = Util.compile(task.call(), configuration.getParentClassLoader());
 
     PrevaylerFactory<P> factory = new PrevaylerFactory<>();
@@ -102,7 +101,7 @@ public class Compayler<PI, P extends PI> {
     factory.configureSnapshotSerializer(new JavaSerializer(loader));
     factory.configureTransientMode(prevalenceDirectory == null);
     if (prevalenceDirectory != null)
-      factory.configurePrevalenceDirectory(prevalenceDirectory);
+      factory.configurePrevalenceDirectory(prevalenceDirectory.getAbsolutePath());
     return decorate(factory.create(), loader);
   }
 
@@ -121,12 +120,12 @@ public class Compayler<PI, P extends PI> {
    *          the method descriptors
    * @return source of the decorator class
    */
-  public Source generateDecoratorSource(Iterable<Tag<PI>> tags) {
+  public Source generateDecoratorSource(Iterable<Tag> tags) {
     List<String> lines = new LinkedList<>();
 
     Class<PI> prevalentInterface = configuration.getPrevalentInterface();
-    String piName = Util.name(prevalentInterface);
-    String pName = Util.name(configuration.getPrevalentSystemClass());
+    String piName = Util.name(prevalentInterface) + configuration.prevalentInterfaceTypeArguments;
+    String pName = Util.name(configuration.getPrevalentSystemClass()) + configuration.prevalentSystemClassTypeArguments;
     String baseDecoName = Util.name(Decorator.class) + "<" + piName + ", " + pName + ">";
     String interfaces = piName;
 
@@ -139,7 +138,7 @@ public class Compayler<PI, P extends PI> {
     lines.add("  }");
     lines.add("");
 
-    for (Tag<PI> tag : tags) {
+    for (Tag tag : tags) {
       // custom implementation?
       List<String> customLines = tag.getCustomDecoratorMethodImplementation();
       if (customLines != null) {
@@ -173,7 +172,7 @@ public class Compayler<PI, P extends PI> {
       Class<?> executableClass = tag.getExecutableClass();
       boolean catchException = executableClass == Query.class || executableClass == TransactionWithQuery.class;
       String newAction = "new " + tag.getClassName() + tag.getParameterParentheses();
-      String assignAction = tag.getExecutableDeclaration(prevalentInterface) + " action = " + newAction;
+      String assignAction = tag.getExecutableDeclaration(configuration) + " action = " + newAction;
       String executeAction = "prevayler.execute(action)";
       lines.add("    " + assignAction + ";");
       if (catchException) {
@@ -215,12 +214,12 @@ public class Compayler<PI, P extends PI> {
    *          method descriptor
    * @return source of the executable
    */
-  public Source generateExecutableSource(Tag<PI> tag) {
+  public Source generateExecutableSource(Tag tag) {
     List<String> lines = new LinkedList<>();
     Class<PI> prevalentInterface = configuration.getPrevalentInterface();
     lines.add("package " + configuration.getPackageName() + ";");
     lines.add("");
-    lines.add("public class " + tag.getClassName() + " implements " + tag.getExecutableDeclaration(prevalentInterface) + " {");
+    lines.add("public class " + tag.getClassName() + " implements " + tag.getExecutableDeclaration(configuration) + " {");
     lines.add("");
     lines.add("  private static final long serialVersionUID = " + tag.getSerialVersionUID() + "L;");
     lines.add("");
@@ -230,7 +229,8 @@ public class Compayler<PI, P extends PI> {
       for (Class<?> param : tag.getMethod().getParameterTypes()) {
         if (index == tag.getIndexOfPrevalentDate())
           lines.add("  @SuppressWarnings(\"unused\")");
-        lines.add("  private final " + Util.name(param) + " " + tag.getParameterName(index) + ";");
+        lines.add("  private final " + Util.name(param) + tag.getParameterDescriptors()[index].getValue(Tag.TYPE_ARGS) + " "
+            + tag.getParameterName(index) + ";");
         index++;
       }
       lines.add("");
@@ -241,7 +241,8 @@ public class Compayler<PI, P extends PI> {
       lines.add("");
     }
     // implementation
-    String parameters = Util.name(prevalentInterface) + " prevalentSystem, java.util.Date executionTime";
+    String parameters = Util.name(prevalentInterface) + configuration.prevalentInterfaceTypeArguments
+        + " prevalentSystem, java.util.Date executionTime";
     String methodCall = tag.getMethod().getName() + tag.getParameterParenthesesWithExecutionTime();
     lines.add("  @Override");
     if (tag.getExecutableClass() == Query.class) {

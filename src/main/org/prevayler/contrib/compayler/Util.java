@@ -70,7 +70,6 @@ public final class Util {
       return new SecureClassLoader(parent) {
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
-          System.out.println(name);
           JavaClassObject object = map.get(name);
           if (object == null)
             throw new ClassNotFoundException(name);

@@ -19,7 +19,9 @@ public class Configuration<PI, P extends PI> implements Cloneable {
   private String packageName;
   private ClassLoader parentClassLoader;
   private final Class<PI> prevalentInterface;
+  public String prevalentInterfaceTypeArguments;
   private final Class<P> prevalentSystemClass;
+  public String prevalentSystemClassTypeArguments;
   private PrevalentType prevalentType;
 
   /**
@@ -38,7 +40,9 @@ public class Configuration<PI, P extends PI> implements Cloneable {
       throw new IllegalArgumentException("Expected type class, but got: " + prevalentSystemClass);
     }
     this.prevalentInterface = prevalentInterface;
+    this.prevalentInterfaceTypeArguments = "";
     this.prevalentSystemClass = prevalentSystemClass;
+    this.prevalentSystemClassTypeArguments = "";
     this.immutable = false;
     this.parentClassLoader = getClass().getClassLoader();
     this.packageName = prevalentInterface.getSimpleName().toLowerCase();
@@ -61,7 +65,9 @@ public class Configuration<PI, P extends PI> implements Cloneable {
   protected Configuration(Configuration<PI, P> configuration) {
     this.immutable = true;
     this.prevalentInterface = configuration.prevalentInterface;
+    this.prevalentInterfaceTypeArguments = configuration.prevalentInterfaceTypeArguments;
     this.prevalentSystemClass = configuration.prevalentSystemClass;
+    this.prevalentSystemClassTypeArguments = configuration.prevalentSystemClassTypeArguments;
     this.decoratorClassName = configuration.decoratorClassName;
     this.direct = configuration.direct;
     this.methodNameUniqueMap = configuration.methodNameUniqueMap;
@@ -108,7 +114,7 @@ public class Configuration<PI, P extends PI> implements Cloneable {
    *          method to analyze
    * @return method description tag
    */
-  public Tag<PI> createTag(Method method) {
+  public Tag createTag(Method method) {
     boolean direct = isDirect();
     PrevalentType type = getPrevalentType();
 
@@ -129,7 +135,7 @@ public class Configuration<PI, P extends PI> implements Cloneable {
       }
     }
 
-    Tag<PI> tag = new Tag<PI>(method, methodNameUniqueMap.get(method.getName()));
+    Tag tag = new Tag(method, methodNameUniqueMap.get(method.getName()));
     tag.setDirect(direct);
     tag.setType(type);
     tag.setSerialVersionUID(1L);

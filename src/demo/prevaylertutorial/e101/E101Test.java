@@ -16,7 +16,7 @@ import org.prevayler.contrib.compayler.Decorator;
 
 public class E101Test {
 
-  class IsEmptyQuery implements Query<Root, Boolean> {
+  private static class IsEmptyQuery implements Query<Root, Boolean> {
 
     private static final long serialVersionUID = 1L;
 

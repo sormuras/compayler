@@ -19,7 +19,9 @@ import org.prevayler.TransactionWithQuery;
  * 
  * @author Christian Stein
  */
-public class Tag<P> extends MethodDescriptor {
+public class Tag extends MethodDescriptor {
+
+  public static final String TYPE_ARGS = "TYPE_ARGS";
 
   private List<String> customDecoratorMethodImplementation;
   private boolean direct;
@@ -37,9 +39,11 @@ public class Tag<P> extends MethodDescriptor {
     setDirect(false);
     setType(PrevalentType.TRANSACTION);
     setSerialVersionUID(1L);
+    setValue(TYPE_ARGS, "");
     for (int i = 0; i < getParameterDescriptors().length; i++) {
       getParameterDescriptors()[i] = new ParameterDescriptor();
       getParameterDescriptors()[i].setName("p" + i);
+      getParameterDescriptors()[i].setValue(TYPE_ARGS, "");
     }
   }
 
@@ -84,8 +88,8 @@ public class Tag<P> extends MethodDescriptor {
     return TransactionWithQuery.class;
   }
 
-  public String getExecutableDeclaration(Class<P> prevalentInterface) {
-    String interfaceName = name(prevalentInterface);
+  public String getExecutableDeclaration(Configuration<?, ?> configuration) {
+    String interfaceName = name(configuration.getPrevalentInterface()) + configuration.prevalentInterfaceTypeArguments;
     String executableName = getExecutableName();
     // Transaction only has 1 generic type parameter
     if (executableName == Transaction.class.getCanonicalName())
@@ -108,7 +112,7 @@ public class Tag<P> extends MethodDescriptor {
 
   public String getMethodDeclaration() {
     StringBuilder builder = new StringBuilder();
-    builder.append(name(method.getReturnType()));
+    builder.append(name(method.getReturnType()) + getValue(TYPE_ARGS));
     builder.append(" ");
     builder.append(method.getName());
     builder.append(getParameterSignature());
@@ -181,9 +185,9 @@ public class Tag<P> extends MethodDescriptor {
     for (Class<?> param : method.getParameterTypes()) {
       if (index > 0)
         builder.append(", ");
-      String ptype = name(param);
+      String ptype = name(param) + getParameterDescriptors()[index].getValue(TYPE_ARGS);
       if (method.isVarArgs() && index == length - 1)
-        ptype = name(param.getComponentType()) + "...";
+        ptype = name(param.getComponentType()) + getParameterDescriptors()[index].getValue(TYPE_ARGS) + "...";
       builder.append(ptype);
       builder.append(" ").append(getParameterName(index++));
     }
@@ -192,11 +196,11 @@ public class Tag<P> extends MethodDescriptor {
   }
 
   public String getReturnTypeName() {
-    return name(method.getReturnType());
+    return name(method.getReturnType()) + getValue(TYPE_ARGS);
   }
 
   public String getReturnTypeWrapName() {
-    return name(wrap(method.getReturnType()));
+    return name(wrap(method.getReturnType())) + getValue(TYPE_ARGS);
   }
 
   public long getSerialVersionUID() {
@@ -215,17 +219,17 @@ public class Tag<P> extends MethodDescriptor {
     return unique;
   }
 
-  public Tag<P> setCustomDecoratorMethodImplementation(List<String> customDecoratorMethodImplementation) {
+  public Tag setCustomDecoratorMethodImplementation(List<String> customDecoratorMethodImplementation) {
     this.customDecoratorMethodImplementation = customDecoratorMethodImplementation;
     return this;
   }
 
-  public Tag<P> setDirect(boolean direct) {
+  public Tag setDirect(boolean direct) {
     this.direct = direct;
     return this;
   }
 
-  public Tag<P> setParameterNames(String... names) {
+  public Tag setParameterNames(String... names) {
     for (int i = 0; i < names.length; i++) {
       getParameterDescriptors()[i].setName(names[i]);
     }
@@ -236,7 +240,7 @@ public class Tag<P> extends MethodDescriptor {
     this.serialVersionUID = serialVersionUID;
   }
 
-  public Tag<P> setType(PrevalentType type) {
+  public Tag setType(PrevalentType type) {
     this.type = type;
     return this;
   }

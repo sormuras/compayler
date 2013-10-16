@@ -6,13 +6,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 import org.prevayler.Prevayler;
 import org.prevayler.PrevaylerFactory;
 import org.prevayler.foundation.serialization.JavaSerializer;
@@ -20,7 +24,14 @@ import org.prevayler.foundation.serialization.JavaSerializer;
 public class CompaylerTest {
 
   @Rule
+  public TestName name = new TestName();
+
+  @Rule
   public TemporaryFolder temp = new TemporaryFolder();
+
+  protected File newTempDir() throws IOException {
+    return temp.newFolder(name.getMethodName());
+  }
 
   @Test
   public void testCompaylerConfiguration() {
@@ -35,9 +46,9 @@ public class CompaylerTest {
     assertTrue(compayler.getConfiguration().isImmutable());
 
     GenerateSourcesTask<Appendable, StringBuilder> task = compayler.generateSourcesTask();
-    Tag<Appendable> a1 = task.getTag("append", char.class).setParameterNames("character").setDirect(true);
-    Tag<Appendable> a2 = task.getTag("append", CharSequence.class).setParameterNames("sequence").setType(PrevalentType.QUERY);
-    Tag<Appendable> a3 = task.getTag("append", CharSequence.class, int.class, int.class).setParameterNames("csq", "start", "end");
+    Tag a1 = task.getTag("append", char.class).setParameterNames("character").setDirect(true);
+    Tag a2 = task.getTag("append", CharSequence.class).setParameterNames("sequence").setType(PrevalentType.QUERY);
+    Tag a3 = task.getTag("append", CharSequence.class, int.class, int.class).setParameterNames("csq", "start", "end");
 
     assertFalse(a1.isUnique());
     assertFalse(a2.isUnique());
@@ -61,6 +72,20 @@ public class CompaylerTest {
   }
 
   @Test
+  public void testIterableAsArrayList() throws Exception {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    Configuration<Iterable<Byte>, ArrayList<Byte>> configuration = new Configuration(Iterable.class, ArrayList.class);
+    configuration.prevalentInterfaceTypeArguments = "<Byte>";
+    configuration.prevalentSystemClassTypeArguments = "<Byte>";
+
+    Compayler<Iterable<Byte>, ArrayList<Byte>> compayler = new Compayler<>(configuration);
+    GenerateSourcesTask<Iterable<Byte>, ArrayList<Byte>> task = compayler.generateSourcesTask();
+    task.getTag("iterator").setValue(Tag.TYPE_ARGS, "<Byte>");
+
+    compayler.decorate(new ArrayList<Byte>(), newTempDir(), task);
+  }
+
+  @Test
   public void testPrevaylerWithCustomClassLoader() throws Exception {
     Compayler<Appendable, StringBuilder> compayler = new Compayler<>(Appendable.class, StringBuilder.class);
 
@@ -69,8 +94,7 @@ public class CompaylerTest {
     // appendable1.append("Works transient!");
     // decorator1.close();
 
-    String prevalenceBase = temp.newFolder("PrevaylerWithCustomClassLoader").toString();
-    Decorator<Appendable, StringBuilder> decorator2 = compayler.decorate(new StringBuilder(), prevalenceBase);
+    Decorator<Appendable, StringBuilder> decorator2 = compayler.decorate(new StringBuilder(), newTempDir());
     Appendable appendable2 = (Appendable) decorator2;
     appendable2.append("Works persistent!");
     decorator2.close();
@@ -79,7 +103,7 @@ public class CompaylerTest {
   @Test
   public void testStringAsCharSequence() throws Exception {
     String string = "123";
-    Decorator<CharSequence, String> decorator = new Compayler<>(CharSequence.class, String.class).decorate(string, temp.newFolder());
+    Decorator<CharSequence, String> decorator = new Compayler<>(CharSequence.class, String.class).decorate(string, newTempDir());
 
     Prevayler<String> prevayler = decorator.prevayler();
     assertNotNull(prevayler);
@@ -95,7 +119,7 @@ public class CompaylerTest {
 
   @Test
   public void testStringBuilderAsAppendable() throws Exception {
-    String prevalenceBase = temp.newFolder("StringBuilderAsAppendable").toString();
+    File prevalenceBase = newTempDir();
     StringBuilder builder = new StringBuilder();
     assertEquals(0, builder.length());
     int oldLength = builder.length();
@@ -115,7 +139,7 @@ public class CompaylerTest {
     PrevaylerFactory<StringBuilder> factory = new PrevaylerFactory<>();
     factory.configurePrevalentSystem(builder);
     factory.configureJournalSerializer(new JavaSerializer(loader));
-    factory.configurePrevalenceDirectory(prevalenceBase);
+    factory.configurePrevalenceDirectory(prevalenceBase.getAbsolutePath());
     Prevayler<StringBuilder> prevayler = factory.create();
     assertEquals(oldLength + 6, builder.length());
     prevayler.close();
