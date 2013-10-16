@@ -97,7 +97,7 @@ public class CustomClassLoaderTest {
    *   ... 33 more
    * </pre>
    */
-  @Test(expected = Error.class)
+  @Test
   public void test2() throws Exception {
     Compayler<Appendable, StringBuilder> compayler = new Compayler<>(Appendable.class, StringBuilder.class);
     GenerateSourcesTask<Appendable, StringBuilder> task = compayler.generateSourcesTask();
@@ -106,8 +106,6 @@ public class CustomClassLoaderTest {
     StringBuilder newPrevalentSystem = new StringBuilder();
     PrevaylerFactory<StringBuilder> factory = new PrevaylerFactory<>();
     factory.configurePrevalentSystem(newPrevalentSystem);
-    factory.configureJournalSerializer(new JavaSerializer(loader));
-    factory.configureSnapshotSerializer(new JavaSerializer(loader));
     factory.configureTransientMode(true);
     NullSnapshotManager<StringBuilder> nsm = new NullSnapshotManager<>(newPrevalentSystem, "No shots!");
     Method method = PrevaylerFactory.class.getDeclaredMethod("configureNullSnapshotManager", NullSnapshotManager.class);
@@ -117,6 +115,28 @@ public class CustomClassLoaderTest {
 
     Appendable appendable = (Appendable) compayler.decorate(transientPrevayler, loader);
     appendable.append("test").append('2');
+  }
+
+  @Test
+  // @Ignore("it works transient - doesn't deep copy transactions")
+  public void test3() throws Exception {
+    Compayler<Appendable, StringBuilder> compayler = new Compayler<>(Appendable.class, StringBuilder.class);
+    GenerateSourcesTask<Appendable, StringBuilder> task = compayler.generateSourcesTask();
+    ClassLoader loader = Util.compile(task.call(), getClass().getClassLoader());
+
+    StringBuilder newPrevalentSystem = new StringBuilder();
+    PrevaylerFactory<StringBuilder> factory = new PrevaylerFactory<>();
+    factory.configurePrevalentSystem(newPrevalentSystem);
+    factory.configureTransientMode(true);
+    factory.configureTransactionDeepCopy(false); // only change regarding test2()
+    NullSnapshotManager<StringBuilder> nsm = new NullSnapshotManager<>(newPrevalentSystem, "No shots!");
+    Method method = PrevaylerFactory.class.getDeclaredMethod("configureNullSnapshotManager", NullSnapshotManager.class);
+    method.setAccessible(true);
+    method.invoke(factory, nsm);
+    Prevayler<StringBuilder> transientPrevayler = factory.create();
+
+    Appendable appendable = (Appendable) compayler.decorate(transientPrevayler, loader);
+    appendable.append("test").append('3');
   }
 
 }
