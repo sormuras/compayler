@@ -12,45 +12,37 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.prevayler.Query;
 import org.prevayler.contrib.compayler.Compayler;
-import org.prevayler.contrib.compayler.PrevaylerCreator;
-import org.prevayler.contrib.compayler.PrevaylerDecorator;
+import org.prevayler.contrib.compayler.Decorator;
 
 public class E101Test {
 
+  class IsEmptyQuery implements Query<Root, Boolean> {
+
+    private static final long serialVersionUID = 1L;
+
+    public Boolean query(Root prevalentSystem, Date executionTime) throws Exception {
+      return prevalentSystem.isEmpty();
+    }
+
+  }
+
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
   public void test() throws Exception {
-
-    String prevalenceBase = temporaryFolder.newFolder("PrevalenceBase_" + System.currentTimeMillis()).toString();
-    PrevaylerCreator<E101> creator = new PrevaylerCreator.DefaultPrevaylerCreator<E101>(new Root(), prevalenceBase);
-
-    try (PrevaylerDecorator<E101> decorator = new Compayler<>(E101.class).toDecorator(creator)) {
-      E101 e101 = (E101) decorator;
-
+    Compayler<E101, Root> compayler = new Compayler<>(E101.class, Root.class);
+    try (Decorator<E101, Root> decorator = compayler.decorate(new Root(), temp.newFolder())) {
+      E101 e101 = decorator.asPrevalentInterface();
       Person person = e101.createPerson(UUID.randomUUID().toString());
-
       String nameOfPerson = "John Doe";
-
       e101.updatePersonName(person.getIdentity(), nameOfPerson);
       assertEquals(nameOfPerson, person.getName());
-
       Person queryResponse = e101.getPerson(person.getIdentity());
       assertSame("person and queryResponse are supposed to be the same object instance!", person, queryResponse);
-
       Person removed = e101.deletePerson(person.getIdentity());
       assertSame("person and removed are supposed to be the same object instance!", person, removed);
-
-      assertTrue("There are not supposed to be any persons in the root at this point!",
-          decorator.prevayler().execute(new Query<E101, Boolean>() {
-            private static final long serialVersionUID = 1L;
-
-            public Boolean query(E101 prevalentSystem, Date executionTime) throws Exception {
-              return prevalentSystem.isEmpty();
-            }
-          }));
-
+      assertTrue("There are not supposed to be any persons in the root at this point!", decorator.prevayler().execute(new IsEmptyQuery()));
     }
 
   }

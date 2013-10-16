@@ -62,7 +62,7 @@ public final class Util {
 
     public JavaFileManager(StandardJavaFileManager standardManager, ClassLoader parent) {
       super(standardManager);
-      this.parent = parent;
+      this.parent = parent != null ? parent : getClass().getClassLoader();
     }
 
     @Override
@@ -70,6 +70,7 @@ public final class Util {
       return new SecureClassLoader(parent) {
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
+          System.out.println(name);
           JavaClassObject object = map.get(name);
           if (object == null)
             throw new ClassNotFoundException(name);

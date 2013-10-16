@@ -1,28 +1,33 @@
 package org.prevayler.contrib.compayler;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.prevayler.Prevayler;
+import org.prevayler.PrevaylerFactory;
 import org.prevayler.Query;
 import org.prevayler.SureTransactionWithQuery;
 import org.prevayler.Transaction;
 import org.prevayler.TransactionWithQuery;
+import org.prevayler.foundation.serialization.JavaSerializer;
 
 /**
  * Prevayler Decorator Compiler.
  * 
  * <pre>
+ * <code>
  * Prevalent Interface: Appendable
  * Prevalent System:    StringBuilder (implements Appendable)
- * Prevalent Decorator: PrevalentAppendable (implements Appendable & PrevaylerDecorator)
+ * Prevalent Decorator: AppendableDecorator (extends Decorator implements Appendable, uses Prevayler(StringBuilder))
+ * </code>
  * </pre>
  * 
  * @author Christian Stein
  * @see {@linkplain http://prevayler.org}
  */
-public class Compayler<PI> {
+public class Compayler<PI, P extends PI> {
 
   /**
    * Simple command line program converting an interface into executable classes and a related decorator.
@@ -33,10 +38,12 @@ public class Compayler<PI> {
    * java Compayler java.lang.Appendable src/generated
    * </pre>
    */
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public static void main(String[] args) throws Exception {
-    if (args.length == 0) {
-      System.out.println("Usage: java Compayler interface [target path]");
+    if (args.length < 2) {
+      System.out.println("Usage: java Compayler interface system [target path]");
       System.out.println("                      interface = prevalent system interface like 'java.lang.Appendable'");
+      System.out.println("                         system = prevalent system class like 'java.lang.StringBuilder'");
       System.out.println("                    target path = optional destination folder for generated classes, defaults to '.'");
       return;
     }
@@ -46,14 +53,16 @@ public class Compayler<PI> {
       System.out.println("Interface expected, but got: " + className);
       return;
     }
+    className = args[1];
+    Class<?> prevalentSystemClass = Class.forName(className);
     String targetPath = ".";
-    if (args.length > 1) {
-      targetPath = args[1];
+    if (args.length > 2) {
+      targetPath = args[2];
     }
-    Util.write(new Compayler<>(prevalentInterface).generateSourcesTask().call(), targetPath);
+    Util.write(new Compayler(prevalentInterface, prevalentSystemClass).generateSourcesTask().call(), targetPath);
   }
 
-  private final Configuration<PI> configuration;
+  private final Configuration<PI, P> configuration;
 
   /**
    * Initialize Compayler with the default configuration for the given prevalent interface.
@@ -61,8 +70,8 @@ public class Compayler<PI> {
    * @param prevalentInterface
    *          interface to compile
    */
-  public Compayler(Class<PI> prevalentInterface) {
-    this(new Configuration<PI>(prevalentInterface));
+  public Compayler(Class<PI> prevalentInterface, Class<P> prevalentSystemClass) {
+    this(new Configuration<PI, P>(prevalentInterface, prevalentSystemClass));
   }
 
   /**
@@ -71,8 +80,38 @@ public class Compayler<PI> {
    * @param configuration
    *          configuration to clone and use
    */
-  public Compayler(Configuration<PI> configuration) {
+  public Compayler(Configuration<PI, P> configuration) {
     this.configuration = configuration.clone();
+  }
+
+  public Decorator<PI, P> decorate(P prevalentSystem) throws Exception {
+    return decorate(prevalentSystem, "Prevalence");
+  }
+
+  public Decorator<PI, P> decorate(P prevalentSystem, File file) throws Exception {
+    return decorate(prevalentSystem, file.toString());
+  }
+
+  public Decorator<PI, P> decorate(P prevalentSystem, String prevalenceDirectory) throws Exception {
+    GenerateSourcesTask<PI, P> task = generateSourcesTask();
+    ClassLoader loader = Util.compile(task.call(), configuration.getParentClassLoader());
+
+    PrevaylerFactory<P> factory = new PrevaylerFactory<>();
+    factory.configurePrevalentSystem(prevalentSystem);
+    factory.configureJournalSerializer(new JavaSerializer(loader));
+    factory.configureSnapshotSerializer(new JavaSerializer(loader));
+    factory.configureTransientMode(prevalenceDirectory == null);
+    if (prevalenceDirectory != null)
+      factory.configurePrevalenceDirectory(prevalenceDirectory);
+    return decorate(factory.create(), loader);
+  }
+
+  public Decorator<PI, P> decorate(Prevayler<P> prevayler, ClassLoader loader) throws Exception {
+    String name = configuration.getPackageName() + "." + configuration.getDecoratorClassName();
+    @SuppressWarnings("unchecked")
+    Class<? extends Decorator<PI, P>> decoratorClass = (Class<? extends Decorator<PI, P>>) loader.loadClass(name);
+    return (Decorator<PI, P>) decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
+
   }
 
   /**
@@ -87,33 +126,16 @@ public class Compayler<PI> {
 
     Class<PI> prevalentInterface = configuration.getPrevalentInterface();
     String piName = Util.name(prevalentInterface);
-    String interfaces = piName + ", " + PrevaylerDecorator.class.getCanonicalName() + "<" + piName + ">";
-    String piField = prevalentInterface.getSimpleName().toLowerCase().charAt(0) + prevalentInterface.getSimpleName().substring(1);
+    String pName = Util.name(configuration.getPrevalentSystemClass());
+    String baseDecoName = Util.name(Decorator.class) + "<" + piName + ", " + pName + ">";
+    String interfaces = piName;
 
     lines.add("package " + configuration.getPackageName() + ";");
     lines.add("");
-    lines.add("public class " + configuration.getDecoratorClassName() + " implements " + interfaces + " {");
+    lines.add("public class " + configuration.getDecoratorClassName() + " extends " + baseDecoName + " implements " + interfaces + " {");
     lines.add("");
-    lines.add("  private final org.prevayler.Prevayler<" + piName + "> prevayler;");
-    lines.add("  private final " + piName + " " + piField + ";");
-    lines.add("");
-    lines.add("  public " + configuration.getDecoratorClassName() + "(org.prevayler.Prevayler<" + piName + "> prevayler) {");
-    lines.add("    this.prevayler = prevayler;");
-    lines.add("    this." + piField + " = prevayler.prevalentSystem();");
-    lines.add("  }");
-    lines.add("");
-    lines.add("  @Override");
-    lines.add("  public void close() throws java.io.IOException {");
-    lines.add("    prevayler.close();");
-    lines.add("  }");
-    lines.add("");
-    lines.add("  @Override");
-    lines.add("  public org.prevayler.Prevayler<" + piName + "> prevayler() {");
-    lines.add("    return prevayler;");
-    lines.add("  }");
-    lines.add("");
-    lines.add("  protected " + piName + " redirect(" + piName + " result) {");
-    lines.add("    return result == " + piField + " ? this : result;");
+    lines.add("  public " + configuration.getDecoratorClassName() + "(org.prevayler.Prevayler<" + pName + "> prevayler) {");
+    lines.add("    super(prevayler);");
     lines.add("  }");
     lines.add("");
 
@@ -135,7 +157,7 @@ public class Compayler<PI> {
       lines.add("  public " + tag.getMethodDeclaration() + " {");
       // direct?
       if (tag.isDirect()) {
-        String invokeMethodDirect = piField + "." + tag.getMethod().getName() + tag.getParameterParentheses();
+        String invokeMethodDirect = "prevalentSystem." + tag.getMethod().getName() + tag.getParameterParentheses();
         if (tag.getMethod().getReturnType() == void.class)
           lines.add("    " + invokeMethodDirect + ";");
         else if (redirect)
@@ -251,7 +273,7 @@ public class Compayler<PI> {
    * 
    * @return task that computes all sources
    */
-  public GenerateSourcesTask<PI> generateSourcesTask() {
+  public GenerateSourcesTask<PI, P> generateSourcesTask() {
     return new GenerateSourcesTask<>(this);
   }
 
@@ -260,53 +282,8 @@ public class Compayler<PI> {
    * 
    * @return the immutable configuration
    */
-  public Configuration<PI> getConfiguration() {
+  public Configuration<PI, P> getConfiguration() {
     return configuration;
   }
 
-  /**
-   * Load decorator class, create new instance and pass the given prevayler to it.
-   * 
-   * @param loader
-   *          class loader to load the decorator class
-   * @param prevayler
-   *          prevayler instance to decorate
-   * @return decorator instance decorating the prevayler
-   * @throws Exception
-   *           if any
-   * 
-   * @see #toDecorator(PrevaylerCreator)
-   */
-  public PrevaylerDecorator<PI> toDecorator(ClassLoader loader, Prevayler<PI> prevayler) throws Exception {
-    String name = configuration.getPackageName() + "." + configuration.getDecoratorClassName();
-    @SuppressWarnings("unchecked")
-    Class<? extends PrevaylerDecorator<PI>> decoratorClass = (Class<? extends PrevaylerDecorator<PI>>) loader.loadClass(name);
-    return (PrevaylerDecorator<PI>) decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
-  }
-
-  /**
-   * Generate & compile all sources, create prevayler instance using the creator, load decorator class, create new instance and pass the
-   * prevayler to it.
-   * 
-   * @param parent
-   *          class loader used as the parent of the newly created one that hosts the compiled classes
-   * @param creator
-   *          prevayler creator
-   * @return decorator instance decorating the created prevayler
-   * @throws Exception
-   *           if any
-   */
-  public PrevaylerDecorator<PI> toDecorator(ClassLoader parent, PrevaylerCreator<PI> creator) throws Exception {
-    GenerateSourcesTask<PI> task = generateSourcesTask();
-    ClassLoader loader = Util.compile(task.call(), parent);
-    Prevayler<PI> prevayler = creator.createPrevayler(loader);
-    return toDecorator(loader, prevayler);
-  }
-
-  /**
-   * Same as {@code toDecorator(getClass().getClassLoader(), creator)}.
-   */
-  public PrevaylerDecorator<PI> toDecorator(PrevaylerCreator<PI> creator) throws Exception {
-    return toDecorator(getClass().getClassLoader(), creator);
-  }
 }

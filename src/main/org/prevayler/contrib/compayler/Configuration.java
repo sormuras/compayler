@@ -10,15 +10,16 @@ import java.util.Map;
  * 
  * @author Christian Stein
  */
-public class Configuration<PI> implements Cloneable {
+public class Configuration<PI, P extends PI> implements Cloneable {
 
   private String decoratorClassName;
   private boolean direct;
   private final boolean immutable;
   private final Map<String, Boolean> methodNameUniqueMap;
   private String packageName;
+  private ClassLoader parentClassLoader;
   private final Class<PI> prevalentInterface;
-  private Class<? extends PI> prevalentSystemClass;
+  private final Class<P> prevalentSystemClass;
   private PrevalentType prevalentType;
 
   /**
@@ -29,15 +30,19 @@ public class Configuration<PI> implements Cloneable {
    * @throws IllegalArgumentException
    *           if the prevalent interface is not an interface
    */
-  public Configuration(Class<PI> prevalentInterface) {
+  public Configuration(Class<PI> prevalentInterface, Class<P> prevalentSystemClass) {
     if (!prevalentInterface.isInterface()) {
       throw new IllegalArgumentException("Expected an interface, but got: " + prevalentInterface);
     }
+    if (prevalentSystemClass.isInterface()) {
+      throw new IllegalArgumentException("Expected type class, but got: " + prevalentSystemClass);
+    }
     this.prevalentInterface = prevalentInterface;
+    this.prevalentSystemClass = prevalentSystemClass;
     this.immutable = false;
-    this.prevalentSystemClass = null;
+    this.parentClassLoader = getClass().getClassLoader();
     this.packageName = prevalentInterface.getSimpleName().toLowerCase();
-    this.decoratorClassName = "Prevalent" + prevalentInterface.getSimpleName();
+    this.decoratorClassName = prevalentInterface.getSimpleName() + "Decorator";
     this.methodNameUniqueMap = Collections.unmodifiableMap(buildMethodNameUniqueMap());
     try {
       this.direct = (boolean) PrevalentMethod.class.getMethod("direct").getDefaultValue();
@@ -53,14 +58,15 @@ public class Configuration<PI> implements Cloneable {
    * @param configuration
    *          the configuration to copy
    */
-  protected Configuration(Configuration<PI> configuration) {
+  protected Configuration(Configuration<PI, P> configuration) {
     this.immutable = true;
     this.prevalentInterface = configuration.prevalentInterface;
+    this.prevalentSystemClass = configuration.prevalentSystemClass;
     this.decoratorClassName = configuration.decoratorClassName;
     this.direct = configuration.direct;
     this.methodNameUniqueMap = configuration.methodNameUniqueMap;
     this.packageName = configuration.packageName;
-    this.prevalentSystemClass = configuration.prevalentSystemClass;
+    this.parentClassLoader = configuration.parentClassLoader;
     this.prevalentType = configuration.prevalentType;
   }
 
@@ -91,8 +97,8 @@ public class Configuration<PI> implements Cloneable {
   }
 
   @Override
-  public Configuration<PI> clone() {
-    return new Configuration<PI>(this);
+  public Configuration<PI, P> clone() {
+    return new Configuration<PI, P>(this);
   }
 
   /**
@@ -145,6 +151,13 @@ public class Configuration<PI> implements Cloneable {
   }
 
   /**
+   * @return parent class loader, like {@code getClass().getClassLoader()}.
+   */
+  public ClassLoader getParentClassLoader() {
+    return parentClassLoader;
+  }
+
+  /**
    * @return prevalent interface type, like {@link java.lang.Appendable}
    */
   public Class<PI> getPrevalentInterface() {
@@ -182,7 +195,7 @@ public class Configuration<PI> implements Cloneable {
   /**
    * Set simple name of the decorator class, like {@code "PrevalentAppendable"}.
    */
-  public Configuration<PI> setDecoratorClassName(String decoratorClassName) {
+  public Configuration<PI, P> setDecoratorClassName(String decoratorClassName) {
     assertMutable();
     this.decoratorClassName = decoratorClassName;
     return this;
@@ -191,7 +204,7 @@ public class Configuration<PI> implements Cloneable {
   /**
    * Set {@code true} if the decorator should by-pass the prevayler, {@code false} otherwise.
    */
-  public Configuration<PI> setDirect(boolean direct) {
+  public Configuration<PI, P> setDirect(boolean direct) {
     assertMutable();
     this.direct = direct;
     return this;
@@ -200,25 +213,25 @@ public class Configuration<PI> implements Cloneable {
   /**
    * Set package name, like {@code "com.abc"}.
    */
-  public Configuration<PI> setPackageName(String packageName) {
+  public Configuration<PI, P> setPackageName(String packageName) {
     assertMutable();
     this.packageName = packageName;
     return this;
   }
 
   /**
-   * Set prevalent system class, like {@code java.lang.StringBuilder} or {@code com.abc.DefaultAppendableImpl}.
+   * Set parent class loader, like {@code getClass().getClassLoader()}.
    */
-  public Configuration<PI> setPrevalentSystemClass(Class<? extends PI> prevalentSystemClass) {
+  public Configuration<PI, P> setParentClassLoader(ClassLoader parentClassLoader) {
     assertMutable();
-    this.prevalentSystemClass = prevalentSystemClass;
+    this.parentClassLoader = parentClassLoader;
     return this;
   }
 
   /**
    * Set default prevalent type if no prevalent method annotation is found at the prevalent interface or system class.
    */
-  public Configuration<PI> setPrevalentType(PrevalentType prevalentType) {
+  public Configuration<PI, P> setPrevalentType(PrevalentType prevalentType) {
     assertMutable();
     this.prevalentType = prevalentType;
     return this;

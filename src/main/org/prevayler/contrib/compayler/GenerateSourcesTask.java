@@ -12,12 +12,12 @@ import java.util.concurrent.Callable;
  * 
  * @author Christian Stein
  */
-public class GenerateSourcesTask<PI> implements Callable<List<Source>> {
+public class GenerateSourcesTask<PI, P extends PI> implements Callable<List<Source>> {
 
-  private final Compayler<PI> compayler;
+  private final Compayler<PI, P> compayler;
   private final Map<Method, Tag<PI>> tags;
 
-  protected GenerateSourcesTask(Compayler<PI> compayler) {
+  protected GenerateSourcesTask(Compayler<PI, P> compayler) {
     this.compayler = compayler;
     this.tags = new HashMap<>();
     for (Method method : compayler.getConfiguration().getPrevalentInterface().getMethods()) {
@@ -35,7 +35,7 @@ public class GenerateSourcesTask<PI> implements Callable<List<Source>> {
     return sources;
   }
 
-  public Compayler<PI> getCompayler() {
+  public Compayler<PI, P> getCompayler() {
     return compayler;
   }
 
