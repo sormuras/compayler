@@ -75,8 +75,8 @@ public class CompaylerTest {
   public void testIterableAsArrayList() throws Exception {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     Configuration<Iterable<Byte>, ArrayList<Byte>> configuration = new Configuration(Iterable.class, ArrayList.class);
-    configuration.prevalentInterfaceTypeArguments = "<Byte>";
-    configuration.prevalentSystemClassTypeArguments = "<Byte>";
+    configuration.setPrevalentInterfaceTypeArguments("<Byte>");
+    configuration.setPrevalentSystemClassTypeArguments("<Byte>");
 
     Compayler<Iterable<Byte>, ArrayList<Byte>> compayler = new Compayler<>(configuration);
     GenerateSourcesTask<Iterable<Byte>, ArrayList<Byte>> task = compayler.generateSourcesTask();

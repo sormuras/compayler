@@ -124,8 +124,8 @@ public class Compayler<PI, P extends PI> {
     List<String> lines = new LinkedList<>();
 
     Class<PI> prevalentInterface = configuration.getPrevalentInterface();
-    String piName = Util.name(prevalentInterface) + configuration.prevalentInterfaceTypeArguments;
-    String pName = Util.name(configuration.getPrevalentSystemClass()) + configuration.prevalentSystemClassTypeArguments;
+    String piName = Util.name(prevalentInterface) + configuration.getPrevalentInterfaceTypeArguments();
+    String pName = Util.name(configuration.getPrevalentSystemClass()) + configuration.getPrevalentSystemClassTypeArguments();
     String baseDecoName = Util.name(Decorator.class) + "<" + piName + ", " + pName + ">";
     String interfaces = piName;
 
@@ -241,7 +241,7 @@ public class Compayler<PI, P extends PI> {
       lines.add("");
     }
     // implementation
-    String parameters = Util.name(prevalentInterface) + configuration.prevalentInterfaceTypeArguments
+    String parameters = Util.name(prevalentInterface) + configuration.getPrevalentInterfaceTypeArguments()
         + " prevalentSystem, java.util.Date executionTime";
     String methodCall = tag.getMethod().getName() + tag.getParameterParenthesesWithExecutionTime();
     lines.add("  @Override");

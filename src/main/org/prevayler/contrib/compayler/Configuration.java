@@ -19,9 +19,9 @@ public class Configuration<PI, P extends PI> implements Cloneable {
   private String packageName;
   private ClassLoader parentClassLoader;
   private final Class<PI> prevalentInterface;
-  public String prevalentInterfaceTypeArguments;
+  private String prevalentInterfaceTypeArguments;
   private final Class<P> prevalentSystemClass;
-  public String prevalentSystemClassTypeArguments;
+  private String prevalentSystemClassTypeArguments;
   private PrevalentType prevalentType;
 
   /**
@@ -171,10 +171,24 @@ public class Configuration<PI, P extends PI> implements Cloneable {
   }
 
   /**
+   * @return like "" or "<String, Integer>"
+   */
+  public String getPrevalentInterfaceTypeArguments() {
+    return prevalentInterfaceTypeArguments;
+  }
+
+  /**
    * @return prevalent system class, like {@code java.lang.StringBuilder} or {@code com.abc.DefaultAppendableImpl}
    */
   public Class<? extends PI> getPrevalentSystemClass() {
     return prevalentSystemClass;
+  }
+
+  /**
+   * @return like "" or "<String, Integer>"
+   */
+  public String getPrevalentSystemClassTypeArguments() {
+    return prevalentSystemClassTypeArguments;
   }
 
   /**
@@ -232,6 +246,20 @@ public class Configuration<PI, P extends PI> implements Cloneable {
     assertMutable();
     this.parentClassLoader = parentClassLoader;
     return this;
+  }
+
+  /**
+   * Set type arguments like "" or "<String, Integer>".
+   */
+  public void setPrevalentInterfaceTypeArguments(String prevalentInterfaceTypeArguments) {
+    this.prevalentInterfaceTypeArguments = prevalentInterfaceTypeArguments;
+  }
+
+  /**
+   * Set type arguments like "" or "<String, Integer>".
+   */
+  public void setPrevalentSystemClassTypeArguments(String prevalentSystemClassTypeArguments) {
+    this.prevalentSystemClassTypeArguments = prevalentSystemClassTypeArguments;
   }
 
   /**

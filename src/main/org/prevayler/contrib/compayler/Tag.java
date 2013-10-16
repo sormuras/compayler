@@ -89,7 +89,7 @@ public class Tag extends MethodDescriptor {
   }
 
   public String getExecutableDeclaration(Configuration<?, ?> configuration) {
-    String interfaceName = name(configuration.getPrevalentInterface()) + configuration.prevalentInterfaceTypeArguments;
+    String interfaceName = name(configuration.getPrevalentInterface()) + configuration.getPrevalentInterfaceTypeArguments();
     String executableName = getExecutableName();
     // Transaction only has 1 generic type parameter
     if (executableName == Transaction.class.getCanonicalName())
