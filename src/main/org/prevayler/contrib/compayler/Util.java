@@ -90,6 +90,9 @@ public final class Util {
 
   public static ClassLoader compile(Iterable<Source> sources, ClassLoader parent) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    if (compiler == null) {
+      throw new IllegalStateException("No system java compiler available. JDK is required!");
+    }
     JavaFileManager fileManager = new JavaFileManager(compiler.getStandardFileManager(null, null, null), parent);
     List<String> options = new ArrayList<>();
     options.add("-Xlint:all");
