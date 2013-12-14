@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project basedir="." name="Compayler" default="test">
+
+	<property name="javac.output.dir" value="bin/ant/classes" />
+	<property name="junit.output.dir" value="bin/ant/junit" />
+
+	<target name="clean">
+		<delete dir="bin/ant" />
+	</target>
+
+	<target name="init">
+		<mkdir dir="${javac.output.dir}" />
+	</target>
+
+	<target name="test" depends="init" description="123">
+		<echo>be*free</echo>
+	</target>
+
+</project>
