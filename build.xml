@@ -2,19 +2,58 @@
 
 <project basedir="." name="Compayler" default="test">
 
-	<property name="javac.output.dir" value="bin/ant/classes" />
-	<property name="junit.output.dir" value="bin/ant/junit" />
+	<tstamp>
+		<format property="timestamp" pattern="yyyyMMddHHmm" />
+	</tstamp>
+
+	<property name="dir.out" value="bin/ant" />
 
 	<target name="clean">
-		<delete dir="bin/ant" />
+		<delete dir="${dir.out}" />
 	</target>
 
-	<target name="init">
-		<mkdir dir="${javac.output.dir}" />
-	</target>
-
-	<target name="test" depends="init" description="123">
+	<target name="init" depends="clean">
 		<echo>be*free</echo>
+		<mkdir dir="${dir.out}" />
+	</target>
+
+	<target name="compile" depends="init">
+		<mkdir dir="${dir.out}/classes" />
+		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
+			<classpath path="lib/prevayler-2.6-core-factory-xstream-source.jar" />
+			<src path="src/main" />
+		</javac>
+		<jar destfile="${dir.out}/compayler.jar">
+			<fileset dir="${dir.out}/classes" />
+		</jar>
+	</target>
+
+	<target name="test" depends="compile" description="execute all tests">
+		<path id="junit.class.path">
+			<pathelement path="${dir.out}/compayler.jar" />
+			<pathelement path="${dir.out}/junit/classes" />
+			<pathelement path="lib/prevayler-2.6-core-factory-xstream-source.jar" />
+			<pathelement path="lib/junit-4.11.jar" />
+			<pathelement path="lib/hamcrest-core-1.3.jar" />
+		</path>
+
+		<mkdir dir="${dir.out}/junit/classes" />
+		<mkdir dir="${dir.out}/junit/reports" />
+		<javac destdir="${dir.out}/junit/classes" encoding="UTF-8" includeantruntime="no">
+			<classpath refid="junit.class.path" />
+			<src path="src/test" />
+		</javac>
+
+		<junit printsummary="yes" fork="yes" haltonfailure="no">
+			<classpath refid="junit.class.path" />
+			<formatter type="xml" />
+			<batchtest todir="${dir.out}/junit/reports">
+				<fileset dir="src/test">
+					<include name="**/*Test*.java" />
+					<exclude name="**/AllTests.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 
 </project>
