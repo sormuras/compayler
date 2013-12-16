@@ -35,7 +35,7 @@ public class Compayler<PI, P extends PI> {
    * Usage example:
    * 
    * <pre>
-   * java Compayler java.lang.Appendable src/generated
+   * java Compayler java.lang.Appendable java.lang.StringBuilder src/generated
    * </pre>
    */
   @SuppressWarnings({ "unchecked", "rawtypes" })
