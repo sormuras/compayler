@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry excluding=".gitignore" kind="src" path="src/generated"/>
 	<classpathentry kind="lib" path="lib/prevayler-2.6-core-factory-xstream-source.jar"/>
-	<classpathentry kind="lib" path="lib/qdox-2.0-20130706.124819-8.jar" sourcepath="lib/qdox-2.0-20130706.124819-8-src.zip"/>
+	<classpathentry kind="lib" path="lib/qdox-2.0-M1.jar" sourcepath="lib/qdox-2.0-M1-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="output" path="bin/eclipse/classes"/>
