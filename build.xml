@@ -7,6 +7,11 @@
 	</tstamp>
 
 	<property name="dir.out" value="bin/ant" />
+	
+	<path id="compile.class.path">
+		<pathelement path="lib/prevayler-2.6-core-factory-xstream-source.jar" />
+		<pathelement path="lib/qdox-2.0-M1.jar" />
+	</path>
 
 	<target name="clean">
 		<delete dir="${dir.out}" />
@@ -20,7 +25,7 @@
 	<target name="compile" depends="init">
 		<mkdir dir="${dir.out}/classes" />
 		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
-			<classpath path="lib/prevayler-2.6-core-factory-xstream-source.jar" />
+			<classpath refid="compile.class.path" />
 			<src path="src/main" />
 		</javac>
 		<jar destfile="${dir.out}/compayler.jar">
@@ -32,7 +37,7 @@
 		<path id="junit.class.path">
 			<pathelement path="${dir.out}/compayler.jar" />
 			<pathelement path="${dir.out}/junit/classes" />
-			<pathelement path="lib/prevayler-2.6-core-factory-xstream-source.jar" />
+			<path refid="compile.class.path" />
 			<pathelement path="lib/junit-4.11.jar" />
 			<pathelement path="lib/hamcrest-core-1.3.jar" />
 		</path>
