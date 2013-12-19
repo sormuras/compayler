@@ -13,9 +13,9 @@ import java.util.List;
 public class Unit {
 
   /**
-   * {@code "SubSequenceQuery"}
+   * {@code "subSequence"}
    */
-  public final String className;
+  public final String unitName;
 
   /**
    * {@code "com.github.sormuras.compayler.generated"}
@@ -42,17 +42,17 @@ public class Unit {
    */
   public List<String> throwing = new ArrayList<>();
 
-  public Unit(String className) {
-    if (className.contains("."))
-      throw new IllegalArgumentException("className must not contain '.' chars");
-    this.className = className;
+  public Unit(String unitName) {
+    if (unitName.contains("."))
+      throw new IllegalArgumentException("unit name must not contain '.' chars");
+    this.unitName = unitName;
   }
 
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    builder.append("Unit [className=");
-    builder.append(className);
+    builder.append("Unit [unitName=");
+    builder.append(unitName);
     builder.append(", packageName=");
     builder.append(packageName);
     builder.append(", parameterNames=");
