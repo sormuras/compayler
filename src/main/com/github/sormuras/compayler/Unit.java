@@ -1,70 +1,38 @@
 package com.github.sormuras.compayler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Class feature descriptor unit.
- * <p>
- * All example javadoc comments below refer to {@link CharSequence#subSequence(int, int)} method.
+ * Executable class implementation feature descriptor bean unit.
  * 
  * @author Christian Stein
  */
 public class Unit {
 
-  /**
-   * {@code "subSequence"}
-   */
-  public final String unitName;
+  private String className;
+  private final Tag tag;
+  private PrevalentType type;
 
-  /**
-   * {@code "com.github.sormuras.compayler.generated"}
-   */
-  public String packageName;
-
-  /**
-   * {@code ["start", "end"]}
-   */
-  public List<String> parameterNames = new ArrayList<>();
-
-  /**
-   * {@code ["int", "int"]}
-   */
-  public List<String> parameterTypes = new ArrayList<>();
-
-  /**
-   * {@code "java.lang.CharSequence"}
-   */
-  public String returnType = void.class.toString();
-
-  /**
-   * {@code ["java.io.IOException"]}
-   */
-  public List<String> throwing = new ArrayList<>();
-
-  public Unit(String unitName) {
-    if (unitName.contains("."))
-      throw new IllegalArgumentException("unit name must not contain '.' chars");
-    this.unitName = unitName;
+  public Unit(Tag tag) {
+    this.tag = tag;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("Unit [unitName=");
-    builder.append(unitName);
-    builder.append(", packageName=");
-    builder.append(packageName);
-    builder.append(", parameterNames=");
-    builder.append(parameterNames);
-    builder.append(", parameterTypes=");
-    builder.append(parameterTypes);
-    builder.append(", returnType=");
-    builder.append(returnType);
-    builder.append(", throwing=");
-    builder.append(throwing);
-    builder.append("]");
-    return builder.toString();
+  public String getClassName() {
+    return className;
+  }
+
+  public Tag getTag() {
+    return tag;
+  }
+
+  public PrevalentType getType() {
+    return type;
+  }
+
+  public void setClassName(String className) {
+    this.className = className;
+  }
+
+  public void setType(PrevalentType type) {
+    this.type = type;
   }
 
 }
