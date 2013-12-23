@@ -7,9 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.sormuras.compayler.PrevalentMethod;
+import com.github.sormuras.compayler.PrevalentMode;
+import com.github.sormuras.compayler.PrevalentType;
 import com.github.sormuras.compayler.Tag;
 import com.github.sormuras.compayler.TagFactory;
 import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
@@ -19,10 +23,11 @@ public class QDoxTagFactory implements TagFactory {
 
   private final JavaProjectBuilder builder;
 
-  public QDoxTagFactory(String sourceFile) {
+  public QDoxTagFactory(String... sourceFiles) {
     this.builder = new JavaProjectBuilder();
     try {
-      builder.addSource(new File(sourceFile));
+      for (String sourceFile : sourceFiles)
+        builder.addSource(new File(sourceFile));
     } catch (IOException e) {
       throw new RuntimeException("Adding source to QDox project builder failed!", e);
     }
@@ -67,9 +72,21 @@ public class QDoxTagFactory implements TagFactory {
       for (JavaType exception : method.getExceptionTypes()) {
         thros.add(exception.getGenericFullyQualifiedName());
       }
-
-      Tag unit = new Tag(name, packageName, names, types, returnType, thros, uniques.get(name));
-      tags.add(unit);
+      Tag tag = new Tag(name, packageName, names, types, returnType, thros, uniques.get(name));
+      for (JavaAnnotation annotation : method.getAnnotations()) {
+        if (!PrevalentMethod.class.getName().equals(annotation.getType().getFullyQualifiedName()))
+          continue;
+        Object object = annotation.getNamedParameter("mode");
+        if (object != null)
+          tag.setPrevalentMode(PrevalentMode.valueOf(object.toString()));
+        object = annotation.getNamedParameter("time");
+        if (object != null)
+          tag.setPrevalentTime(Integer.valueOf(object.toString()));
+        object = annotation.getNamedParameter("value");
+        if (object != null)
+          tag.setPrevalentType(PrevalentType.valueOf(object.toString().substring(object.toString().lastIndexOf('.') + 1)));
+      }
+      tags.add(tag);
     }
 
     return tags;

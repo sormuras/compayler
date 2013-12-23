@@ -1,5 +1,8 @@
 package com.github.sormuras.compayler;
 
+import static com.github.sormuras.compayler.PrevalentMode.PREVALENT;
+import static com.github.sormuras.compayler.PrevalentType.TRANSACTION;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,7 +22,7 @@ public @interface PrevalentMethod {
    * 
    * No transaction is journaled for system recovery. No synchronization performed by Prevayler.
    */
-  boolean direct() default false;
+  PrevalentMode mode() default PREVALENT;
 
   /**
    * Index of the execution time parameter. The parameter to which the index points to, must be of type <code>java.util.Date</code>.
@@ -29,6 +32,6 @@ public @interface PrevalentMethod {
   /**
    * Query or transaction type?
    */
-  PrevalentType value() default PrevalentType.TRANSACTION;
+  PrevalentType value() default TRANSACTION;
 
 }

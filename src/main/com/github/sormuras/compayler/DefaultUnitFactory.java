@@ -16,10 +16,10 @@ public class DefaultUnitFactory implements UnitFactory {
    */
   public String buildClassName(Unit unit) {
     Tag tag = unit.getTag();
-    PrevalentType type = unit.getType();
     // capitalize unit name
     String name = tag.getName().toUpperCase().charAt(0) + tag.getName().substring(1);
     // append Query or Transaction
+    PrevalentType type = tag.getPrevalentType();
     name = name + type.name().charAt(0) + type.name().substring(1).toLowerCase(); // Query | Transaction
     // done, if name is unique
     if (tag.isUnique()) {
@@ -37,14 +37,8 @@ public class DefaultUnitFactory implements UnitFactory {
   @Override
   public Unit createUnit(Tag tag) {
     Unit unit = new Unit(tag);
-    unit.setType(buildType(unit));
     unit.setClassName(buildClassName(unit));
     return unit;
-  }
-
-  private PrevalentType buildType(Unit unit) {
-    // TODO Auto-generated method stub
-    return PrevalentType.TRANSACTION;
   }
 
 }

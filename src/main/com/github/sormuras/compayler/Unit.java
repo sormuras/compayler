@@ -9,7 +9,6 @@ public class Unit {
 
   private String className;
   private final Tag tag;
-  private PrevalentType type;
 
   public Unit(Tag tag) {
     this.tag = tag;
@@ -23,16 +22,8 @@ public class Unit {
     return tag;
   }
 
-  public PrevalentType getType() {
-    return type;
-  }
-
   public void setClassName(String className) {
     this.className = className;
-  }
-
-  public void setType(PrevalentType type) {
-    this.type = type;
   }
 
 }

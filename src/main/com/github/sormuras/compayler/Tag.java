@@ -37,6 +37,15 @@ public class Tag {
   private final List<String> parameterTypes;
 
   /**
+   * 
+   */
+  private PrevalentMode prevalentMode;
+
+  private int prevalentTime;
+
+  private PrevalentType prevalentType;
+
+  /**
    * {@code "java.lang.CharSequence"}
    */
   private final String returnType;
@@ -66,7 +75,8 @@ public class Tag {
   public Tag(String name, String packageName, List<String> parameterNames, List<String> parameterTypes, String returnType,
       List<String> throwing, boolean unique) {
     if (name.contains("."))
-      throw new IllegalArgumentException("unit name must not contain '.' char(s)");
+      throw new IllegalArgumentException("tag name must not contain '.' char(s) - use the package name attribute");
+    // assign read-only properties
     this.name = name;
     this.packageName = packageName;
     this.parameterNames = buildUnmodifiableList(parameterNames);
@@ -74,6 +84,14 @@ public class Tag {
     this.returnType = returnType;
     this.throwing = buildUnmodifiableList(throwing);
     this.unique = unique;
+    // initialize prevalent properties
+    try {
+      this.prevalentMode = (PrevalentMode) PrevalentMethod.class.getMethod("mode").getDefaultValue();
+      this.prevalentType = (PrevalentType) PrevalentMethod.class.getMethod("value").getDefaultValue();
+      this.prevalentTime = (int) PrevalentMethod.class.getMethod("time").getDefaultValue();
+    } catch (NoSuchMethodException | SecurityException e) {
+      throw new Error(e);
+    }
   }
 
   private List<String> buildUnmodifiableList(List<String> strings) {
@@ -97,6 +115,18 @@ public class Tag {
     return parameterTypes;
   }
 
+  public PrevalentMode getPrevalentMode() {
+    return prevalentMode;
+  }
+
+  public int getPrevalentTime() {
+    return prevalentTime;
+  }
+
+  public PrevalentType getPrevalentType() {
+    return prevalentType;
+  }
+
   public String getReturnType() {
     return returnType;
   }
@@ -107,6 +137,18 @@ public class Tag {
 
   public boolean isUnique() {
     return unique;
+  }
+
+  public void setPrevalentMode(PrevalentMode prevalentMode) {
+    this.prevalentMode = prevalentMode;
+  }
+
+  public void setPrevalentTime(int prevalentTime) {
+    this.prevalentTime = prevalentTime;
+  }
+
+  public void setPrevalentType(PrevalentType prevalentType) {
+    this.prevalentType = prevalentType;
   }
 
   @Override
@@ -120,6 +162,12 @@ public class Tag {
     builder.append(parameterNames);
     builder.append(", parameterTypes=");
     builder.append(parameterTypes);
+    builder.append(", prevalentMode=");
+    builder.append(prevalentMode);
+    builder.append(", prevalentTime=");
+    builder.append(prevalentTime);
+    builder.append(", prevalentType=");
+    builder.append(prevalentType);
     builder.append(", returnType=");
     builder.append(returnType);
     builder.append(", throwing=");

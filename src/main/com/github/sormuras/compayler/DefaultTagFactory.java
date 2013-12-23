@@ -51,8 +51,14 @@ public class DefaultTagFactory implements TagFactory {
       for (Class<?> exception : method.getExceptionTypes()) {
         thros.add(exception.getCanonicalName());
       }
-      Tag unit = new Tag(name, packageName, names, types, returnType, thros, uniques.get(name));
-      tags.add(unit);
+      Tag tag = new Tag(name, packageName, names, types, returnType, thros, uniques.get(name));
+      PrevalentMethod anntotation = method.getAnnotation(PrevalentMethod.class);
+      if (anntotation != null) {
+        tag.setPrevalentMode(anntotation.mode());
+        tag.setPrevalentTime(anntotation.time());
+        tag.setPrevalentType(anntotation.value());
+      }
+      tags.add(tag);
     }
 
     return tags;

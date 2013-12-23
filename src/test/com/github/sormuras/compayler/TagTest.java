@@ -26,7 +26,9 @@ public class TagTest {
 
   @Test
   public void testQDoxTagFactory() {
-    TagFactory factory = new QDoxTagFactory("src/test/" + Api.class.getName().replace('.', '/') + ".java");
+    String[] files = { "src/test/" + Api.class.getName().replace('.', '/') + ".java",
+        "src/main/com/github/sormuras/compayler/PrevalentMethod.java" };
+    TagFactory factory = new QDoxTagFactory(files);
     List<Tag> tags = factory.createTags(Api.class.getName());
     Assert.assertNotNull(tags);
     System.out.println(tags);
