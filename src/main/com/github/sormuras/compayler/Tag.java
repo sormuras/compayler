@@ -66,7 +66,7 @@ public class Tag {
    * C'tor.
    */
   public Tag(String name, boolean unique) {
-    this(name, "", emptyStringList(), emptyStringList(), void.class.toString(), emptyStringList(), unique);
+    this(name, "", null, null, "void", null, unique);
   }
 
   /**
@@ -96,7 +96,7 @@ public class Tag {
 
   private List<String> buildUnmodifiableList(List<String> strings) {
     List<String> empty = Collections.emptyList();
-    return strings.isEmpty() ? empty : Collections.unmodifiableList(strings);
+    return (strings == null || strings.isEmpty()) ? empty : Collections.unmodifiableList(strings);
   }
 
   public String getName() {

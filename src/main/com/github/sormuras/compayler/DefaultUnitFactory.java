@@ -1,6 +1,18 @@
 package com.github.sormuras.compayler;
 
+import java.util.List;
+
 public class DefaultUnitFactory implements UnitFactory {
+
+  public String buildHashOfTypeNames(List<String> names) {
+    long hash = 0L;
+    for (String name : names) {
+      // TODO remove generics? if (name.indexOf('<') > 0) name = name.substring(0, name.indexOf('<'));
+      hash = 37 * hash + name.hashCode();
+    }
+    hash = Math.abs(hash);
+    return Long.toString(hash, Character.MAX_RADIX).toUpperCase();
+  }
 
   /**
    * Simple class name based on the method name and parameter types.
@@ -25,13 +37,8 @@ public class DefaultUnitFactory implements UnitFactory {
     if (tag.isUnique()) {
       return name;
     }
-    // name's not unique append hash for parameter type name strings
-    long hash = 0L;
-    for (String typeName : tag.getParameterTypes()) {
-      hash = 37 * hash + typeName.hashCode();
-    }
-    hash = Math.abs(hash);
-    return name + "_" + Long.toString(hash, Character.MAX_RADIX).toUpperCase();
+    // name's not unique, append hash for parameter type name strings
+    return name + "_" + buildHashOfTypeNames(tag.getParameterTypes());
   }
 
   @Override
