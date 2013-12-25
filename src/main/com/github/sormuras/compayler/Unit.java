@@ -8,6 +8,7 @@ package com.github.sormuras.compayler;
 public class Unit {
 
   private String className;
+  private String packageName;
   private final Tag tag;
 
   public Unit(Tag tag) {
@@ -16,6 +17,14 @@ public class Unit {
 
   public String getClassName() {
     return className;
+  }
+
+  public String getPackageName() {
+    return packageName;
+  }
+
+  public void setPackageName(String packageName) {
+    this.packageName = packageName;
   }
 
   public Tag getTag() {
