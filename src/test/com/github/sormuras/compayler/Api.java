@@ -13,5 +13,7 @@ public interface Api {
 
   List<Map<String, Number>> listOfMaps(Date date, byte flag, List<TimeUnit> times) throws NumberFormatException,
       ConcurrentModificationException;
+  
+  int size(int mask);
 
 }

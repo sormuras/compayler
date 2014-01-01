@@ -84,7 +84,7 @@ public class Tag {
     this.returnType = returnType;
     this.throwing = buildUnmodifiableList(throwing);
     this.unique = unique;
-    // initialize prevalent properties
+    // initialize non-final prevalent properties
     try {
       this.prevalentMode = (PrevalentMode) PrevalentMethod.class.getMethod("mode").getDefaultValue();
       this.prevalentType = (PrevalentType) PrevalentMethod.class.getMethod("value").getDefaultValue();
