@@ -9,6 +9,7 @@ public class Unit {
 
   private String className;
   private String packageName;
+  private String returnType;
   private long serialVersionUID;
   private final Tag tag;
 
@@ -26,20 +27,28 @@ public class Unit {
     return packageName;
   }
 
+  public String getReturnType() {
+    return returnType;
+  }
+
   public long getSerialVersionUID() {
     return serialVersionUID;
   }
-  
+
   public Tag getTag() {
     return tag;
   }
-  
+
   public void setClassName(String className) {
     this.className = className;
   }
 
   public void setPackageName(String packageName) {
     this.packageName = packageName;
+  }
+
+  public void setReturnType(String returnType) {
+    this.returnType = returnType;
   }
 
   public void setSerialVersionUID(long serialVersionUID) {

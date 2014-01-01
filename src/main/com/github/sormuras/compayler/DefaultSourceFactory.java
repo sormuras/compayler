@@ -35,7 +35,7 @@ public class DefaultSourceFactory implements SourceFactory {
   public String getImplements(Unit unit) {
     Tag tag = unit.getTag();
     String simple = "<" + interfaceName + ">";
-    String typed = "<" + interfaceName + ", " + wrap(tag.getReturnType()) + ">";
+    String typed = "<" + interfaceName + ", " + unit.getReturnType() + ">";
     if (tag.getPrevalentType() == PrevalentType.QUERY)
       return "org.prevayler.Query" + typed;
     if (tag.getReturnType().equals("void"))
@@ -43,31 +43,6 @@ public class DefaultSourceFactory implements SourceFactory {
     if (tag.getThrowing().isEmpty())
       return "org.prevayler.SureTransactionWithQuery" + typed;
     return "org.prevayler.TransactionWithQuery" + typed;
-  }
-
-  public String wrap(String className) {
-    switch (className) {
-    case "boolean":
-      return "java.lang.Boolean";
-    case "byte":
-      return "java.lang.Byte";
-    case "char":
-      return "java.lang.Character";
-    case "double":
-      return "java.lang.Double";
-    case "float":
-      return "java.lang.Float";
-    case "int":
-      return "java.lang.Integer";
-    case "long":
-      return "java.lang.Long";
-    case "short":
-      return "java.lang.Short";
-    case "void":
-      return "java.lang.Void";
-    default:
-      return className;
-    }
   }
 
 }
