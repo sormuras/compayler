@@ -67,7 +67,11 @@ public class QDoxTagFactory implements TagFactory {
       List<String> thros = new ArrayList<>();
       for (JavaParameter parameter : method.getParameters()) {
         names.add(parameter.getName());
-        types.add(parameter.getType().getGenericFullyQualifiedName());
+        if (parameter.isVarArgs()) {
+          types.add(parameter.getType().getGenericFullyQualifiedName() + "...");
+        } else {
+          types.add(parameter.getType().getGenericFullyQualifiedName());
+        }
       }
       for (JavaType exception : method.getExceptionTypes()) {
         thros.add(exception.getGenericFullyQualifiedName());

@@ -11,8 +11,8 @@ public class CompaylerTest {
   @Test
   public void testDefaultTagFactory() {
     String interfaceName = "com.github.sormuras.compayler.Api";
-    
-    //TagFactory tagFactory = new DefaultTagFactory(com.github.sormuras.compayler.Api.class);
+
+    // TagFactory tagFactory = new DefaultTagFactory(com.github.sormuras.compayler.Api.class);
     TagFactory tagFactory = new QDoxTagFactory("src/test/" + interfaceName.replace('.', '/') + ".java");
     UnitFactory unitFactory = new DefaultUnitFactory();
     SourceFactory sourceFactory = new DefaultSourceFactory(interfaceName);
