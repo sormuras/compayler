@@ -86,6 +86,7 @@ public class DefaultSourceFactory implements SourceFactory {
     return new Source(unit.getPackageName(), unit.getClassName(), lines);
   }
 
+  // TODO move to unit factory
   public String getImplements(Unit unit) {
     Tag tag = unit.getTag();
     String typed = "<" + interfaceName + ", " + unit.getReturnType() + ">";

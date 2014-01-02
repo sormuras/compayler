@@ -28,8 +28,6 @@ public class Unit {
   }
 
   public String getParameterName(int index) {
-    if (index < 0 )
-      return "-1-";
     return tag.getParameterNames().get(index);
   }
 
@@ -62,7 +60,11 @@ public class Unit {
    * @return {@code "(p0, executionTime, ... pn-1)"}
    */
   public String getParameterParenthesesWithExecutionTime() {
-    return getParameterParentheses().replace(getParameterName(tag.getPrevalentTime()), "executionTime");
+    String parantheses = getParameterParentheses();
+    int index = tag.getPrevalentTime();
+    if (index < 0)
+      return parantheses;
+    return parantheses.replace(getParameterName(index), "executionTime");
   }
 
   public String getParameterSignature() {
