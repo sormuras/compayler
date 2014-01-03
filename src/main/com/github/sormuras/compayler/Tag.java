@@ -12,10 +12,6 @@ import java.util.List;
  */
 public class Tag {
 
-  public static List<String> emptyStringList() {
-    return Collections.emptyList();
-  }
-
   /**
    * {@code "subSequence"}
    */
