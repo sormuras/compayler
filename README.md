@@ -1,3 +1,3 @@
-## Compayler [![Build Status](https://api.travis-ci.org/sormuras/compayler.png)](https://travis-ci.org/sormuras/compayler)
+## Compayler [![Build Status](https://travis-ci.org/sormuras/compayler.png?branch=master)](https://travis-ci.org/sormuras/compayler)
 
 Prevayler Decorator Compiler
