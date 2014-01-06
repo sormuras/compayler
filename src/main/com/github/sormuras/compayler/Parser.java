@@ -1,21 +1,20 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CRC32;
 
+import com.github.sormuras.compayler.Compayler.Configuration;
+import com.github.sormuras.compayler.Compayler.DescriptionFactory;
+import com.github.sormuras.compayler.Compayler.Directive;
+import com.github.sormuras.compayler.Compayler.Mode;
+import com.github.sormuras.compayler.Description.Field;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.thoughtworks.qdox.model.JavaType;
-
-import sandbox.Compayler.Configuration;
-import sandbox.Compayler.DescriptionFactory;
-import sandbox.Compayler.Directive;
-import sandbox.Compayler.Mode;
-import sandbox.Description.Field;
 
 public class Parser implements DescriptionFactory {
 

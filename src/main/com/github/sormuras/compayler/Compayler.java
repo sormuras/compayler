@@ -1,4 +1,4 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;

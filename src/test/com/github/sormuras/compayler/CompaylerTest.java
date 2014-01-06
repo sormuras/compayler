@@ -1,4 +1,4 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,16 +12,20 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import sandbox.Compayler.Configuration;
-import sandbox.Compayler.DescriptionVisitor;
-import sandbox.Compayler.DescriptionWriter;
+import com.github.sormuras.compayler.Description;
+import com.github.sormuras.compayler.Parser;
+import com.github.sormuras.compayler.Scribe;
+import com.github.sormuras.compayler.Source;
+import com.github.sormuras.compayler.Compayler.Configuration;
+import com.github.sormuras.compayler.Compayler.DescriptionVisitor;
+import com.github.sormuras.compayler.Compayler.DescriptionWriter;
 
 public class CompaylerTest {
 
-  public static class TestableImplementation implements Nestable {
+  public static class TestableImplementation implements Testable {
 
     @Override
-    public Nestable direct() {
+    public Testable direct() {
       return this;
     }
 
@@ -95,7 +99,7 @@ public class CompaylerTest {
 
   @Test
   public void testTestable() throws Exception {
-    Configuration configuration = new Configuration("sandbox.Nestable");
+    Configuration configuration = new Configuration("com.github.sormuras.compayler.Testable");
 
     Parser parser = new Parser(configuration);
     parser.getJavaProjectBuilder().addSource(new File("src/test/" + configuration.getInterfaceName().replace('.', '/') + ".java"));

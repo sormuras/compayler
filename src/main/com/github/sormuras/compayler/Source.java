@@ -1,4 +1,4 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import java.net.URI;
 import java.nio.charset.Charset;

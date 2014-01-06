@@ -1,4 +1,4 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
 
-import sandbox.Compayler.Configuration;
-import sandbox.Compayler.DescriptionFactory;
-import sandbox.Compayler.DescriptionVisitor;
-import sandbox.Compayler.DescriptionWriter;
-import sandbox.Compayler.Kind;
-import sandbox.Compayler.Mode;
-import sandbox.Description.Field;
+import com.github.sormuras.compayler.Compayler.Configuration;
+import com.github.sormuras.compayler.Compayler.DescriptionFactory;
+import com.github.sormuras.compayler.Compayler.DescriptionVisitor;
+import com.github.sormuras.compayler.Compayler.DescriptionWriter;
+import com.github.sormuras.compayler.Compayler.Kind;
+import com.github.sormuras.compayler.Compayler.Mode;
+import com.github.sormuras.compayler.Description.Field;
 
 public class Scribe implements DescriptionFactory, DescriptionVisitor, DescriptionWriter {
 

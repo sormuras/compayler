@@ -1,18 +1,18 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import sandbox.Compayler.Directive;
-import sandbox.Compayler.ExecutionTime;
-import sandbox.Compayler.Mode;
+import com.github.sormuras.compayler.Compayler.Directive;
+import com.github.sormuras.compayler.Compayler.ExecutionTime;
+import com.github.sormuras.compayler.Compayler.Mode;
 
-public interface Nestable {
+public interface Testable {
 
   @Directive(Mode.DIRECT)
-  Nestable direct();
+  Testable direct();
 
   long executionTime(@ExecutionTime Date time);
 

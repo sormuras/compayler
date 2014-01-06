@@ -16,7 +16,7 @@ public class E101Test {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void test() throws Exception {
+  public void testE101() throws Exception {
     test(new Root());
     // Compayler<E101, Root> compayler = new Compayler<>(E101.class, Root.class);
     // try (Decorator<E101, Root> decorator = compayler.decorate(new Root(), temp.newFolder())) {

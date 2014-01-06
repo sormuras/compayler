@@ -1,9 +1,9 @@
-package sandbox;
+package com.github.sormuras.compayler;
 
 import java.util.List;
 
-import sandbox.Compayler.Kind;
-import sandbox.Compayler.Mode;
+import com.github.sormuras.compayler.Compayler.Kind;
+import com.github.sormuras.compayler.Compayler.Mode;
 
 public class Description {
 
