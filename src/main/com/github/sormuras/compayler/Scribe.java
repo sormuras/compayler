@@ -237,7 +237,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     // implementation
     String parameters = configuration.getInterfaceName() + " prevalentSystem, java.util.Date executionTime";
     String returnType = Compayler.wrap(description.getReturnType());
-    String methodCall = description.getName() + description.getParameterParenthesesWithExecutionTime(this);
+    String methodCall = description.getName() + description.getParameterParenthesesWithExecutionTime();
     lines.add("");
     lines.add("  @Override");
     switch (description.getKind()) {
