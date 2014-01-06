@@ -2,6 +2,7 @@ package com.github.sormuras.compayler;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -13,7 +14,6 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
-import com.github.sormuras.compayler.Compayler.DescriptionWriter;
 
 public class CompaylerTest {
 
@@ -44,41 +44,29 @@ public class CompaylerTest {
   @Test
   public void testAppendable() throws Exception {
     Configuration configuration = new Configuration("java.lang.Appendable");
-    // System.out.println(configuration);
 
     Scribe scribe = new Scribe(configuration);
-
-    // DescriptionFactory factory = scribe;
     Parser factory = new Parser(configuration);
-    factory.getJavaProjectBuilder().addSource(
-        URI.create("http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/lang/Appendable.java/?v=source")
-            .toURL());
+    String base = "http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/";
+    factory.getJavaProjectBuilder().addSource(URI.create(base + "java/lang/Appendable.java/?v=source").toURL());
     List<Description> descriptions = factory.createDescriptions();
 
-    DescriptionWriter writer = scribe;
-
-    Source source = writer.writeDecorator(descriptions);
+    Source source = scribe.writeDecorator(descriptions);
     System.out.println(source.getCharContent(true));
   }
 
   public void testAppendable(Appendable appendable) throws Exception {
     appendable.append('a').append("b").append("abc", 2, 3);
+    assertEquals("abc", appendable.toString());
+    if (appendable instanceof Closeable) {
+      ((Closeable) appendable).close();
+    }
   }
 
   @Test
   public void testAppendableGenerated() throws Exception {
-    // pojo
-    Appendable appendable = new StringBuilder();
-    testAppendable(appendable);
-    assertEquals("abc", appendable.toString());
-
-    // decorated
-    // appendable = new StringBuilder();
-    // Prevayler<Appendable> prevayler = PrevaylerFactory.createTransientPrevayler(appendable);
-    // try (AppendableDecorator decorator = new AppendableDecorator(prevayler)) {
-    // testAppendable(decorator);
-    // }
-    // assertEquals("abc", appendable.toString());
+    testAppendable(new StringBuilder());
+    // testAppendable(new AppendableDecorator(PrevaylerFactory.createTransientPrevayler(new StringBuilder())));
   }
 
   @Test

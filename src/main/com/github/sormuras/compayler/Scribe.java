@@ -104,6 +104,23 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     lines.add("    this.prevalentSystem = prevayler.prevalentSystem();");
     lines.add("  }");
 
+    // hashCode(), equals() and toString() methods declared in java.lang.Object
+    lines.add("");
+    lines.add("  @Override");
+    lines.add("  public boolean equals(Object obj) {");
+    lines.add("    return prevalentSystem.equals(obj);");
+    lines.add("  }");
+    lines.add("");
+    lines.add("  @Override");
+    lines.add("  public int hashCode() {");
+    lines.add("    return prevalentSystem.hashCode();");
+    lines.add("  }");
+    lines.add("");
+    lines.add("  @Override");
+    lines.add("  public String toString() {");
+    lines.add("    return prevalentSystem.toString();");
+    lines.add("  }");
+
     // utility methods
     lines.add("");
     lines.add("  @Override");

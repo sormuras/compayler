@@ -119,7 +119,7 @@ public class Description {
       builder.append('>');
       return builder.toString();
     }
-    
+
     public Kind generateKind() {
       if (getMode() == Mode.QUERY)
         return Kind.QUERY;
@@ -129,8 +129,8 @@ public class Description {
         return Kind.TRANSACTION_QUERY;
       // if nothing applies...
       return Kind.TRANSACTION_QUERY_EXCEPTION;
-    }    
-    
+    }
+
     public String generateMethodDeclaration() {
       StringBuilder builder = new StringBuilder();
       builder.append(getReturnType());
@@ -144,7 +144,7 @@ public class Description {
       builder.append(getExceptions(","));
       return builder.toString();
     }
-    
+
     public String generateParameterParentheses() {
       int length = getFields().size();
       if (length == 0)
@@ -183,7 +183,7 @@ public class Description {
       }
       builder.append(')');
       return builder.toString();
-    }    
+    }
 
   }
 
@@ -207,7 +207,7 @@ public class Description {
 
   }
 
-  public class Variable {
+  public static class Variable {
 
     private Mode mode = Mode.TRANSACTION;
     private long serialVersionUID = 0L;
@@ -257,10 +257,6 @@ public class Description {
 
   public List<Field> getFields() {
     return signature.fields;
-  }
-
-  public Generator getGenerator() {
-    return generator;
   }
 
   public String getImplements() {
