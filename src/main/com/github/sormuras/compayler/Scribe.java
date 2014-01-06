@@ -94,12 +94,12 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
 
     // fields
     lines.add("");
-    lines.add("  protected final org.prevayler.Prevayler<" + interfaceName + "> prevayler;");
+    lines.add("  protected final org.prevayler.Prevayler<? extends " + interfaceName + "> prevayler;");
     lines.add("  protected final " + interfaceName + " prevalentSystem;");
 
     // c'tor
     lines.add("");
-    lines.add("  public " + className + "(org.prevayler.Prevayler<" + interfaceName + "> prevayler) {");
+    lines.add("  public " + className + "(org.prevayler.Prevayler<? extends " + interfaceName + "> prevayler) {");
     lines.add("    this.prevayler = prevayler;");
     lines.add("    this.prevalentSystem = prevayler.prevalentSystem();");
     lines.add("  }");
@@ -128,7 +128,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     lines.add("    prevayler.close();");
     lines.add("  }");
     lines.add("");
-    lines.add("  public org.prevayler.Prevayler<" + interfaceName + "> prevayler() {");
+    lines.add("  public org.prevayler.Prevayler<? extends " + interfaceName + "> prevayler() {");
     lines.add("    return prevayler;");
     lines.add("  }");
     lines.add("");

@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.prevayler.PrevaylerFactory;
+
+import appendable.AppendableDecorator;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 
@@ -66,7 +69,7 @@ public class CompaylerTest {
   @Test
   public void testAppendableGenerated() throws Exception {
     testAppendable(new StringBuilder());
-    // testAppendable(new AppendableDecorator(PrevaylerFactory.createTransientPrevayler(new StringBuilder())));
+    testAppendable(new AppendableDecorator(PrevaylerFactory.createTransientPrevayler(new StringBuilder())));
   }
 
   @Test

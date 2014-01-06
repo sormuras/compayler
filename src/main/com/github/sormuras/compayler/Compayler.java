@@ -1,10 +1,12 @@
 package com.github.sormuras.compayler;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -157,6 +159,37 @@ public class Compayler {
   public static boolean isExecutionTimePresent(Annotation... annotations) {
     return isAnnotationPresent(ExecutionTime.class, annotations);
   }
+  
+  /**
+   * Simple command line program converting an interface into decorator java file.
+   * 
+   * Usage example:
+   * 
+   * <pre>
+   * java Compayler java.lang.Appendable src/generated
+   * </pre>
+   */
+  public static void main(String[] args) throws Exception {
+    if (args.length < 2) {
+      System.out.println("Usage: java Compayler interface [target path]");
+      System.out.println("                      interface = prevalent system interface like 'java.lang.Appendable'");
+      System.out.println("                    target path = optional destination folder for generated classes, defaults to '.'");
+      return;
+    }
+    String interfaceName = args[0];
+    Class<?> prevalentInterface = Class.forName(interfaceName);
+    if (!prevalentInterface.isInterface()) {
+      System.out.println("Interface expected, but got: " + interfaceName);
+      return;
+    }
+    String targetPath = ".";
+    if (args.length > 1) {
+      targetPath = args[1];
+    }
+    Configuration configuration = new Configuration(interfaceName);
+    Scribe scribe = new Scribe(configuration);
+    save(targetPath, scribe.writeDecorator(scribe.createDescriptions()));
+  }  
 
   public static String now() {
     TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -212,6 +245,18 @@ public class Compayler {
       return "java.lang.Void";
     }
     return name;
+  }
+  
+  public static void save(String targetPath, Source... sources) throws Exception {
+    for (Source source : sources) {
+      String packname = source.getPackageName();
+      String pathname = targetPath + "/" + packname.replace('.', '/');
+      File parent = Files.createDirectories(new File(pathname).toPath().toAbsolutePath()).toFile();
+      File file = new File(parent, source.getSimpleClassName() + source.getKind().extension);
+      System.out.print(file + " ...");
+      Files.write(file.toPath(), source.getLinesOfCode(), source.getCharset());
+      System.out.println(" ok");
+    }
   }
 
 }
