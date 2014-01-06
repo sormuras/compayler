@@ -12,12 +12,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.github.sormuras.compayler.Description;
-import com.github.sormuras.compayler.Parser;
-import com.github.sormuras.compayler.Scribe;
-import com.github.sormuras.compayler.Source;
 import com.github.sormuras.compayler.Compayler.Configuration;
-import com.github.sormuras.compayler.Compayler.DescriptionVisitor;
 import com.github.sormuras.compayler.Compayler.DescriptionWriter;
 
 public class CompaylerTest {
@@ -59,9 +54,6 @@ public class CompaylerTest {
         URI.create("http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/lang/Appendable.java/?v=source")
             .toURL());
     List<Description> descriptions = factory.createDescriptions();
-
-    DescriptionVisitor visitor = scribe;
-    visitor.visitDescriptions(descriptions);
 
     DescriptionWriter writer = scribe;
 
@@ -106,7 +98,6 @@ public class CompaylerTest {
 
     List<Description> descriptions = parser.createDescriptions();
     Scribe scribe = new Scribe(configuration);
-    scribe.visitDescriptions(descriptions);
     Source source = scribe.writeDecorator(descriptions);
     System.out.println(source.getCharContent(true));
   }

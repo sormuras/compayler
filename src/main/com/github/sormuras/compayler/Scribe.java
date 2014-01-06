@@ -6,22 +6,33 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.CRC32;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 import com.github.sormuras.compayler.Compayler.DescriptionFactory;
-import com.github.sormuras.compayler.Compayler.DescriptionVisitor;
 import com.github.sormuras.compayler.Compayler.DescriptionWriter;
 import com.github.sormuras.compayler.Compayler.Kind;
 import com.github.sormuras.compayler.Compayler.Mode;
 import com.github.sormuras.compayler.Description.Field;
+import com.github.sormuras.compayler.Description.Signature;
 
-public class Scribe implements DescriptionFactory, DescriptionVisitor, DescriptionWriter {
+public class Scribe implements DescriptionFactory, DescriptionWriter {
 
   private final Configuration configuration;
 
   public Scribe(Configuration configuration) {
     this.configuration = configuration;
+  }
+
+  protected Map<String, Boolean> buildNameIsUniqueMap(Class<?> interfaceClass) {
+    Map<String, Boolean> uniques = new HashMap<>();
+    for (Method method : interfaceClass.getMethods()) {
+      String name = method.getName();
+      Boolean old = uniques.put(name, Boolean.TRUE);
+      if (old == null)
+        continue;
+      uniques.put(name, Boolean.FALSE);
+    }
+    return uniques;
   }
 
   @Override
@@ -33,7 +44,7 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Can't describe " + configuration, e);
     }
-    CRC32 crc32 = new CRC32();
+    Map<String, Boolean> uniques = buildNameIsUniqueMap(interfaceClass);
     for (Method method : interfaceClass.getMethods()) {
       // simple strings
       String name = method.getName();
@@ -43,7 +54,6 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
       for (Class<?> exceptionType : method.getExceptionTypes())
         throwables.add(exceptionType.getCanonicalName());
       // parse parameters to fields
-      crc32.reset();
       List<Field> fields = new ArrayList<>();
       int lastIndex = method.getParameterTypes().length - 1;
       for (int index = 0; index <= lastIndex; index++) {
@@ -54,143 +64,17 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
         field.setType(method.getParameterTypes()[index].getCanonicalName());
         field.setVariable(index == lastIndex && method.isVarArgs());
         fields.add(field);
-        // update checksum
-        crc32.update(field.getType().getBytes());
       }
       // create description
-      Description description = new Description(crc32.getValue(), name, returnType, fields, throwables);
+      Signature signature = new Signature(name, returnType, fields, throwables, uniques.get(name));
+      Description description = new Description(configuration, signature);
       // update mode, if possible
       if (method.isAnnotationPresent(Compayler.Directive.class))
-        description.setMode(method.getAnnotation(Compayler.Directive.class).value());
+        description.getVariable().setMode(method.getAnnotation(Compayler.Directive.class).value());
       // done
       descriptions.add(description);
     }
     return descriptions;
-  }
-
-  protected String generateClassName(Description description) {
-    // capitalize name
-    String name = description.getName();
-    name = name.toUpperCase().charAt(0) + name.substring(1);
-    // done, if name is unique
-    if (description.isNameUnique()) {
-      return name;
-    }
-    // name is overloaded, append hash for parameter type name strings
-    return name + description.getChecksum(Character.MAX_RADIX);
-  }
-
-  protected String generateExceptions(Description description, String separator) {
-    StringBuilder builder = new StringBuilder();
-    boolean comma = false;
-    for (String throwable : description.getThrowables()) {
-      if (comma) {
-        builder.append(separator);
-      }
-      builder.append(" ");
-      builder.append(throwable);
-      comma = true;
-    }
-    return builder.toString().trim();
-  }
-
-  protected String generateImplements(Description description) {
-    String interfaceName = configuration.getInterfaceName();
-    String typed = "<" + interfaceName + ", " + Compayler.wrap(description.getReturnType()) + ">";
-    Kind kind = description.getKind();
-    if (kind == Kind.TRANSACTION) {
-      typed = "<" + interfaceName + ">";
-    }
-    return kind.getExecutableInterface().getCanonicalName() + typed;
-  }
-
-  protected Kind generateKind(Description description) {
-    if (description.getMode() == Mode.QUERY)
-      return Kind.QUERY;
-    if (description.getReturnType().equals("void"))
-      return Kind.TRANSACTION;
-    if (description.getThrowables().isEmpty())
-      return Kind.TRANSACTION_QUERY;
-    // fallen through
-    return Kind.TRANSACTION_QUERY_EXCEPTION;
-  }
-
-  protected String generateMethodDeclaration(Description description) {
-    StringBuilder builder = new StringBuilder();
-    builder.append(description.getReturnType());
-    builder.append(" ");
-    builder.append(description.getName());
-    builder.append(generateParameterSignature(description));
-    if (description.getThrowables().isEmpty())
-      return builder.toString();
-
-    builder.append(" throws ");
-    builder.append(generateExceptions(description, ","));
-    return builder.toString();
-  }
-
-  protected Map<String, Boolean> generateNameIsUniqueMap(List<Description> descriptions) {
-    Map<String, Boolean> uniques = new HashMap<>();
-    for (Description description : descriptions) {
-      String name = description.getName();
-      Boolean old = uniques.put(name, Boolean.TRUE);
-      if (old == null)
-        continue;
-      uniques.put(name, Boolean.FALSE);
-    }
-    return uniques;
-  }
-
-  protected String generateParameterParentheses(Description description) {
-    int length = description.getFields().size();
-    if (length == 0)
-      return "()";
-    if (length == 1)
-      return "(" + description.getFields().get(0).getName() + ")";
-    StringBuilder builder = new StringBuilder();
-    builder.append("(").append(description.getFields().get(0).getName());
-    for (int index = 1; index < length; index++) {
-      builder.append(", ").append(description.getFields().get(index).getName());
-    }
-    builder.append(")");
-    return builder.toString();
-  }
-
-  protected String generateParameterParenthesesWithExecutionTime(Description description) {
-    String parantheses = generateParameterParentheses(description);
-    for (Field field : description.getFields()) {
-      if (field.isTime())
-        return parantheses.replace(field.getName(), "executionTime");
-    }
-    return parantheses;
-  }
-
-  protected String generateParameterSignature(Description description) {
-    StringBuilder builder = new StringBuilder();
-    builder.append('(');
-    for (Field field : description.getFields()) {
-      if (field.getIndex() > 0)
-        builder.append(", ");
-      if (field.isVariable())
-        builder.append(Compayler.replaceLast(field.getType(), "[]", "..."));
-      else
-        builder.append(field.getType());
-      builder.append(' ').append(field.getName());
-    }
-    builder.append(')');
-    return builder.toString();
-  }
-
-  @Override
-  public void visitDescriptions(List<Description> descriptions) {
-    Map<String, Boolean> uniques = generateNameIsUniqueMap(descriptions);
-    for (Description description : descriptions) {
-      description.setNameUnique(uniques.get(description.getName()));
-      description.setClassName(generateClassName(description));
-      description.setKind(generateKind(description));
-      description.setMethodDeclaration(generateMethodDeclaration(description));
-      description.setParameterParentheses(generateParameterParentheses(description));
-    }
   }
 
   @Override
@@ -289,7 +173,7 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
 
       if (kind.isThrowingException()) {
         if (!description.getThrowables().isEmpty()) {
-          lines.add("    " + "} catch (" + generateExceptions(description, "|") + " e) {");
+          lines.add("    " + "} catch (" + description.getExceptions("|") + " e) {");
           lines.add("    " + "  throw e;");
         }
         if (!description.getThrowables().contains("java.lang.Exception")) {
@@ -329,7 +213,7 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
 
   protected void writeExecutable(Description description, List<String> lines, String classModifier) {
     lines.add("");
-    lines.add(classModifier + " class " + description.getClassName() + " implements " + generateImplements(description) + " {");
+    lines.add(classModifier + " class " + description.getClassName() + " implements " + description.getImplements() + " {");
 
     lines.add("");
     lines.add("  private static final long serialVersionUID = " + description.getSerialVersionUID() + "L;");
@@ -343,7 +227,7 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
         lines.add("  private final " + field.getType() + " " + field.getName() + ";");
       }
       lines.add("");
-      lines.add("  public " + description.getClassName() + generateParameterSignature(description) + " {");
+      lines.add("  public " + description.getClassName() + description.getParameterSignature() + " {");
       for (Field field : description.getFields()) {
         lines.add("    this." + field.getName() + " = " + field.getName() + ";");
       }
@@ -353,7 +237,7 @@ public class Scribe implements DescriptionFactory, DescriptionVisitor, Descripti
     // implementation
     String parameters = configuration.getInterfaceName() + " prevalentSystem, java.util.Date executionTime";
     String returnType = Compayler.wrap(description.getReturnType());
-    String methodCall = description.getName() + generateParameterParenthesesWithExecutionTime(description);
+    String methodCall = description.getName() + description.getParameterParenthesesWithExecutionTime(this);
     lines.add("");
     lines.add("  @Override");
     switch (description.getKind()) {

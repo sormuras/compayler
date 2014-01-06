@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.zip.CRC32;
 
 import org.prevayler.Query;
 import org.prevayler.SureTransactionWithQuery;
@@ -21,6 +22,8 @@ public class Compayler {
 
   public static class Configuration {
 
+    private final StringBuilder builder;
+    private final CRC32 crc32;
     private final String decoratorName;
     private final String interfaceName;
     private final String targetPackage;
@@ -30,9 +33,15 @@ public class Compayler {
     }
 
     public Configuration(String interfaceName, String targetPackage, String decoratorName) {
+      this.builder = new StringBuilder(2000);
+      this.crc32 = new CRC32();
       this.interfaceName = interfaceName;
       this.targetPackage = targetPackage;
       this.decoratorName = decoratorName;
+    }
+
+    public CRC32 getChecksumBuilder() {
+      return crc32;
     }
 
     public String getDecoratorName() {
@@ -41,6 +50,16 @@ public class Compayler {
 
     public String getInterfaceName() {
       return interfaceName;
+    }
+
+    public StringBuilder getStringBuilder() {
+      return getStringBuilder(true);
+    }
+
+    public StringBuilder getStringBuilder(boolean reset) {
+      if (reset)
+        builder.setLength(0);
+      return builder;
     }
 
     public String getTargetPackage() {
