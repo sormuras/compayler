@@ -1,5 +1,7 @@
 package com.github.sormuras.compayler;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.zip.CRC32;
 
@@ -112,6 +114,7 @@ public class Description {
       builder.append(kind.getExecutableInterface().getCanonicalName());
       builder.append('<');
       builder.append(getConfiguration().getInterfaceName());
+      builder.append(Compayler.merge(Arrays.asList(getConfiguration().getInterfaceTypeVariables())));
       if (kind != Kind.TRANSACTION) {
         assert getReturnType().equals("void");
         builder.append(',').append(' ').append(Compayler.wrap(getReturnType()));
@@ -133,6 +136,13 @@ public class Description {
 
     public String generateMethodDeclaration() {
       StringBuilder builder = new StringBuilder();
+      if (!getVariable().getTypeParameters().isEmpty()) {
+        builder.append("<");
+        for (String var : getVariable().getTypeParameters()) {
+          builder.append(var);
+        }
+        builder.append("> ");
+      }
       builder.append(getReturnType());
       builder.append(" ");
       builder.append(getName());
@@ -185,6 +195,15 @@ public class Description {
       return builder.toString();
     }
 
+    public String generateClassNameWithTypeVariables() {
+      StringBuilder typeVarBuilder = new StringBuilder();
+      typeVarBuilder.append(generateClassName());
+      if (!configuration.getInterfaceTypeVariables().isEmpty() || !getVariable().getTypeParameters().isEmpty()) {
+        typeVarBuilder.append(Compayler.merge(Arrays.asList(configuration.getInterfaceTypeVariables(), getVariable().getTypeParameters())));
+      }
+      return typeVarBuilder.toString();
+    }
+
   }
 
   public static class Signature {
@@ -211,6 +230,7 @@ public class Description {
 
     private Mode mode = Mode.TRANSACTION;
     private long serialVersionUID = 0L;
+    private List<String> typeParameters = new ArrayList<>();
 
     public Mode getMode() {
       return mode;
@@ -218,6 +238,10 @@ public class Description {
 
     public long getSerialVersionUID() {
       return serialVersionUID;
+    }
+
+    public List<String> getTypeParameters() {
+      return typeParameters;
     }
 
     public void setMode(Mode mode) {
@@ -229,6 +253,7 @@ public class Description {
     public void setSerialVersionUID(long serialVersionUID) {
       this.serialVersionUID = serialVersionUID;
     }
+
   }
 
   private final Configuration configuration;
@@ -245,6 +270,10 @@ public class Description {
 
   public String getClassName() {
     return generator.generateClassName();
+  }
+
+  public String getClassNameWithTypeVariables() {
+    return generator.generateClassNameWithTypeVariables();
   }
 
   public Configuration getConfiguration() {

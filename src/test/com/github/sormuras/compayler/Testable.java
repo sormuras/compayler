@@ -2,6 +2,7 @@ package com.github.sormuras.compayler;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
@@ -9,10 +10,10 @@ import com.github.sormuras.compayler.Compayler.Directive;
 import com.github.sormuras.compayler.Compayler.ExecutionTime;
 import com.github.sormuras.compayler.Compayler.Mode;
 
-public interface Testable {
+public interface Testable<E> extends Deque<E> {
 
   @Directive(Mode.DIRECT)
-  Testable direct();
+  Testable<E> direct();
 
   long executionTime(@ExecutionTime Date time);
 

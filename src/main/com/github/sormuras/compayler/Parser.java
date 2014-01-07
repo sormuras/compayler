@@ -14,9 +14,11 @@ import com.github.sormuras.compayler.Description.Signature;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaGenericDeclaration;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.thoughtworks.qdox.model.JavaType;
+import com.thoughtworks.qdox.model.JavaTypeVariable;
 
 public class Parser implements DescriptionFactory {
 
@@ -34,7 +36,7 @@ public class Parser implements DescriptionFactory {
 
   protected Map<String, Boolean> buildNameIsUniqueMap(JavaClass javaClass) {
     Map<String, Boolean> uniques = new HashMap<>();
-    for (JavaMethod method : javaClass.getMethods()) {
+    for (JavaMethod method : javaClass.getMethods(true)) {
       String name = method.getName();
       Boolean old = uniques.put(name, Boolean.TRUE);
       if (old != null)
@@ -42,12 +44,16 @@ public class Parser implements DescriptionFactory {
     }
     return uniques;
   }
-  
+
   @Override
   public List<Description> createDescriptions() {
     JavaClass javaClass = javaProjectBuilder.getClassByName(configuration.getInterfaceName());
     if (javaClass == null)
       throw new IllegalStateException("Couldn't retrieve interface for name: " + configuration.getInterfaceName());
+
+    for (JavaTypeVariable<JavaGenericDeclaration> typeVar : javaClass.getTypeParameters()) {
+      configuration.getInterfaceTypeVariables().add(typeVar.getName());
+    }
 
     Map<String, Boolean> uniques = buildNameIsUniqueMap(javaClass);
     List<Description> descriptions = new ArrayList<>();
@@ -83,6 +89,11 @@ public class Parser implements DescriptionFactory {
         Object object = annotation.getNamedParameter("value");
         if (object != null)
           description.getVariable().setMode(Mode.valueOf(object.toString().substring(object.toString().lastIndexOf('.') + 1)));
+      }
+      if (!method.getTypeParameters().isEmpty()) {
+        for (JavaTypeVariable<JavaGenericDeclaration> typeVar : method.getTypeParameters()) {
+          description.getVariable().getTypeParameters().add(typeVar.getName());
+        }
       }
       // done
       descriptions.add(description);

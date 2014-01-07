@@ -6,9 +6,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.URI;
 import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +22,8 @@ import org.prevayler.SureTransactionWithQuery;
 import org.prevayler.Transaction;
 import org.prevayler.TransactionWithQuery;
 
+import com.thoughtworks.qdox.JavaProjectBuilder;
+
 public class Compayler {
 
   public static class Configuration {
@@ -28,6 +32,7 @@ public class Compayler {
     private final CRC32 crc32;
     private final String decoratorName;
     private final String interfaceName;
+    private final List<String> interfaceTypeVariables = new ArrayList<>();
     private final String targetPackage;
 
     public Configuration(String interfaceName) {
@@ -52,6 +57,10 @@ public class Compayler {
 
     public String getInterfaceName() {
       return interfaceName;
+    }
+
+    public List<String> getInterfaceTypeVariables() {
+      return interfaceTypeVariables;
     }
 
     public StringBuilder getStringBuilder() {
@@ -159,7 +168,7 @@ public class Compayler {
   public static boolean isExecutionTimePresent(Annotation... annotations) {
     return isAnnotationPresent(ExecutionTime.class, annotations);
   }
-  
+
   /**
    * Simple command line program converting an interface into decorator java file.
    * 
@@ -171,25 +180,56 @@ public class Compayler {
    */
   public static void main(String[] args) throws Exception {
     if (args.length < 2) {
-      System.out.println("Usage: java Compayler interface [target path]");
-      System.out.println("                      interface = prevalent system interface like 'java.lang.Appendable'");
-      System.out.println("                    target path = optional destination folder for generated classes, defaults to '.'");
+      System.out.println("Usage: java Compayler path interface [interfaces...]");
+      System.out.println("                      path = folder for generated source file(s) like '.' or 'src/generated'");
+      System.out.println("                           interface = prevalent system interface like 'java.lang.Appendable'");
+      System.out.println("                                      interfaces... = more interfaces to convert");
       return;
     }
-    String interfaceName = args[0];
-    Class<?> prevalentInterface = Class.forName(interfaceName);
-    if (!prevalentInterface.isInterface()) {
-      System.out.println("Interface expected, but got: " + interfaceName);
-      return;
+    String targetPath = args[0];
+    for (int i = 1; i < args.length; i++) {
+      String interfaceName = args[i];
+      Configuration configuration = new Configuration(interfaceName);
+      DescriptionFactory factory = new Scribe(configuration);
+      try {
+        Class<?> prevalentInterface = Class.forName(interfaceName);
+        if (!prevalentInterface.isInterface()) {
+          System.out.println("Interface expected, but got: " + interfaceName);
+          return;
+        }
+      } catch (ClassNotFoundException e) {
+        JavaProjectBuilder builder = new JavaProjectBuilder();
+        if (args[i].startsWith("http://"))
+          builder.addSource(URI.create(args[i]).toURL());
+        interfaceName = builder.getClasses().iterator().next().getFullyQualifiedName();
+        configuration = new Configuration(interfaceName);
+        Parser parser = new Parser(configuration, builder);
+        factory = parser;
+      }
+      Scribe scribe = new Scribe(configuration);
+      save(targetPath, scribe.writeDecorator(factory.createDescriptions()));
     }
-    String targetPath = ".";
-    if (args.length > 1) {
-      targetPath = args[1];
-    }
-    Configuration configuration = new Configuration(interfaceName);
-    Scribe scribe = new Scribe(configuration);
-    save(targetPath, scribe.writeDecorator(scribe.createDescriptions()));
-  }  
+  }
+
+  public static String merge(List<List<String>> lists) {
+    return merge("<", ">", lists);
+  }
+
+  public static String merge(String head, String tail, List<List<String>> lists) {
+    String separator = ", ";
+    StringBuilder builder = new StringBuilder();
+    int count = 0;
+    builder.append(head);
+    for (List<String> list : lists)
+      for (String var : list) {
+        if (builder.length() > head.length())
+          builder.append(separator);
+        builder.append(var);
+        count++;
+      }
+    builder.append(tail);
+    return count > 0 ? builder.toString() : "";
+  }
 
   public static String now() {
     TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -203,6 +243,18 @@ public class Compayler {
     if (pos < 0)
       return string;
     return string.substring(0, pos) + replacement + string.substring(pos + toReplace.length(), string.length());
+  }
+
+  public static void save(String targetPath, Source... sources) throws Exception {
+    for (Source source : sources) {
+      String packname = source.getPackageName();
+      String pathname = targetPath + "/" + packname.replace('.', '/');
+      File parent = Files.createDirectories(new File(pathname).toPath().toAbsolutePath()).toFile();
+      File file = new File(parent, source.getSimpleClassName() + source.getKind().extension);
+      System.out.print(file + " ...");
+      Files.write(file.toPath(), source.getLinesOfCode(), source.getCharset());
+      System.out.println(" ok");
+    }
   }
 
   /**
@@ -245,18 +297,6 @@ public class Compayler {
       return "java.lang.Void";
     }
     return name;
-  }
-  
-  public static void save(String targetPath, Source... sources) throws Exception {
-    for (Source source : sources) {
-      String packname = source.getPackageName();
-      String pathname = targetPath + "/" + packname.replace('.', '/');
-      File parent = Files.createDirectories(new File(pathname).toPath().toAbsolutePath()).toFile();
-      File file = new File(parent, source.getSimpleClassName() + source.getKind().extension);
-      System.out.print(file + " ...");
-      Files.write(file.toPath(), source.getLinesOfCode(), source.getCharset());
-      System.out.println(" ok");
-    }
   }
 
 }

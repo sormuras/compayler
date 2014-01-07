@@ -2,6 +2,7 @@ package com.github.sormuras.compayler;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,7 +83,8 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     List<String> lines = new LinkedList<>();
     lines.add("package " + configuration.getTargetPackage() + ";");
 
-    String interfaceName = configuration.getInterfaceName();
+    String typeVariables = Compayler.merge(Arrays.asList(configuration.getInterfaceTypeVariables()));
+    String interfaceName = configuration.getInterfaceName() + typeVariables;
     String className = configuration.getDecoratorName();
 
     // head
@@ -90,7 +92,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     lines.add("/**");
     lines.add(" * @compayled " + Compayler.now());
     lines.add(" */");
-    lines.add("public class " + className + " implements " + interfaceName + ", java.lang.AutoCloseable {");
+    lines.add("public class " + className + typeVariables + " implements " + interfaceName + ", java.lang.AutoCloseable {");
 
     // fields
     lines.add("");
@@ -139,6 +141,14 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     // decorating methods
     for (Description description : descriptions) {
 
+      if (description.getName().equals("equals") && description.getFields().size() == 1
+          && description.getFields().get(0).getType().equals("java.lang.Object"))
+        continue;
+      if (description.getName().equals("hashCode") && description.getFields().isEmpty())
+        continue;
+      if (description.getName().equals("toString") && description.getFields().isEmpty())
+        continue;
+
       Kind kind = description.getKind();
       String returns = description.getReturnType();
 
@@ -167,7 +177,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
       }
 
       // instantiate executable/action and let prevayler do the work
-      String fullClassName = description.getClassName();
+      String fullClassName = description.getClassNameWithTypeVariables();
       String newAction = "new " + fullClassName + description.getParameterParentheses();
       String assignAction = fullClassName + " action = " + newAction;
       String executeAction = "prevayler.execute(action)";
@@ -228,9 +238,9 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     return new Source(configuration.getTargetPackage(), description.getClassName(), lines);
   }
 
-  protected void writeExecutable(Description description, List<String> lines, String classModifier) {
+  protected void writeExecutable(Description description, List<String> lines, String classModifier) {    
     lines.add("");
-    lines.add(classModifier + " class " + description.getClassName() + " implements " + description.getImplements() + " {");
+    lines.add(classModifier + " class " + description.getClassNameWithTypeVariables() + " implements " + description.getImplements() + " {");
 
     lines.add("");
     lines.add("  private static final long serialVersionUID = " + description.getSerialVersionUID() + "L;");
@@ -252,7 +262,8 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     } // end of fields + c'tor
 
     // implementation
-    String parameters = configuration.getInterfaceName() + " prevalentSystem, java.util.Date executionTime";
+    String typeVariables = Compayler.merge(Arrays.asList(configuration.getInterfaceTypeVariables()));
+    String parameters = configuration.getInterfaceName() + typeVariables + " prevalentSystem, java.util.Date executionTime";
     String returnType = Compayler.wrap(description.getReturnType());
     String methodCall = description.getName() + description.getParameterParenthesesWithExecutionTime();
     lines.add("");

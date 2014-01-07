@@ -8,22 +8,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.prevayler.PrevaylerFactory;
-
-import appendable.AppendableDecorator;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 
 public class CompaylerTest {
 
-  public static class TestableImplementation implements Testable {
+  @SuppressWarnings("serial")
+  public static class TestableImplementation extends LinkedList<String> implements Testable<String> {
 
     @Override
-    public Testable direct() {
+    public Testable<String> direct() {
       return this;
     }
 
@@ -69,7 +68,7 @@ public class CompaylerTest {
   @Test
   public void testAppendableGenerated() throws Exception {
     testAppendable(new StringBuilder());
-    testAppendable(new AppendableDecorator(PrevaylerFactory.createTransientPrevayler(new StringBuilder())));
+    // testAppendable(new AppendableDecorator(PrevaylerFactory.createTransientPrevayler(new StringBuilder())));
   }
 
   @Test
@@ -85,6 +84,11 @@ public class CompaylerTest {
     Configuration configuration = new Configuration("com.github.sormuras.compayler.Testable");
 
     Parser parser = new Parser(configuration);
+    String base = "http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/";
+    parser.getJavaProjectBuilder().addSource(URI.create(base + "java/util/Collection.java/?v=source").toURL());
+    parser.getJavaProjectBuilder().addSource(URI.create(base + "java/util/List.java/?v=source").toURL());
+    parser.getJavaProjectBuilder().addSource(URI.create(base + "java/util/Queue.java/?v=source").toURL());
+    parser.getJavaProjectBuilder().addSource(URI.create(base + "java/util/Deque.java/?v=source").toURL());
     parser.getJavaProjectBuilder().addSource(new File("src/test/" + configuration.getInterfaceName().replace('.', '/') + ".java"));
 
     List<Description> descriptions = parser.createDescriptions();
