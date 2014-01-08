@@ -1,5 +1,6 @@
 package com.github.sormuras.compayler;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,12 +12,24 @@ import java.util.Map;
 import com.github.sormuras.compayler.Compayler.Configuration;
 import com.github.sormuras.compayler.Compayler.DescriptionFactory;
 import com.github.sormuras.compayler.Compayler.DescriptionWriter;
+import com.github.sormuras.compayler.Compayler.ExecutionTime;
 import com.github.sormuras.compayler.Compayler.Kind;
 import com.github.sormuras.compayler.Compayler.Mode;
 import com.github.sormuras.compayler.Description.Field;
 import com.github.sormuras.compayler.Description.Signature;
 
 public class Scribe implements DescriptionFactory, DescriptionWriter {
+
+  public static boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, Annotation... annotations) {
+    for (Annotation annotation : annotations)
+      if (annotation.annotationType() == annotationClass)
+        return true;
+    return false;
+  }
+
+  public static boolean isExecutionTimePresent(Annotation... annotations) {
+    return isAnnotationPresent(ExecutionTime.class, annotations);
+  }
 
   private final Configuration configuration;
 
@@ -61,7 +74,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
         Field field = new Field();
         field.setIndex(index);
         field.setName("p" + index);
-        field.setTime(Compayler.isExecutionTimePresent(method.getParameterAnnotations()[index]));
+        field.setTime(isExecutionTimePresent(method.getParameterAnnotations()[index]));
         field.setType(method.getParameterTypes()[index].getCanonicalName());
         field.setVariable(index == lastIndex && method.isVarArgs());
         fields.add(field);
@@ -238,9 +251,10 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     return new Source(configuration.getTargetPackage(), description.getClassName(), lines);
   }
 
-  protected void writeExecutable(Description description, List<String> lines, String classModifier) {    
+  protected void writeExecutable(Description description, List<String> lines, String classModifier) {
     lines.add("");
-    lines.add(classModifier + " class " + description.getClassNameWithTypeVariables() + " implements " + description.getImplements() + " {");
+    lines
+        .add(classModifier + " class " + description.getClassNameWithTypeVariables() + " implements " + description.getImplements() + " {");
 
     lines.add("");
     lines.add("  private static final long serialVersionUID = " + description.getSerialVersionUID() + "L;");

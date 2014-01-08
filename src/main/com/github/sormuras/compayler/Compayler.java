@@ -1,7 +1,6 @@
 package com.github.sormuras.compayler;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -156,17 +155,6 @@ public class Compayler {
 
   public static enum Mode {
     DIRECT, QUERY, TRANSACTION
-  }
-
-  public static boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, Annotation... annotations) {
-    for (Annotation annotation : annotations)
-      if (annotation.annotationType() == annotationClass)
-        return true;
-    return false;
-  }
-
-  public static boolean isExecutionTimePresent(Annotation... annotations) {
-    return isAnnotationPresent(ExecutionTime.class, annotations);
   }
 
   /**
