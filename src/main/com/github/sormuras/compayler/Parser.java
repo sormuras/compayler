@@ -12,6 +12,7 @@ import com.github.sormuras.compayler.Compayler.Mode;
 import com.github.sormuras.compayler.Description.Field;
 import com.github.sormuras.compayler.Description.Signature;
 import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.model.DocletTag;
 import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaGenericDeclaration;
@@ -83,6 +84,12 @@ public class Parser implements DescriptionFactory {
       Signature signature = new Signature(name, returnType, fields, throwables, uniques.get(name));
       Description description = new Description(configuration, signature);
       // update mode, if possible
+      DocletTag compaylerTag = method.getTagByName("compayler");
+      if (compaylerTag != null) {
+        String mode = compaylerTag.getNamedParameter("mode");
+        if (mode != null)
+          description.getVariable().setMode(Mode.valueOf(mode.toUpperCase()));
+      }
       for (JavaAnnotation annotation : method.getAnnotations()) {
         if (!Directive.class.getName().equals(annotation.getType().getFullyQualifiedName()))
           continue;
@@ -91,8 +98,8 @@ public class Parser implements DescriptionFactory {
           description.getVariable().setMode(Mode.valueOf(object.toString().substring(object.toString().lastIndexOf('.') + 1)));
       }
       if (!method.getTypeParameters().isEmpty()) {
-        for (JavaTypeVariable<JavaGenericDeclaration> typeVar : method.getTypeParameters()) {
-          description.getVariable().getTypeParameters().add(typeVar.getName());
+        for (JavaTypeVariable<JavaGenericDeclaration> parameter : method.getTypeParameters()) {
+          description.getVariable().getTypeParameters().add(parameter.getName());
         }
       }
       // done

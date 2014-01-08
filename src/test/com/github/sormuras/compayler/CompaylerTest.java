@@ -35,6 +35,11 @@ public class CompaylerTest {
     public Date executionTime(Date seed, Date time, Date... dates) {
       return time;
     }
+    
+    @Override
+    public int query() {
+      return 0;
+    }
 
     @Override
     public Map<String, Date> zzz(List<Map<Integer, Number>> list, int... numbers) throws IllegalStateException, IOException {

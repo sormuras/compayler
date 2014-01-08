@@ -19,6 +19,11 @@ public interface Testable<E> extends Deque<E> {
 
   Date executionTime(Date seed, @ExecutionTime Date time, Date... dates);
 
+  /**
+   * @compayler mode = QUERY
+   */
+  int query() throws Exception;
+
   Map<String, Date> zzz(List<Map<Integer, Number>> list, int... numbers) throws IllegalStateException, IOException;
 
 }
