@@ -12,7 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.prevayler.PrevaylerFactory;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 
@@ -35,7 +37,7 @@ public class CompaylerTest {
     public Date executionTime(Date seed, Date time, Date... dates) {
       return time;
     }
-    
+
     @Override
     public int query() {
       return 0;
@@ -86,8 +88,9 @@ public class CompaylerTest {
 
   @Test
   public void testTestable() throws Exception {
-    Configuration configuration = new Configuration("com.github.sormuras.compayler.Testable");
+    // testTestable(new TestableImplementation()); ... fails for execution time mismatch
 
+    Configuration configuration = new Configuration("com.github.sormuras.compayler.Testable");
     Parser parser = new Parser(configuration);
     String base = "http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/";
     parser.getJavaProjectBuilder().addSource(URI.create(base + "java/util/Collection.java/?v=source").toURL());
@@ -99,17 +102,14 @@ public class CompaylerTest {
     List<Description> descriptions = parser.createDescriptions();
     Scribe scribe = new Scribe(configuration);
     Source source = scribe.writeDecorator(descriptions);
-    System.out.println(source.getCharContent(true));
+
+    Testable<String> testable = Loader.decorate(source, PrevaylerFactory.createTransientPrevayler(new TestableImplementation()));
+    testTestable(testable);
   }
 
-  // @Test
-  // public void testTestableGenerated() throws Exception {
-  // Testable i = new TestableImplementation();
-  // Prevayler<Testable> p = PrevaylerFactory.createTransientPrevayler(i);
-  // Testable d = new TestableDecorator(p);
-  //
-  // assertSame(d, d.direct());
-  // assertNotEquals(0l, d.executionTime(new Date(0l)));
-  // }
+  public void testTestable(Testable<String> testable) throws Exception {
+    Assert.assertSame(testable, testable.direct());
+    Assert.assertNotEquals(0L, testable.executionTime(new Date(0L)));
+  }
 
 }
