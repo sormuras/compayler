@@ -1,0 +1,107 @@
+package com.github.sormuras.compayler;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Arrays;
+
+import org.prevayler.Clock;
+import org.prevayler.Prevayler;
+import org.prevayler.Query;
+import org.prevayler.SureTransactionWithQuery;
+import org.prevayler.Transaction;
+import org.prevayler.TransactionWithQuery;
+import org.prevayler.foundation.ObjectInputStreamWithClassLoader;
+import org.prevayler.implementation.clock.MachineClock;
+
+public class VolatilePrevayler<P> implements Prevayler<P> {
+
+  private final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(0xFFFF);
+  private final ClassLoader classLoader;
+  private final Clock clock;
+  private final P prevalentSystem;
+
+  public VolatilePrevayler(P prevalentSystem, ClassLoader classLoader) {
+    this.classLoader = classLoader;
+    this.clock = new MachineClock();
+    this.prevalentSystem = prevalentSystem;
+  }
+
+  protected void assertSerializable(Object object) {
+    byte[] bytes = toBytes(object);
+    Object result = toObject(bytes);
+    byte[] results = toBytes(result);
+    if (Arrays.equals(bytes, results)) {
+      return;
+    }
+    throw new IllegalStateException("Object binary form mismatch. Serialization is broken?! " + object);
+  }
+
+  @Override
+  public Clock clock() {
+    return clock;
+  }
+
+  @Override
+  public void close() throws IOException {
+    byteArrayOutputStream.close();
+  }
+
+  @Override
+  public <R> R execute(Query<? super P, R> sensitiveQuery) throws Exception {
+    assertSerializable(sensitiveQuery);
+    return sensitiveQuery.query(prevalentSystem, clock().time());
+  }
+
+  @Override
+  public <R> R execute(SureTransactionWithQuery<? super P, R> sureTransactionWithQuery) {
+    assertSerializable(sureTransactionWithQuery);
+    return sureTransactionWithQuery.executeAndQuery(prevalentSystem, clock().time());
+  }
+
+  @Override
+  public void execute(Transaction<? super P> transaction) {
+    assertSerializable(transaction);
+    transaction.executeOn(prevalentSystem, clock().time());
+  }
+
+  @Override
+  public <R> R execute(TransactionWithQuery<? super P, R> transactionWithQuery) throws Exception {
+    assertSerializable(transactionWithQuery);
+    return transactionWithQuery.executeAndQuery(prevalentSystem, clock().time());
+  }
+
+  @Override
+  public P prevalentSystem() {
+    return prevalentSystem;
+  }
+
+  @Override
+  public File takeSnapshot() throws Exception {
+    throw new UnsupportedOperationException();
+  }
+
+  protected byte[] toBytes(Object object) {
+    byteArrayOutputStream.reset();
+    try (ObjectOutputStream out = new ObjectOutputStream(byteArrayOutputStream)) {
+      out.writeObject(object);
+      return byteArrayOutputStream.toByteArray();
+    } catch (Exception e) {
+      throw new RuntimeException("Serialization failed!", e);
+    }
+  }
+
+  protected Object toObject(byte[] bytes) {
+    try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+    // or new org.apache.commons.io.input.ClassLoaderObjectInputStream(classLoader, byteArrayInputStream)
+        ObjectInputStream in = new ObjectInputStreamWithClassLoader(byteArrayInputStream, classLoader)) {
+      return in.readObject();
+    } catch (Exception e) {
+      throw new RuntimeException("Deserialization failed!", e);
+    }
+  }
+
+}

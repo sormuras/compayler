@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.prevayler.PrevaylerFactory;
+import org.prevayler.Prevayler;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 
@@ -103,7 +104,10 @@ public class CompaylerTest {
     Scribe scribe = new Scribe(configuration);
     Source source = scribe.writeDecorator(descriptions);
 
-    Testable<String> testable = Loader.decorate(source, PrevaylerFactory.createTransientPrevayler(new TestableImplementation()));
+    ClassLoader loader = Loader.compile(Arrays.asList(source), getClass().getClassLoader());
+    
+    Prevayler<? extends Testable<String>> prevayler = new VolatilePrevayler<>(new TestableImplementation(), loader);
+    Testable<String> testable = Loader.decorate(source, prevayler);
     testTestable(testable);
   }
 
