@@ -24,18 +24,23 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
   private final Clock clock;
   private final P prevalentSystem;
 
+  public VolatilePrevayler(P prevalentSystem) {
+    this(prevalentSystem, Thread.currentThread().getContextClassLoader());
+  }
+
   public VolatilePrevayler(P prevalentSystem, ClassLoader classLoader) {
     this.classLoader = classLoader;
     this.clock = new MachineClock();
     this.prevalentSystem = prevalentSystem;
   }
 
-  protected void assertSerializable(Object object) {
+  @SuppressWarnings("unchecked")
+  protected <T> T copy(T object) {
     byte[] bytes = toBytes(object);
     Object result = toObject(bytes);
     byte[] results = toBytes(result);
     if (Arrays.equals(bytes, results)) {
-      return;
+      return (T) result;
     }
     throw new IllegalStateException("Object binary form mismatch. Serialization is broken?! " + object);
   }
@@ -52,26 +57,22 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
 
   @Override
   public <R> R execute(Query<? super P, R> sensitiveQuery) throws Exception {
-    assertSerializable(sensitiveQuery);
-    return sensitiveQuery.query(prevalentSystem, clock().time());
+    return sensitiveQuery.query(prevalentSystem, clock().time()); // no copy needed - queries are transient by contract
   }
 
   @Override
   public <R> R execute(SureTransactionWithQuery<? super P, R> sureTransactionWithQuery) {
-    assertSerializable(sureTransactionWithQuery);
-    return sureTransactionWithQuery.executeAndQuery(prevalentSystem, clock().time());
+    return copy(sureTransactionWithQuery).executeAndQuery(prevalentSystem, clock().time());
   }
 
   @Override
   public void execute(Transaction<? super P> transaction) {
-    assertSerializable(transaction);
-    transaction.executeOn(prevalentSystem, clock().time());
+    copy(transaction).executeOn(prevalentSystem, clock().time());
   }
 
   @Override
   public <R> R execute(TransactionWithQuery<? super P, R> transactionWithQuery) throws Exception {
-    assertSerializable(transactionWithQuery);
-    return transactionWithQuery.executeAndQuery(prevalentSystem, clock().time());
+    return copy(transactionWithQuery).executeAndQuery(prevalentSystem, clock().time());
   }
 
   @Override

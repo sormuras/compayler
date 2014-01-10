@@ -7,6 +7,7 @@ import java.net.URI;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,22 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
+import org.prevayler.Clock;
 import org.prevayler.Prevayler;
+import org.prevayler.foundation.monitor.Monitor;
+import org.prevayler.foundation.monitor.SimpleMonitor;
+import org.prevayler.foundation.serialization.JavaSerializer;
+import org.prevayler.foundation.serialization.Serializer;
+import org.prevayler.implementation.PrevaylerDirectory;
+import org.prevayler.implementation.PrevaylerImpl;
+import org.prevayler.implementation.clock.MachineClock;
+import org.prevayler.implementation.journal.Journal;
+import org.prevayler.implementation.journal.PersistentJournal;
+import org.prevayler.implementation.publishing.CentralPublisher;
+import org.prevayler.implementation.publishing.TransactionPublisher;
+import org.prevayler.implementation.snapshot.GenericSnapshotManager;
+
+import com.github.sormuras.compayler.Compayler.Configuration;
 
 public class Loader {
   /**
@@ -92,11 +108,40 @@ public class Loader {
     return fileManager.getClassLoader(null);
   }
 
+  public static ClassLoader compile(Class<?> interfaceClass) {
+    Configuration configuration = new Configuration(interfaceClass.getCanonicalName());
+
+    Scribe scribe = new Scribe(configuration);
+    // Parser factory = new Parser(configuration);
+    // String base = "http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/";
+    // factory.getJavaProjectBuilder().addSource(URI.create(base + "java/lang/Appendable.java/?v=source").toURL());
+    List<Description> descriptions = scribe.createDescriptions();
+
+    Source source = scribe.writeDecorator(descriptions);
+    return compile(Arrays.asList(source), Thread.currentThread().getContextClassLoader());
+
+  }
+
   @SuppressWarnings("unchecked")
-  public static <P> P decorate(Source source, Prevayler<P> prevayler) throws Exception {
-    ClassLoader loader = compile(Arrays.asList(source), Loader.class.getClassLoader());
-    Class<?> decoratorClass = loader.loadClass(source.getPackageName() + "." + source.getSimpleClassName());
+  public static <P> P load(ClassLoader loader, String decoratorClassName, Prevayler<P> prevayler) throws Exception {
+    Class<?> decoratorClass = loader.loadClass(decoratorClassName);
     return (P) decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
+  }
+
+  public static <P> Prevayler<P> newPrevayler(P prevalentSystem, ClassLoader classLoader) {
+    Clock clock = new MachineClock();
+    Monitor monitor = new SimpleMonitor(System.err);
+    Serializer serializer = new JavaSerializer(classLoader);
+    try {
+      PrevaylerDirectory directory = new PrevaylerDirectory("PrevalenceBase");
+      Journal journal = new PersistentJournal(directory, 0, 0, true, "journal", monitor);
+      GenericSnapshotManager<P> snapshotManager = new GenericSnapshotManager<P>(Collections.singletonMap("snapshot", serializer),
+          "snapshot", prevalentSystem, directory, serializer);
+      TransactionPublisher publisher = new CentralPublisher(clock, journal);
+      return new PrevaylerImpl<P>(snapshotManager, publisher, serializer, true);
+    } catch (Exception e) {
+      throw new Error(e);
+    }
   }
 
 }
