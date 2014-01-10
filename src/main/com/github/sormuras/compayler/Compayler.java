@@ -1,19 +1,13 @@
 package com.github.sormuras.compayler;
 
-import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.net.URI;
-import java.nio.file.Files;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.zip.CRC32;
 
 import org.prevayler.Query;
@@ -26,6 +20,13 @@ import com.thoughtworks.qdox.JavaProjectBuilder;
 public class Compayler {
 
   public static class Configuration {
+    
+    /**
+     * Strip package name and return simple class name.
+     */
+    public static String simple(String name) {
+      return name.substring(name.lastIndexOf('.') + 1);
+    }    
 
     private final StringBuilder builder;
     private final CRC32 crc32;
@@ -177,6 +178,7 @@ public class Compayler {
     String targetPath = args[0];
     for (int i = 1; i < args.length; i++) {
       String interfaceName = args[i];
+      System.out.print(interfaceName + "...");
       Configuration configuration = new Configuration(interfaceName);
       DescriptionFactory factory = new Scribe(configuration);
       try {
@@ -195,12 +197,18 @@ public class Compayler {
         factory = parser;
       }
       Scribe scribe = new Scribe(configuration);
-      save(targetPath, scribe.writeDecorator(factory.createDescriptions()));
+      Source source = scribe.writeDecorator(factory.createDescriptions());
+      source.save(targetPath);
+      System.out.println("ok");
     }
   }
 
-  public static String merge(List<List<String>> lists) {
-    return merge("<", ">", lists);
+  public static String merge(List<String> list) {
+    return merge("<", ">", Arrays.asList(list));
+  }
+
+  public static String merge(List<String> list1, List<String> list2) {
+    return merge("<", ">", Arrays.asList(list1, list2));
   }
 
   public static String merge(String head, String tail, List<List<String>> lists) {
@@ -217,74 +225,6 @@ public class Compayler {
       }
     builder.append(tail);
     return count > 0 ? builder.toString() : "";
-  }
-
-  public static String now() {
-    TimeZone tz = TimeZone.getTimeZone("UTC");
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
-    df.setTimeZone(tz);
-    return df.format(new Date());
-  }
-
-  public static String replaceLast(String string, String toReplace, String replacement) {
-    int pos = string.lastIndexOf(toReplace);
-    if (pos < 0)
-      return string;
-    return string.substring(0, pos) + replacement + string.substring(pos + toReplace.length(), string.length());
-  }
-
-  public static void save(String targetPath, Source... sources) throws Exception {
-    for (Source source : sources) {
-      String packname = source.getPackageName();
-      String pathname = targetPath + "/" + packname.replace('.', '/');
-      File parent = Files.createDirectories(new File(pathname).toPath().toAbsolutePath()).toFile();
-      File file = new File(parent, source.getSimpleClassName() + source.getKind().extension);
-      System.out.print(file + " ...");
-      Files.write(file.toPath(), source.getLinesOfCode(), source.getCharset());
-      System.out.println(" ok");
-    }
-  }
-
-  /**
-   * Strip package name and return simple class name.
-   */
-  public static String simple(String name) {
-    return name.substring(name.lastIndexOf('.') + 1);
-  }
-
-  /**
-   * Unmodifiable list, never null.
-   */
-  public static <T> List<T> unmodifiableList(List<T> list) {
-    List<T> empty = Collections.emptyList();
-    return (list == null || list.isEmpty()) ? empty : Collections.unmodifiableList(list);
-  }
-
-  /**
-   * Return wrapper class name for primitives.
-   */
-  public static String wrap(String name) {
-    switch (name) {
-    case "boolean":
-      return "java.lang.Boolean";
-    case "byte":
-      return "java.lang.Byte";
-    case "char":
-      return "java.lang.Character";
-    case "double":
-      return "java.lang.Double";
-    case "float":
-      return "java.lang.Float";
-    case "int":
-      return "java.lang.Integer";
-    case "long":
-      return "java.lang.Long";
-    case "short":
-      return "java.lang.Short";
-    case "void":
-      return "java.lang.Void";
-    }
-    return name;
   }
 
 }

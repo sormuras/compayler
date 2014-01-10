@@ -1,7 +1,7 @@
 package com.github.sormuras.compayler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.zip.CRC32;
 
@@ -114,10 +114,10 @@ public class Description {
       builder.append(kind.getExecutableInterface().getCanonicalName());
       builder.append('<');
       builder.append(getConfiguration().getInterfaceName());
-      builder.append(Compayler.merge(Arrays.asList(getConfiguration().getInterfaceTypeVariables())));
+      builder.append(Compayler.merge(getConfiguration().getInterfaceTypeVariables()));
       if (kind != Kind.TRANSACTION) {
         assert getReturnType().equals("void");
-        builder.append(',').append(' ').append(Compayler.wrap(getReturnType()));
+        builder.append(',').append(' ').append(getReturnWrap());
       }
       builder.append('>');
       return builder.toString();
@@ -185,9 +185,18 @@ public class Description {
       for (Field field : getFields()) {
         if (field.getIndex() > 0)
           builder.append(", ");
-        if (field.isVariable())
-          builder.append(Compayler.replaceLast(field.getType(), "[]", "..."));
-        else
+        if (field.isVariable()) {
+          // builder.append(field.getType().replaceLast("[]", "..."));
+          String string = field.getType();
+          int pos = string.lastIndexOf("[]");
+          if (pos < 0)
+            builder.append(field.getType());
+          else {
+            builder.append(string.substring(0, pos));
+            builder.append("...");
+            builder.append(string.substring(pos + "[]".length(), string.length()));
+          }
+        } else
           builder.append(field.getType());
         builder.append(' ').append(field.getName());
       }
@@ -199,7 +208,7 @@ public class Description {
       StringBuilder typeVarBuilder = new StringBuilder();
       typeVarBuilder.append(generateClassName());
       if (!configuration.getInterfaceTypeVariables().isEmpty() || !getVariable().getTypeParameters().isEmpty()) {
-        typeVarBuilder.append(Compayler.merge(Arrays.asList(configuration.getInterfaceTypeVariables(), getVariable().getTypeParameters())));
+        typeVarBuilder.append(Compayler.merge(configuration.getInterfaceTypeVariables(), getVariable().getTypeParameters()));
       }
       return typeVarBuilder.toString();
     }
@@ -211,6 +220,7 @@ public class Description {
     private final List<Field> fields;
     private final String name;
     private final String returnType;
+    private final String returnWrap;
     private final List<String> throwables;
     private final boolean unique;
 
@@ -219,9 +229,39 @@ public class Description {
         throw new IllegalArgumentException("name and returnType must not be null");
       this.name = name;
       this.returnType = returnType;
-      this.fields = Compayler.unmodifiableList(fields);
-      this.throwables = Compayler.unmodifiableList(throwables);
+      this.returnWrap = wrap(returnType);
+      this.fields = unmodifiable(fields);
+      this.throwables = unmodifiable(throwables);
       this.unique = unique;
+    }
+
+    private <T> List<T> unmodifiable(List<T> list) {
+      List<T> empty = Collections.emptyList();
+      return (list == null || list.isEmpty()) ? empty : Collections.unmodifiableList(list);
+    }
+
+    private String wrap(String name) {
+      switch (name) {
+      case "boolean":
+        return "java.lang.Boolean";
+      case "byte":
+        return "java.lang.Byte";
+      case "char":
+        return "java.lang.Character";
+      case "double":
+        return "java.lang.Double";
+      case "float":
+        return "java.lang.Float";
+      case "int":
+        return "java.lang.Integer";
+      case "long":
+        return "java.lang.Long";
+      case "short":
+        return "java.lang.Short";
+      case "void":
+        return "java.lang.Void";
+      }
+      return name;
     }
 
   }
@@ -322,6 +362,10 @@ public class Description {
 
   public String getReturnType() {
     return signature.returnType;
+  }
+
+  public String getReturnWrap() {
+    return signature.returnWrap;
   }
 
   public long getSerialVersionUID() {

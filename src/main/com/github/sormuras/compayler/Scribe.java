@@ -2,12 +2,15 @@ package com.github.sormuras.compayler;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 import com.github.sormuras.compayler.Compayler.DescriptionFactory;
@@ -30,6 +33,13 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
   public static boolean isExecutionTimePresent(Annotation... annotations) {
     return isAnnotationPresent(ExecutionTime.class, annotations);
   }
+
+  public static String now() {
+    TimeZone tz = TimeZone.getTimeZone("UTC");
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+    df.setTimeZone(tz);
+    return df.format(new Date());
+  }  
 
   private final Configuration configuration;
 
@@ -96,14 +106,14 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     List<String> lines = new LinkedList<>();
     lines.add("package " + configuration.getTargetPackage() + ";");
 
-    String typeVariables = Compayler.merge(Arrays.asList(configuration.getInterfaceTypeVariables()));
+    String typeVariables = Compayler.merge(configuration.getInterfaceTypeVariables());
     String interfaceName = configuration.getInterfaceName() + typeVariables;
     String className = configuration.getDecoratorName();
 
     // head
     lines.add("");
     lines.add("/**");
-    lines.add(" * @compayled " + Compayler.now());
+    lines.add(" * @compayled " + now());
     lines.add(" */");
     lines.add("public class " + className + typeVariables + " implements " + interfaceName + ", java.lang.AutoCloseable {");
 
@@ -241,7 +251,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
   public Source writeExecutable(Description description) {
     List<String> lines = new LinkedList<>();
     lines.add("");
-    lines.add("// " + getClass().getSimpleName() + " wrote " + description.getClassName() + " on " + Compayler.now());
+    lines.add("// " + getClass().getSimpleName() + " wrote " + description.getClassName() + " on " + now());
 
     lines.add("");
     lines.add("package " + configuration.getTargetPackage() + ";");
@@ -276,9 +286,9 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     } // end of fields + c'tor
 
     // implementation
-    String typeVariables = Compayler.merge(Arrays.asList(configuration.getInterfaceTypeVariables()));
+    String typeVariables = Compayler.merge(configuration.getInterfaceTypeVariables());
     String parameters = configuration.getInterfaceName() + typeVariables + " prevalentSystem, java.util.Date executionTime";
-    String returnType = Compayler.wrap(description.getReturnType());
+    String returnType = description.getReturnWrap();
     String methodCall = description.getName() + description.getParameterParenthesesWithExecutionTime();
     lines.add("");
     lines.add("  @Override");

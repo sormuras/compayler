@@ -1,7 +1,9 @@
 package com.github.sormuras.compayler;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 
 import javax.tools.SimpleJavaFileObject;
@@ -69,6 +71,13 @@ public class Source extends SimpleJavaFileObject {
 
   public Charset getCharset() {
     return Charset.forName("UTF-8");
+  }
+
+  public void save(String targetPath) throws Exception {
+    String pathname = targetPath + "/" + getPackageName().replace('.', '/');
+    File parent = Files.createDirectories(new File(pathname).toPath().toAbsolutePath()).toFile();
+    File file = new File(parent, getSimpleClassName() + getKind().extension);
+    Files.write(file.toPath(), getLinesOfCode(), getCharset());
   }
 
 }
