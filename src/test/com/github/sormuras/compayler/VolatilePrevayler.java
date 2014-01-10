@@ -34,17 +34,6 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
     this.prevalentSystem = prevalentSystem;
   }
 
-  @SuppressWarnings("unchecked")
-  protected <T> T copy(T object) {
-    byte[] bytes = toBytes(object);
-    Object result = toObject(bytes);
-    byte[] results = toBytes(result);
-    if (Arrays.equals(bytes, results)) {
-      return (T) result;
-    }
-    throw new IllegalStateException("Object binary form mismatch. Serialization is broken?! " + object);
-  }
-
   @Override
   public Clock clock() {
     return clock;
@@ -62,17 +51,17 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
 
   @Override
   public <R> R execute(SureTransactionWithQuery<? super P, R> sureTransactionWithQuery) {
-    return copy(sureTransactionWithQuery).executeAndQuery(prevalentSystem, clock().time());
+    return testCopy(sureTransactionWithQuery).executeAndQuery(prevalentSystem, clock().time());
   }
 
   @Override
   public void execute(Transaction<? super P> transaction) {
-    copy(transaction).executeOn(prevalentSystem, clock().time());
+    testCopy(transaction).executeOn(prevalentSystem, clock().time());
   }
 
   @Override
   public <R> R execute(TransactionWithQuery<? super P, R> transactionWithQuery) throws Exception {
-    return copy(transactionWithQuery).executeAndQuery(prevalentSystem, clock().time());
+    return testCopy(transactionWithQuery).executeAndQuery(prevalentSystem, clock().time());
   }
 
   @Override
@@ -83,6 +72,17 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
   @Override
   public File takeSnapshot() throws Exception {
     throw new UnsupportedOperationException();
+  }
+
+  protected <T> T testCopy(T object) {
+    byte[] bytes = toBytes(object);
+    @SuppressWarnings("unchecked")
+    T result = (T) toObject(bytes);
+    byte[] results = toBytes(result);
+    if (Arrays.equals(bytes, results)) {
+      return result;
+    }
+    throw new IllegalStateException("Object binary form mismatch. Serialization is broken?! " + object);
   }
 
   protected byte[] toBytes(Object object) {
