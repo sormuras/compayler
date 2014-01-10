@@ -9,7 +9,7 @@
 	<property name="dir.out" value="bin/ant" />
 
 	<path id="compile.class.path">
-		<pathelement path="lib/prevayler-2.6-core-factory-xstream-source.jar" />
+		<pathelement path="lib/prevayler-core-2.6.jar" />
 		<pathelement path="lib/qdox-2.0-M1.jar" />
 	</path>
 
