@@ -20,13 +20,37 @@ import com.thoughtworks.qdox.JavaProjectBuilder;
 public class Compayler {
 
   public static class Configuration {
-    
+
+    public static String merge(List<String> list) {
+      return merge("<", ">", Arrays.asList(list));
+    }
+
+    public static String merge(List<String> list1, List<String> list2) {
+      return merge("<", ">", Arrays.asList(list1, list2));
+    }
+
+    public static String merge(String head, String tail, List<List<String>> lists) {
+      String separator = ", ";
+      StringBuilder builder = new StringBuilder();
+      int count = 0;
+      builder.append(head);
+      for (List<String> list : lists)
+        for (String var : list) {
+          if (builder.length() > head.length())
+            builder.append(separator);
+          builder.append(var);
+          count++;
+        }
+      builder.append(tail);
+      return count > 0 ? builder.toString() : "";
+    }
+
     /**
      * Strip package name and return simple class name.
      */
     public static String simple(String name) {
       return name.substring(name.lastIndexOf('.') + 1);
-    }    
+    }
 
     private final StringBuilder builder;
     private final CRC32 crc32;
@@ -48,6 +72,12 @@ public class Compayler {
     }
 
     public CRC32 getChecksumBuilder() {
+      return getChecksumBuilder(true);
+    }
+    
+    public CRC32 getChecksumBuilder(boolean reset) {
+      if (reset)
+        crc32.reset();
       return crc32;
     }
 
@@ -57,10 +87,6 @@ public class Compayler {
 
     public String getInterfaceName() {
       return interfaceName;
-    }
-
-    public List<String> getInterfaceTypeVariables() {
-      return interfaceTypeVariables;
     }
 
     public StringBuilder getStringBuilder() {
@@ -75,6 +101,18 @@ public class Compayler {
 
     public String getTargetPackage() {
       return targetPackage;
+    }
+
+    public String getTypeParameterParenthesis() {
+      return merge(getTypeParametes());
+    }
+
+    public String getTypeParameterParenthesis(List<String> moreTypeParameters) {
+      return merge(getTypeParametes(), moreTypeParameters);
+    }
+
+    public List<String> getTypeParametes() {
+      return interfaceTypeVariables;
     }
 
     @Override
@@ -201,30 +239,6 @@ public class Compayler {
       source.save(targetPath);
       System.out.println("ok");
     }
-  }
-
-  public static String merge(List<String> list) {
-    return merge("<", ">", Arrays.asList(list));
-  }
-
-  public static String merge(List<String> list1, List<String> list2) {
-    return merge("<", ">", Arrays.asList(list1, list2));
-  }
-
-  public static String merge(String head, String tail, List<List<String>> lists) {
-    String separator = ", ";
-    StringBuilder builder = new StringBuilder();
-    int count = 0;
-    builder.append(head);
-    for (List<String> list : lists)
-      for (String var : list) {
-        if (builder.length() > head.length())
-          builder.append(separator);
-        builder.append(var);
-        count++;
-      }
-    builder.append(tail);
-    return count > 0 ? builder.toString() : "";
   }
 
 }

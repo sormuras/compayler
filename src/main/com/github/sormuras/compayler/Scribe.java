@@ -106,7 +106,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     List<String> lines = new LinkedList<>();
     lines.add("package " + configuration.getTargetPackage() + ";");
 
-    String typeVariables = Compayler.merge(configuration.getInterfaceTypeVariables());
+    String typeVariables = configuration.getTypeParameterParenthesis();
     String interfaceName = configuration.getInterfaceName() + typeVariables;
     String className = configuration.getDecoratorName();
 
@@ -286,7 +286,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     } // end of fields + c'tor
 
     // implementation
-    String typeVariables = Compayler.merge(configuration.getInterfaceTypeVariables());
+    String typeVariables = configuration.getTypeParameterParenthesis();
     String parameters = configuration.getInterfaceName() + typeVariables + " prevalentSystem, java.util.Date executionTime";
     String returnType = description.getReturnWrap();
     String methodCall = description.getName() + description.getParameterParenthesesWithExecutionTime();

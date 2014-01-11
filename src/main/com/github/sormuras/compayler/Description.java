@@ -114,7 +114,7 @@ public class Description {
       builder.append(kind.getExecutableInterface().getCanonicalName());
       builder.append('<');
       builder.append(getConfiguration().getInterfaceName());
-      builder.append(Compayler.merge(getConfiguration().getInterfaceTypeVariables()));
+      builder.append(getConfiguration().getTypeParameterParenthesis());
       if (kind != Kind.TRANSACTION) {
         assert getReturnType().equals("void");
         builder.append(',').append(' ').append(getReturnWrap());
@@ -207,8 +207,8 @@ public class Description {
     public String generateClassNameWithTypeVariables() {
       StringBuilder typeVarBuilder = new StringBuilder();
       typeVarBuilder.append(generateClassName());
-      if (!configuration.getInterfaceTypeVariables().isEmpty() || !getVariable().getTypeParameters().isEmpty()) {
-        typeVarBuilder.append(Compayler.merge(configuration.getInterfaceTypeVariables(), getVariable().getTypeParameters()));
+      if (!configuration.getTypeParametes().isEmpty() || !getVariable().getTypeParameters().isEmpty()) {
+        typeVarBuilder.append(configuration.getTypeParameterParenthesis(getVariable().getTypeParameters()));
       }
       return typeVarBuilder.toString();
     }

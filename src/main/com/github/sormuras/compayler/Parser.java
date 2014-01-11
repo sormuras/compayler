@@ -53,7 +53,7 @@ public class Parser implements DescriptionFactory {
       throw new IllegalStateException("Couldn't retrieve interface for name: " + configuration.getInterfaceName());
 
     for (JavaTypeVariable<JavaGenericDeclaration> typeVar : javaClass.getTypeParameters()) {
-      configuration.getInterfaceTypeVariables().add(typeVar.getName());
+      configuration.getTypeParametes().add(typeVar.getName());
     }
 
     Map<String, Boolean> uniques = buildNameIsUniqueMap(javaClass);
