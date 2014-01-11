@@ -96,6 +96,14 @@ public class Loader {
     }
   }
 
+  public static ClassLoader compile(Class<?> interfaceClass) {
+    Configuration configuration = new Configuration(interfaceClass.getCanonicalName());
+    Scribe scribe = new Scribe(configuration);
+    List<Description> descriptions = scribe.createDescriptions();
+    Source source = scribe.writeDecorator(descriptions);
+    return compile(Arrays.asList(source), Thread.currentThread().getContextClassLoader());
+  }
+
   public static ClassLoader compile(Iterable<Source> sources, ClassLoader parent) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
@@ -108,18 +116,15 @@ public class Loader {
     return fileManager.getClassLoader(null);
   }
 
-  public static ClassLoader compile(Class<?> interfaceClass) {
+  public static <P> P load(Class<P> interfaceClass, P prevalentSystem) {
     Configuration configuration = new Configuration(interfaceClass.getCanonicalName());
-
-    Scribe scribe = new Scribe(configuration);
-    // Parser factory = new Parser(configuration);
-    // String base = "http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/";
-    // factory.getJavaProjectBuilder().addSource(URI.create(base + "java/lang/Appendable.java/?v=source").toURL());
-    List<Description> descriptions = scribe.createDescriptions();
-
-    Source source = scribe.writeDecorator(descriptions);
-    return compile(Arrays.asList(source), Thread.currentThread().getContextClassLoader());
-
+    ClassLoader classLoader = compile(interfaceClass);
+    Prevayler<P> prevayler = newPrevayler(prevalentSystem, classLoader);
+    try {
+      return load(classLoader, configuration.getTargetPackage() + "." + configuration.getDecoratorName(), prevayler);
+    } catch (Exception e) {
+      throw new Error(e);
+    }
   }
 
   @SuppressWarnings("unchecked")

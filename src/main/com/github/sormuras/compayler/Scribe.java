@@ -115,7 +115,7 @@ public class Scribe implements DescriptionFactory, DescriptionWriter {
     lines.add("/**");
     lines.add(" * @compayled " + now());
     lines.add(" */");
-    lines.add("public class " + className + typeVariables + " implements " + interfaceName + ", java.lang.AutoCloseable {");
+    lines.add("public class " + className + typeVariables + " implements " + interfaceName + ", java.io.Closeable {");
 
     // fields
     lines.add("");
