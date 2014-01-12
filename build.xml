@@ -44,11 +44,8 @@
 
 		<java classpathref="junit.class.path" classname="com.github.sormuras.compayler.Compayler">
 			<arg value="src/generated" />
-			<arg value="java.lang.Appendable" />
 			<arg value="java.lang.CharSequence" />
-			<arg value="java.lang.Runnable" />
 			<arg value="http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/lang/Comparable.java/?v=source" />
-			<arg value="http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/util/Collection.java/?v=source" />
 		</java>
 
 		<mkdir dir="${dir.out}/junit/classes" />
