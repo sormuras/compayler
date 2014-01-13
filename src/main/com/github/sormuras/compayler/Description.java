@@ -386,7 +386,7 @@ public class Description {
 
   @Override
   public String toString() {
-    StringBuilder builder = configuration.getStringBuilder();
+    StringBuilder builder = new StringBuilder();
     builder.append("Description [");
     builder.append("name=").append(getName());
     builder.append(", className=").append(getClassName());
