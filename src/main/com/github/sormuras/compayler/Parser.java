@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.github.sormuras.compayler.Compayler.Configuration;
 import com.github.sormuras.compayler.Compayler.DescriptionFactory;
@@ -53,7 +55,16 @@ public class Parser implements DescriptionFactory {
       throw new IllegalStateException("Couldn't retrieve interface for name: " + configuration.getInterfaceName());
 
     for (JavaTypeVariable<JavaGenericDeclaration> typeVar : javaClass.getTypeParameters()) {
-      configuration.getTypeParametes().add(typeVar.getName());
+      configuration.getTypeParameters().add(typeVar.getName());
+    }
+    
+    Matcher queryNameMatcher = Pattern.compile("123").matcher("");
+    Matcher directNameMatcher = Pattern.compile("123").matcher("");
+
+    DocletTag classCompaylerTag = javaClass.getTagByName("compayler");
+    if (classCompaylerTag != null) {
+      queryNameMatcher = Pattern.compile(classCompaylerTag.getNamedParameter("queryNames")).matcher("");
+      directNameMatcher = Pattern.compile(classCompaylerTag.getNamedParameter("directNames")).matcher("");
     }
 
     Map<String, Boolean> uniques = buildNameIsUniqueMap(javaClass);
@@ -84,6 +95,12 @@ public class Parser implements DescriptionFactory {
       Signature signature = new Signature(name, returnType, fields, throwables, uniques.get(name));
       Description description = new Description(configuration, signature);
       // update mode, if possible
+      if (queryNameMatcher.reset(name).matches()) {
+        description.getVariable().setMode(Mode.QUERY);
+      }
+      if (directNameMatcher.reset(name).matches()) {
+        description.getVariable().setMode(Mode.DIRECT);
+      }
       DocletTag compaylerTag = method.getTagByName("compayler");
       if (compaylerTag != null) {
         String mode = compaylerTag.getNamedParameter("mode");

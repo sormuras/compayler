@@ -207,7 +207,7 @@ public class Description {
     public String generateClassNameWithTypeVariables() {
       StringBuilder typeVarBuilder = new StringBuilder();
       typeVarBuilder.append(generateClassName());
-      if (!configuration.getTypeParametes().isEmpty() || !getVariable().getTypeParameters().isEmpty()) {
+      if (!configuration.getTypeParameters().isEmpty() || !getVariable().getTypeParameters().isEmpty()) {
         typeVarBuilder.append(configuration.getTypeParameterParenthesis(getVariable().getTypeParameters()));
       }
       return typeVarBuilder.toString();

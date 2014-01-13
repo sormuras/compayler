@@ -3,6 +3,7 @@ package com.github.sormuras.compayler;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
@@ -84,10 +85,10 @@ public class CompaylerTest {
     Class<?> decoratorClass = loader.loadClass("appendable.AppendableDecorator");
     Appendable appendable = (Appendable) decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
     testAppendable(appendable);
-    
+
     testAppendable(decorate(Appendable.class, "appendable.AppendableDecorator", new StringBuilder()));
   }
-  
+
   @SuppressWarnings("unchecked")
   private <P> P decorate(Class<P> interfaceClass, String decoratorClassName, P prevalentSystem) throws Exception {
     ClassLoader loader = Loader.compile(interfaceClass);
@@ -133,5 +134,14 @@ public class CompaylerTest {
   // Assert.assertSame(testable, testable.direct());
   // Assert.assertNotEquals(0L, testable.executionTime(new Date(0L)));
   // }
+
+  @Test
+  public void testParsable() throws Exception {
+    Configuration configuration = new Configuration(Parsable.class.getCanonicalName());
+    Parser parser = new Parser(configuration);
+    parser.getJavaProjectBuilder().addSource(new File("src/test/" + configuration.getInterfaceName().replace('.', '/') + ".java"));
+    List<Description> descriptions = parser.createDescriptions();
+    System.out.println(descriptions);
+  }
 
 }

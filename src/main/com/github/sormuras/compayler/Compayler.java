@@ -104,14 +104,14 @@ public class Compayler {
     }
 
     public String getTypeParameterParenthesis() {
-      return merge(getTypeParametes());
+      return merge(getTypeParameters());
     }
 
     public String getTypeParameterParenthesis(List<String> moreTypeParameters) {
-      return merge(getTypeParametes(), moreTypeParameters);
+      return merge(getTypeParameters(), moreTypeParameters);
     }
 
-    public List<String> getTypeParametes() {
+    public List<String> getTypeParameters() {
       return interfaceTypeVariables;
     }
 
