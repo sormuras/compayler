@@ -64,7 +64,7 @@ public class CompaylerTest {
     // System.out.println(source.getCharContent(true));
   }
 
-  public void testAppendable(Appendable appendable) throws Exception {
+  private void testAppendable(Appendable appendable) throws Exception {
     appendable.append('a').append("b").append("abc", 2, 3);
     assertEquals("abc", appendable.toString());
     if (appendable instanceof Closeable) {
