@@ -2,6 +2,20 @@ package de.sormuras.compayler;
 
 public class Configuration {
 
+  /**
+   * Given the fully qualified name for an interface this method attempts to locate, load, and link the interface.
+   */
+  public static Class<?> load(String name, ClassLoader loader, Class<?> fallBack) {
+    try {
+      return Class.forName(name, true, loader);
+    } catch (ClassNotFoundException e) {
+      return fallBack;
+    }
+  }
+
+  /**
+   * Build simple class name using '$' signs for nested classes.
+   */
   public static String simple(Class<?> c) {
     if (!c.isMemberClass())
       return c.getSimpleName();
@@ -32,9 +46,9 @@ public class Configuration {
   private String decoratorPackage;
 
   /**
-   * null or <i>interface java.lang.Appendable.class</i>
+   * void.class or <i>interface java.lang.Appendable.class</i>
    */
-  private Class<?> interfaceClass;
+  private final Class<?> interfaceClass;
 
   /**
    * "Appendable"
@@ -48,7 +62,7 @@ public class Configuration {
 
   public Configuration(Class<?> interfaceClass) {
     this(interfaceClass.getPackage().getName(), simple(interfaceClass));
-    this.interfaceClass = interfaceClass;
+    assert this.interfaceClass == interfaceClass;
   }
 
   /**
@@ -68,15 +82,17 @@ public class Configuration {
    *          "Appendable"
    */
   public Configuration(String interfacePackage, String interfaceName) {
+    this(interfacePackage, interfaceName, Thread.currentThread().getContextClassLoader());
+  }
+
+  public Configuration(String interfacePackage, String interfaceName, ClassLoader loader) {
     this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
+    this.interfaceClass = load(getInterfaceClassName(), loader, void.class);
     setDecoratorPackage(interfacePackage.startsWith("java.") ? interfaceName.toLowerCase() : interfacePackage);
     setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
   }
 
-  /**
-   * @return "com.any.api.AppendableDecorator"
-   */
   public String getDecoratorClassName() {
     return decoratorPackage + '.' + decoratorName;
   }
@@ -89,16 +105,10 @@ public class Configuration {
     return decoratorPackage;
   }
 
-  public Class<?> getInterfaceClass() throws ClassNotFoundException {
-    if (interfaceClass == null) {
-      interfaceClass = Class.forName(getInterfaceClassName());
-    }
+  public Class<?> getInterfaceClass() {
     return interfaceClass;
   }
 
-  /**
-   * @return "java.lang.Appendable"
-   */
   public String getInterfaceClassName() {
     return interfacePackage + '.' + interfaceName;
   }

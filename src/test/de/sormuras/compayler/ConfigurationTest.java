@@ -16,12 +16,12 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testConstructorWithAppendable() throws Exception {
+  public void testConstructorWithAppendable() {
     testConstructorWithAppendable(new Configuration("java.lang.Appendable"));
     testConstructorWithAppendable(new Configuration(Appendable.class));
   }
 
-  private void testConstructorWithAppendable(Configuration configuration) throws Exception {
+  private void testConstructorWithAppendable(Configuration configuration) {
     assertEquals("java.lang", configuration.getInterfacePackage());
     assertEquals("Appendable", configuration.getInterfaceName());
     assertEquals("java.lang.Appendable", configuration.getInterfaceClassName());
@@ -32,12 +32,12 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testConstructorWithDeeply() throws Exception {
+  public void testConstructorWithDeeply() {
     testConstructorWithDeeply(new Configuration("de.sormuras.compayler.Apis$Nested$Deeply"));
     testConstructorWithDeeply(new Configuration(Deeply.class));
   }
 
-  private void testConstructorWithDeeply(Configuration configuration) throws Exception {
+  private void testConstructorWithDeeply(Configuration configuration) {
     assertEquals("de.sormuras.compayler", configuration.getInterfacePackage());
     assertEquals("Apis$Nested$Deeply", configuration.getInterfaceName());
     assertEquals("de.sormuras.compayler.Apis$Nested$Deeply", configuration.getInterfaceClassName());
@@ -48,12 +48,12 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testConstructorWithNested() throws Exception {
+  public void testConstructorWithNested() {
     testConstructorWithNested(new Configuration("de.sormuras.compayler.Apis$Nested"));
     testConstructorWithNested(new Configuration(Nested.class));
   }
 
-  private void testConstructorWithNested(Configuration configuration) throws Exception {
+  private void testConstructorWithNested(Configuration configuration) {
     assertEquals("de.sormuras.compayler", configuration.getInterfacePackage());
     assertEquals("Apis$Nested", configuration.getInterfaceName());
     assertEquals("de.sormuras.compayler.Apis$Nested", configuration.getInterfaceClassName());
@@ -64,12 +64,12 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testConstructorWithParsable() throws Exception {
+  public void testConstructorWithParsable() {
     testConstructorWithParsable(new Configuration("de.sormuras.compayler.Parsable"));
     testConstructorWithParsable(new Configuration(Parsable.class));
   }
 
-  private void testConstructorWithParsable(Configuration configuration) throws Exception {
+  private void testConstructorWithParsable(Configuration configuration) {
     assertEquals("de.sormuras.compayler", configuration.getInterfacePackage());
     assertEquals("Parsable", configuration.getInterfaceName());
     assertEquals("de.sormuras.compayler.Parsable", configuration.getInterfaceClassName());
