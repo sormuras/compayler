@@ -2,32 +2,23 @@ package de.sormuras.compayler;
 
 public class Configuration {
 
-  /**
-   * Strip package name and return simple class name.
-   */
-  public static String simple(String name) {
-    return name.substring(name.lastIndexOf('.') + 1);
-  }
-
-  public static String stack(Class<?> c) {
+  public static String simple(Class<?> c) {
     if (!c.isMemberClass())
       return c.getSimpleName();
     StringBuilder builder = new StringBuilder();
     builder.append(c.getSimpleName());
-    c = c.getEnclosingClass();
-    while (c != null) {
-      builder.insert(0, '$');
-      builder.insert(0, c.getSimpleName());
-      c = c.getEnclosingClass();
+    while ((c = c.getEnclosingClass()) != null) {
+      builder.insert(0, '$').insert(0, c.getSimpleName());
     }
     return builder.toString();
   }
 
   /**
-   * Strip and return package name.
+   * Split package and simple class name and return one.
    */
-  public static String strip(String name) {
-    return name.substring(0, name.lastIndexOf('.'));
+  public static String simple(String name, boolean returnSimpleClassName) {
+    int index = name.lastIndexOf('.');
+    return returnSimpleClassName ? name.substring(index + 1) : name.substring(0, index);
   }
 
   /**
@@ -41,17 +32,23 @@ public class Configuration {
   private String decoratorPackage;
 
   /**
+   * null or <i>interface java.lang.Appendable.class</i>
+   */
+  private Class<?> interfaceClass;
+
+  /**
    * "Appendable"
    */
-  private String interfaceName;
+  private final String interfaceName;
 
   /**
    * "java.lang"
    */
-  private String interfacePackage;
+  private final String interfacePackage;
 
   public Configuration(Class<?> interfaceClass) {
-    this(interfaceClass.getPackage().getName(), stack(interfaceClass));
+    this(interfaceClass.getPackage().getName(), simple(interfaceClass));
+    this.interfaceClass = interfaceClass;
   }
 
   /**
@@ -60,7 +57,7 @@ public class Configuration {
    *          "java.lang.Appendable"
    */
   public Configuration(String interfaceName) {
-    this(strip(interfaceName), simple(interfaceName));
+    this(simple(interfaceName, false), simple(interfaceName, true));
   }
 
   /**
@@ -73,8 +70,8 @@ public class Configuration {
   public Configuration(String interfacePackage, String interfaceName) {
     this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
-    this.decoratorPackage = interfacePackage.equals("java.lang") ? interfaceName.toLowerCase() : interfacePackage;
-    this.decoratorName = interfaceName + "Decorator";
+    setDecoratorPackage(interfacePackage.startsWith("java.") ? interfaceName.toLowerCase() : interfacePackage);
+    setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
   }
 
   /**
@@ -92,6 +89,13 @@ public class Configuration {
     return decoratorPackage;
   }
 
+  public Class<?> getInterfaceClass() throws ClassNotFoundException {
+    if (interfaceClass == null) {
+      interfaceClass = Class.forName(getInterfaceClassName());
+    }
+    return interfaceClass;
+  }
+
   /**
    * @return "java.lang.Appendable"
    */
@@ -105,6 +109,14 @@ public class Configuration {
 
   public String getInterfacePackage() {
     return interfacePackage;
+  }
+
+  public void setDecoratorName(String decoratorName) {
+    this.decoratorName = decoratorName;
+  }
+
+  public void setDecoratorPackage(String decoratorPackage) {
+    this.decoratorPackage = decoratorPackage;
   }
 
 }

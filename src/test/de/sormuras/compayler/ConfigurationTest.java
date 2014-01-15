@@ -1,10 +1,11 @@
 package de.sormuras.compayler;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import de.sormuras.compayler.Apis.Nested;
+import de.sormuras.compayler.Apis.Nested.Deeply;
 
 public class ConfigurationTest {
 
@@ -15,37 +16,64 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testConstructor() {
+  public void testConstructorWithAppendable() throws Exception {
     testConstructorWithAppendable(new Configuration("java.lang.Appendable"));
     testConstructorWithAppendable(new Configuration(Appendable.class));
-    testConstructorWithParsable(new Configuration("de.sormuras.compayler.Parsable"));
-    testConstructorWithParsable(new Configuration(Parsable.class));
-    testConstructorWithNested(new Configuration("de.sormuras.compayler.Apis$Nested"));
-    testConstructorWithNested(new Configuration(Nested.class));
   }
 
-  private void testConstructorWithAppendable(Configuration configuration) {
+  private void testConstructorWithAppendable(Configuration configuration) throws Exception {
     assertEquals("java.lang", configuration.getInterfacePackage());
     assertEquals("Appendable", configuration.getInterfaceName());
     assertEquals("java.lang.Appendable", configuration.getInterfaceClassName());
+    assertSame(Appendable.class, configuration.getInterfaceClass());
     assertEquals("appendable", configuration.getDecoratorPackage());
     assertEquals("AppendableDecorator", configuration.getDecoratorName());
     assertEquals("appendable.AppendableDecorator", configuration.getDecoratorClassName());
   }
 
-  private void testConstructorWithNested(Configuration configuration) {
+  @Test
+  public void testConstructorWithDeeply() throws Exception {
+    testConstructorWithDeeply(new Configuration("de.sormuras.compayler.Apis$Nested$Deeply"));
+    testConstructorWithDeeply(new Configuration(Deeply.class));
+  }
+
+  private void testConstructorWithDeeply(Configuration configuration) throws Exception {
+    assertEquals("de.sormuras.compayler", configuration.getInterfacePackage());
+    assertEquals("Apis$Nested$Deeply", configuration.getInterfaceName());
+    assertEquals("de.sormuras.compayler.Apis$Nested$Deeply", configuration.getInterfaceClassName());
+    assertSame(Deeply.class, configuration.getInterfaceClass());
+    assertEquals("de.sormuras.compayler", configuration.getDecoratorPackage());
+    assertEquals("ApisNestedDeeplyDecorator", configuration.getDecoratorName());
+    assertEquals("de.sormuras.compayler.ApisNestedDeeplyDecorator", configuration.getDecoratorClassName());
+  }
+
+  @Test
+  public void testConstructorWithNested() throws Exception {
+    testConstructorWithNested(new Configuration("de.sormuras.compayler.Apis$Nested"));
+    testConstructorWithNested(new Configuration(Nested.class));
+  }
+
+  private void testConstructorWithNested(Configuration configuration) throws Exception {
     assertEquals("de.sormuras.compayler", configuration.getInterfacePackage());
     assertEquals("Apis$Nested", configuration.getInterfaceName());
     assertEquals("de.sormuras.compayler.Apis$Nested", configuration.getInterfaceClassName());
+    assertSame(Nested.class, configuration.getInterfaceClass());
     assertEquals("de.sormuras.compayler", configuration.getDecoratorPackage());
-    assertEquals("Apis$NestedDecorator", configuration.getDecoratorName());
-    assertEquals("de.sormuras.compayler.Apis$NestedDecorator", configuration.getDecoratorClassName());
+    assertEquals("ApisNestedDecorator", configuration.getDecoratorName());
+    assertEquals("de.sormuras.compayler.ApisNestedDecorator", configuration.getDecoratorClassName());
   }
 
-  private void testConstructorWithParsable(Configuration configuration) {
+  @Test
+  public void testConstructorWithParsable() throws Exception {
+    testConstructorWithParsable(new Configuration("de.sormuras.compayler.Parsable"));
+    testConstructorWithParsable(new Configuration(Parsable.class));
+  }
+
+  private void testConstructorWithParsable(Configuration configuration) throws Exception {
     assertEquals("de.sormuras.compayler", configuration.getInterfacePackage());
     assertEquals("Parsable", configuration.getInterfaceName());
     assertEquals("de.sormuras.compayler.Parsable", configuration.getInterfaceClassName());
+    assertSame(Parsable.class, configuration.getInterfaceClass());
     assertEquals("de.sormuras.compayler", configuration.getDecoratorPackage());
     assertEquals("ParsableDecorator", configuration.getDecoratorName());
     assertEquals("de.sormuras.compayler.ParsableDecorator", configuration.getDecoratorClassName());
