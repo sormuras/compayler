@@ -1,8 +1,9 @@
 package de.sormuras.compayler;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Date;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.prevayler.Prevayler;
 import org.prevayler.TransactionWithQuery;
@@ -11,56 +12,60 @@ import com.github.sormuras.compayler.VolatilePrevayler;
 
 public class PrevaylerSupportTest {
 
-  private static class AppendChar implements TransactionWithQuery<Appendable, Appendable> {
+  private interface AppendableExecutable {
 
-    private static final long serialVersionUID = 1L;
+    class AppendChar implements TransactionWithQuery<Appendable, Appendable> {
 
-    private final char c;
+      private static final long serialVersionUID = 1L;
 
-    private AppendChar(char c) {
-      this.c = c;
+      private final char c;
+
+      private AppendChar(char c) {
+        this.c = c;
+      }
+
+      @Override
+      public Appendable executeAndQuery(Appendable prevalentSystem, Date executionTime) throws Exception {
+        return prevalentSystem.append(c);
+      }
+
     }
 
-    @Override
-    public Appendable executeAndQuery(Appendable prevalentSystem, Date executionTime) throws Exception {
-      return prevalentSystem.append(c);
+    class AppendCharSequence implements TransactionWithQuery<Appendable, Appendable> {
+
+      private static final long serialVersionUID = 1L;
+
+      private final CharSequence csq;
+
+      private AppendCharSequence(CharSequence csq) {
+        this.csq = csq;
+      }
+
+      @Override
+      public Appendable executeAndQuery(Appendable prevalentSystem, Date executionTime) throws Exception {
+        return prevalentSystem.append(csq);
+      }
+
     }
 
-  }
+    class AppendCharSequenceStartEnd implements TransactionWithQuery<Appendable, Appendable> {
 
-  private static class AppendCharSequence implements TransactionWithQuery<Appendable, Appendable> {
+      private static final long serialVersionUID = 1L;
 
-    private static final long serialVersionUID = 1L;
+      private final CharSequence csq;
+      private final int start, end;
 
-    private final CharSequence csq;
+      private AppendCharSequenceStartEnd(CharSequence csq, int start, int end) {
+        this.csq = csq;
+        this.start = start;
+        this.end = end;
+      }
 
-    private AppendCharSequence(CharSequence csq) {
-      this.csq = csq;
-    }
+      @Override
+      public Appendable executeAndQuery(Appendable prevalentSystem, Date executionTime) throws Exception {
+        return prevalentSystem.append(csq, start, end);
+      }
 
-    @Override
-    public Appendable executeAndQuery(Appendable prevalentSystem, Date executionTime) throws Exception {
-      return prevalentSystem.append(csq);
-    }
-
-  }
-
-  private static class AppendCharSequenceStartEnd implements TransactionWithQuery<Appendable, Appendable> {
-
-    private static final long serialVersionUID = 1L;
-
-    private final CharSequence csq;
-    private final int start, end;
-
-    private AppendCharSequenceStartEnd(CharSequence csq, int start, int end) {
-      this.csq = csq;
-      this.start = start;
-      this.end = end;
-    }
-
-    @Override
-    public Appendable executeAndQuery(Appendable prevalentSystem, Date executionTime) throws Exception {
-      return prevalentSystem.append(csq, start, end);
     }
 
   }
@@ -69,10 +74,10 @@ public class PrevaylerSupportTest {
   public void testVolatilePrevayler() throws Exception {
     StringBuilder builder = new StringBuilder();
     Prevayler<StringBuilder> prevayler = new VolatilePrevayler<>(builder);
-    prevayler.execute(new AppendChar('0'));
-    prevayler.execute(new AppendCharSequence("123"));
-    prevayler.execute(new AppendCharSequenceStartEnd("123456789", 3, 6));
-    Assert.assertEquals("0123456", builder.toString());
+    prevayler.execute(new AppendableExecutable.AppendChar('0'));
+    prevayler.execute(new AppendableExecutable.AppendCharSequence("123"));
+    prevayler.execute(new AppendableExecutable.AppendCharSequenceStartEnd("123456789", 3, 6));
+    assertEquals("0123456", builder.toString());
     prevayler.takeSnapshot();
   }
 

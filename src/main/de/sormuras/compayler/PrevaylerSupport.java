@@ -34,7 +34,7 @@ public class PrevaylerSupport {
 
   public static class VolatilePrevayler<P> implements Prevayler<P> {
 
-    private final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(0xFFFF);
+    private final ByteArrayOutputStream byteArrayOutputStream;
     private final ClassLoader classLoader;
     private final Clock clock;
     private final P prevalentSystem;
@@ -44,9 +44,10 @@ public class PrevaylerSupport {
     }
 
     public VolatilePrevayler(P prevalentSystem, ClassLoader classLoader) {
+      this.prevalentSystem = prevalentSystem;
       this.classLoader = classLoader;
       this.clock = new MachineClock();
-      this.prevalentSystem = prevalentSystem;
+      this.byteArrayOutputStream = new ByteArrayOutputStream(0xFFFF);
     }
 
     @Override
@@ -123,10 +124,10 @@ public class PrevaylerSupport {
   }
 
   public static <P> Prevayler<P> createPrevayler(P prevalentSystem, ClassLoader loader) throws Exception {
-    return createPrevayler(prevalentSystem, loader, new File("PrevalenceBase"));
+    return createPrevayler(prevalentSystem, loader, "PrevalenceBase");
   }
 
-  public static <P> Prevayler<P> createPrevayler(P prevalentSystem, ClassLoader loader, File folder) throws Exception {
+  public static <P> Prevayler<P> createPrevayler(P prevalentSystem, ClassLoader loader, String folder) throws Exception {
     PrevaylerDirectory directory = new PrevaylerDirectory(folder);
     Monitor monitor = new SimpleMonitor(System.err);
     Journal journal = new PersistentJournal(directory, 0, 0, true, "journal", monitor);

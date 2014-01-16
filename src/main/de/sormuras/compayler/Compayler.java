@@ -1,11 +1,22 @@
 package de.sormuras.compayler;
 
-public class Configuration {
+import org.prevayler.Prevayler;
+
+public class Compayler {
+
+  public static <P> P decorate(Class<P> interfaceClass, P prevalentSystem, String directory) throws Exception {
+    Compayler compayler = new Compayler(interfaceClass);
+    ClassLoader loader = Compayler.class.getClassLoader();
+    Prevayler<P> prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
+    @SuppressWarnings("unchecked")
+    Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(compayler.getDecoratorClassName());
+    return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
+  }
 
   /**
    * Given the fully qualified name for an interface this method attempts to locate, load, and link the interface.
    */
-  public static Class<?> load(String name, ClassLoader loader, Class<?> fallBack) {
+  private static Class<?> load(String name, ClassLoader loader, Class<?> fallBack) {
     try {
       return Class.forName(name, true, loader);
     } catch (ClassNotFoundException e) {
@@ -16,7 +27,7 @@ public class Configuration {
   /**
    * Build simple class name using '$' signs for nested classes.
    */
-  public static String simple(Class<?> c) {
+  private static String simple(Class<?> c) {
     if (!c.isMemberClass())
       return c.getSimpleName();
     StringBuilder builder = new StringBuilder();
@@ -30,7 +41,7 @@ public class Configuration {
   /**
    * Split package and simple class name and return one.
    */
-  public static String simple(String name, boolean returnSimpleClassName) {
+  private static String simple(String name, boolean returnSimpleClassName) {
     int index = name.lastIndexOf('.');
     return returnSimpleClassName ? name.substring(index + 1) : name.substring(0, index);
   }
@@ -60,9 +71,14 @@ public class Configuration {
    */
   private final String interfacePackage;
 
-  public Configuration(Class<?> interfaceClass) {
+  /**
+   * @param interfaceClass
+   *          the runtime interface representation
+   */
+  public Compayler(Class<?> interfaceClass) {
     this(interfaceClass.getPackage().getName(), simple(interfaceClass));
     assert this.interfaceClass == interfaceClass;
+    assert interfaceClass.isInterface();
   }
 
   /**
@@ -70,7 +86,7 @@ public class Configuration {
    * @param interfaceName
    *          "java.lang.Appendable"
    */
-  public Configuration(String interfaceName) {
+  public Compayler(String interfaceName) {
     this(simple(interfaceName, false), simple(interfaceName, true));
   }
 
@@ -81,11 +97,19 @@ public class Configuration {
    * @param interfaceName
    *          "Appendable"
    */
-  public Configuration(String interfacePackage, String interfaceName) {
+  public Compayler(String interfacePackage, String interfaceName) {
     this(interfacePackage, interfaceName, Thread.currentThread().getContextClassLoader());
   }
 
-  public Configuration(String interfacePackage, String interfaceName, ClassLoader loader) {
+  /**
+   * @param interfacePackage
+   *          "java.lang"
+   * @param interfaceName
+   *          "Appendable"
+   * @param loader
+   *          the class loader that is requested loading the interface class
+   */
+  public Compayler(String interfacePackage, String interfaceName, ClassLoader loader) {
     this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
     this.interfaceClass = load(getInterfaceClassName(), loader, void.class);
