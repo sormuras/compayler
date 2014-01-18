@@ -4,26 +4,6 @@ import org.prevayler.Prevayler;
 
 public class Compayler {
 
-  public static <P> P decorate(Class<P> interfaceClass, P prevalentSystem, String directory) throws Exception {
-    Compayler compayler = new Compayler(interfaceClass);
-    ClassLoader loader = Compayler.class.getClassLoader();
-    Prevayler<P> prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
-    @SuppressWarnings("unchecked")
-    Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(compayler.getDecoratorClassName());
-    return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
-  }
-
-  /**
-   * Given the fully qualified name for an interface this method attempts to locate, load, and link the interface.
-   */
-  private static Class<?> load(String name, ClassLoader loader, Class<?> fallBack) {
-    try {
-      return Class.forName(name, true, loader);
-    } catch (ClassNotFoundException e) {
-      return fallBack;
-    }
-  }
-
   /**
    * Build simple class name using '$' signs for nested classes.
    */
@@ -60,6 +40,11 @@ public class Compayler {
    * void.class or <i>interface java.lang.Appendable.class</i>
    */
   private final Class<?> interfaceClass;
+
+  /**
+   * Interface class loader.
+   */
+  private final ClassLoader interfaceLoader;
 
   /**
    * "Appendable"
@@ -106,15 +91,35 @@ public class Compayler {
    *          "java.lang"
    * @param interfaceName
    *          "Appendable"
-   * @param loader
-   *          the class loader that is requested loading the interface class
+   * @param interfaceLoader
+   *          the class loader that is requested loading the interface class and used as parent for compilation
    */
-  public Compayler(String interfacePackage, String interfaceName, ClassLoader loader) {
+  public Compayler(String interfacePackage, String interfaceName, ClassLoader interfaceLoader) {
     this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
-    this.interfaceClass = load(getInterfaceClassName(), loader, void.class);
+    this.interfaceLoader = interfaceLoader;
+    this.interfaceClass = getClassForInterfaceClassName();
     setDecoratorPackage(interfacePackage.startsWith("java.") ? interfaceName.toLowerCase() : interfacePackage);
     setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
+  }
+
+  public <P> P decorate(P prevalentSystem, String directory) throws Exception {
+    ClassLoader loader = getInterfaceLoader(); // TODO compile()
+    Prevayler<P> prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
+    @SuppressWarnings("unchecked")
+    Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(getDecoratorClassName());
+    return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
+  }
+
+  /**
+   * Attempts to locate, load, and link the interface by it's name.
+   */
+  private Class<?> getClassForInterfaceClassName() {
+    try {
+      return Class.forName(getInterfaceClassName(), true, interfaceLoader);
+    } catch (ClassNotFoundException e) {
+      return void.class;
+    }
   }
 
   public String getDecoratorClassName() {
@@ -135,6 +140,10 @@ public class Compayler {
 
   public String getInterfaceClassName() {
     return interfacePackage + '.' + interfaceName;
+  }
+
+  public ClassLoader getInterfaceLoader() {
+    return interfaceLoader;
   }
 
   public String getInterfaceName() {
