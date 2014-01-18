@@ -105,7 +105,9 @@ public class Compayler {
 
   public <P> P decorate(P prevalentSystem, String directory) throws Exception {
     ClassLoader loader = getInterfaceLoader(); // TODO compile()
-    Prevayler<P> prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
+    Prevayler<P> prevayler = new PrevaylerSupport.VolatilePrevayler<>(prevalentSystem, loader);
+    if (directory != null)
+      prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
     @SuppressWarnings("unchecked")
     Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(getDecoratorClassName());
     return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
