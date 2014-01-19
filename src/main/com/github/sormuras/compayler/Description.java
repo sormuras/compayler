@@ -116,7 +116,6 @@ public class Description {
       builder.append(getConfiguration().getInterfaceName());
       builder.append(getConfiguration().getTypeParameterParenthesis());
       if (kind != Kind.TRANSACTION) {
-        assert getReturnType().equals("void");
         builder.append(',').append(' ').append(getReturnWrap());
       }
       builder.append('>');
