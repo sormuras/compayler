@@ -5,25 +5,42 @@ import org.prevayler.Prevayler;
 public class Compayler {
 
   /**
-   * Build simple class name using '$' signs for nested classes.
+   * Helper and utility functions.
    */
-  private static String simple(Class<?> c) {
-    if (!c.isMemberClass())
-      return c.getSimpleName();
-    StringBuilder builder = new StringBuilder();
-    builder.append(c.getSimpleName());
-    while ((c = c.getEnclosingClass()) != null) {
-      builder.insert(0, '$').insert(0, c.getSimpleName());
-    }
-    return builder.toString();
-  }
+  private static class Tool {
 
-  /**
-   * Split package and simple class name and return one.
-   */
-  private static String simple(String name, boolean returnSimpleClassName) {
-    int index = name.lastIndexOf('.');
-    return returnSimpleClassName ? name.substring(index + 1) : name.substring(0, index);
+    /**
+     * Attempts to locate, load, and link the interface by it's name.
+     */
+    private static Class<?> load(String name, ClassLoader loader) {
+      try {
+        return Class.forName(name, true, loader);
+      } catch (ClassNotFoundException e) {
+        return void.class;
+      }
+    }
+
+    /**
+     * Build simple class name using '$' signs for nested classes.
+     */
+    private static String simple(Class<?> c) {
+      if (!c.isMemberClass())
+        return c.getSimpleName();
+      StringBuilder builder = new StringBuilder();
+      builder.append(c.getSimpleName());
+      while ((c = c.getEnclosingClass()) != null) {
+        builder.insert(0, '$').insert(0, c.getSimpleName());
+      }
+      return builder.toString();
+    }
+
+    /**
+     * Split package and simple class name and return one.
+     */
+    private static String simple(String name, boolean returnSimpleClassName) {
+      int index = name.lastIndexOf('.');
+      return returnSimpleClassName ? name.substring(index + 1) : name.substring(0, index);
+    }
   }
 
   /**
@@ -61,7 +78,7 @@ public class Compayler {
    *          the runtime interface representation
    */
   public Compayler(Class<?> interfaceClass) {
-    this(interfaceClass.getPackage().getName(), simple(interfaceClass));
+    this(interfaceClass.getPackage().getName(), Tool.simple(interfaceClass));
     assert this.interfaceClass == interfaceClass;
     assert interfaceClass.isInterface();
   }
@@ -72,7 +89,7 @@ public class Compayler {
    *          "java.lang.Appendable"
    */
   public Compayler(String interfaceName) {
-    this(simple(interfaceName, false), simple(interfaceName, true));
+    this(Tool.simple(interfaceName, false), Tool.simple(interfaceName, true));
   }
 
   /**
@@ -98,30 +115,29 @@ public class Compayler {
     this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
     this.interfaceLoader = interfaceLoader;
-    this.interfaceClass = getClassForInterfaceClassName();
+    this.interfaceClass = Tool.load(getInterfaceClassName(), getInterfaceLoader());
     setDecoratorPackage(interfacePackage.startsWith("java.") ? interfaceName.toLowerCase() : interfacePackage);
     setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
   }
 
+  public void compile() {
+    // TODO generate decorator source file
+    // TODO comile decorator source
+    // TODO set decorator loader
+  }
+
+  public <P> P decorate(P prevalentSystem) throws Exception {
+    return decorate(prevalentSystem, "PrevalenceBase");
+  }
+
   public <P> P decorate(P prevalentSystem, String directory) throws Exception {
-    ClassLoader loader = getInterfaceLoader(); // TODO compile()
+    ClassLoader loader = getInterfaceLoader(); // TODO compile() -> getDecoratorLoader()
     Prevayler<P> prevayler = new PrevaylerSupport.VolatilePrevayler<>(prevalentSystem, loader);
     if (directory != null)
       prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
     @SuppressWarnings("unchecked")
     Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(getDecoratorClassName());
     return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
-  }
-
-  /**
-   * Attempts to locate, load, and link the interface by it's name.
-   */
-  private Class<?> getClassForInterfaceClassName() {
-    try {
-      return Class.forName(getInterfaceClassName(), true, interfaceLoader);
-    } catch (ClassNotFoundException e) {
-      return void.class;
-    }
   }
 
   public String getDecoratorClassName() {

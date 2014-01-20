@@ -30,6 +30,9 @@
 		</javac>
 		<jar destfile="${dir.out}/compayler.jar">
 			<fileset dir="${dir.out}/classes" />
+            <manifest>
+                <attribute name="Main-Class" value="com.github.sormuras.compayler.Compayler"/>
+            </manifest>
 		</jar>
 	</target>
 

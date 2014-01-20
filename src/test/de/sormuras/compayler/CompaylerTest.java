@@ -13,6 +13,7 @@ public class CompaylerTest {
   public void testClassForName() throws Exception {
     Class.forName("de.sormuras.compayler.Parsable");
     Class.forName("de.sormuras.compayler.Apis$Nested");
+    Class.forName("de.sormuras.compayler.Apis$Nested$Deeply");
   }
 
   @Test
