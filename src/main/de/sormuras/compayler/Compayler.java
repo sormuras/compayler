@@ -2,6 +2,8 @@ package de.sormuras.compayler;
 
 import org.prevayler.Prevayler;
 
+import de.sormuras.compayler.service.PrevaylerFactory;
+
 public class Compayler {
 
   /**
@@ -120,21 +122,23 @@ public class Compayler {
     setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
   }
 
-  public void compile() {
-    // TODO generate decorator source file
-    // TODO comile decorator source
-    // TODO set decorator loader
+  public void build() {
+    // TODO build decorator source file
+  }
+
+  public ClassLoader compile() {
+    // TODO compile decorator source
+    // TODO return decorator loader
+    return getInterfaceLoader();
   }
 
   public <P> P decorate(P prevalentSystem) throws Exception {
-    return decorate(prevalentSystem, "PrevalenceBase");
+    return decorate(new PrevaylerSupport.VolatilePrevaylerFactory<>(prevalentSystem));
   }
 
-  public <P> P decorate(P prevalentSystem, String directory) throws Exception {
-    ClassLoader loader = getInterfaceLoader(); // TODO compile() -> getDecoratorLoader()
-    Prevayler<P> prevayler = new PrevaylerSupport.VolatilePrevayler<>(prevalentSystem, loader);
-    if (directory != null)
-      prevayler = PrevaylerSupport.createPrevayler(prevalentSystem, loader, directory);
+  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
+    ClassLoader loader = compile();
+    Prevayler<P> prevayler = prevaylerFactory.createPrevayler(loader);
     @SuppressWarnings("unchecked")
     Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(getDecoratorClassName());
     return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);

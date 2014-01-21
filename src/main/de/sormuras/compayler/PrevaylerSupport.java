@@ -30,7 +30,24 @@ import org.prevayler.implementation.publishing.CentralPublisher;
 import org.prevayler.implementation.publishing.TransactionPublisher;
 import org.prevayler.implementation.snapshot.GenericSnapshotManager;
 
+import de.sormuras.compayler.service.PrevaylerFactory;
+
 public class PrevaylerSupport {
+
+  public static class DefaultPrevaylerFactory<P> implements PrevaylerFactory<P> {
+
+    private final P prevalentSystem;
+
+    public DefaultPrevaylerFactory(P prevalentSystem) {
+      this.prevalentSystem = prevalentSystem;
+    }
+
+    @Override
+    public Prevayler<P> createPrevayler(ClassLoader loader) throws Exception {
+      return PrevaylerSupport.createPrevayler(prevalentSystem, loader);
+    }
+
+  }
 
   public static class VolatilePrevayler<P> implements Prevayler<P> {
 
@@ -119,6 +136,21 @@ public class PrevaylerSupport {
       } catch (Exception e) {
         throw new RuntimeException("Deserialization failed!", e);
       }
+    }
+
+  }
+
+  public static class VolatilePrevaylerFactory<P> implements PrevaylerFactory<P> {
+
+    private final P prevalentSystem;
+
+    public VolatilePrevaylerFactory(P prevalentSystem) {
+      this.prevalentSystem = prevalentSystem;
+    }
+
+    @Override
+    public Prevayler<P> createPrevayler(ClassLoader loader) {
+      return new VolatilePrevayler<>(prevalentSystem, loader);
     }
 
   }
