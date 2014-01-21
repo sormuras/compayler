@@ -11,3 +11,7 @@ Prevayler Decorator Compiler
 ## On-the-fly decoration
 
 	Appendable appendable = new Compayler(Appendable.class).decorate(new StringBuilder());
+	
+### On-the-fly with custom Prevayler instance, lambda-style
+
+	Appendable appendable = new Compayler(Appendable.class).decorate(loader -> createPrevayler(new StringBuilder(), loader));
