@@ -4,14 +4,16 @@ Prevayler Decorator Compiler
 
 ## Generate decorator source 
 
-	Prevayler prevayler = PrevaylerFactory.createPrevayler(new StringBuilder());
+	Prevayler prevayler = createPrevayler(new StringBuilder());
 	Appendable appendable = new AppendableDecorator(prevayler);
 
 
 ## On-the-fly decoration
 
-	Appendable appendable = new Compayler(Appendable.class).decorate(new StringBuilder());
+	Compayler compayler = new Compayler(Appendable.class);
+	Appendable appendable = compayler.decorate(new StringBuilder());
 	
 ### On-the-fly with custom Prevayler instance, lambda-style
 
-	Appendable appendable = new Compayler(Appendable.class).decorate(loader -> PrevaylerFactory.createPrevayler(new StringBuilder(), loader));
+	Compayler compayler = new Compayler(Appendable.class);
+	Appendable appendable = compayler.decorate(loader -> createPrevayler(new StringBuilder(), loader));
