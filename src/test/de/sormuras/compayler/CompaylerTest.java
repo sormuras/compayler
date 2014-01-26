@@ -8,6 +8,13 @@ import de.sormuras.compayler.Apis.Nested;
 import de.sormuras.compayler.Apis.Nested.Deeply;
 
 public class CompaylerTest {
+  
+  @Test
+  public void test() {
+    Source source = new Compayler(Appendable.class).build();
+    System.out.println(source.getCharContent(true));
+    assertNotNull(source);
+  }
 
   @Test
   public void testClassForName() throws Exception {

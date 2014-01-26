@@ -1,8 +1,20 @@
 package de.sormuras.compayler;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.prevayler.Prevayler;
 
+import de.sormuras.compayler.model.Description;
+import de.sormuras.compayler.model.Signature;
+import de.sormuras.compayler.service.DescriptionVisitor;
 import de.sormuras.compayler.service.PrevaylerFactory;
+import de.sormuras.compayler.service.SignatureFactory;
+import de.sormuras.compayler.service.SourceFactory;
+import de.sormuras.compayler.service.impl.DefaultSignatureFactory;
+import de.sormuras.compayler.service.impl.DefaultSourceFactory;
 
 public class Compayler {
 
@@ -122,12 +134,29 @@ public class Compayler {
     setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
   }
 
-  public void build() {
-    // TODO build decorator source file
+  public Source build() {
+    List<DescriptionVisitor<Method>> visitors = Collections.emptyList();
+    return build(new DefaultSignatureFactory(), visitors, new DefaultSourceFactory());
   }
 
+  public <X> Source build(SignatureFactory<X> signatureFactory, List<DescriptionVisitor<X>> descriptionVisitors, SourceFactory sourceFactory) {
+    List<Signature<X>> signatures = signatureFactory.createSignatures(this);
+    List<Description<X>> descriptions = new ArrayList<>();
+    SignatureLoop: for (Signature<X> signature : signatures) {
+      Description<X> description = new Description<>(this, signature);
+      for (DescriptionVisitor<X> descriptionVisitor : descriptionVisitors) {
+        if (!descriptionVisitor.visit(this, description))
+          continue SignatureLoop;
+      }
+      descriptions.add(description);
+    }
+    // if (descriptions.isEmpty())
+    // throw new IllegalStateException("No descriptions available?!");
+    return sourceFactory.createSource(this, descriptions);
+  }
+
+  // TODO compile decorator source
   public ClassLoader compile() {
-    // TODO compile decorator source
     // TODO return decorator loader
     return getInterfaceLoader();
   }
