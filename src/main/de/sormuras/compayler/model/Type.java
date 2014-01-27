@@ -24,6 +24,19 @@ public class Type {
     return builder.toString();
   }
 
+  public static int dimension(Class<?> classType) {
+    int dimension = 0;
+    while (classType.isArray()) {
+      classType = classType.getComponentType();
+      dimension++;
+    }
+    return dimension;
+  }
+
+  public static Type forClass(Class<?> classType) {
+    return forName(classType.getCanonicalName(), dimension(classType));
+  }
+
   /**
    * Simple getter.
    */

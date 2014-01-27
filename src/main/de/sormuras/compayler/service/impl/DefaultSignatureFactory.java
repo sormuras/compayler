@@ -40,19 +40,6 @@ public class DefaultSignatureFactory implements SignatureFactory<Method> {
     return uniques;
   }
 
-  public static int dimension(Class<?> classType) {
-    int dimension = 0;
-    while (classType.isArray()) {
-      classType = classType.getComponentType();
-      dimension++;
-    }
-    return dimension;
-  }
-
-  public static Type buildType(Class<?> classType) {
-    return Type.forName(classType.getCanonicalName(), dimension(classType));
-  }
-
   @Override
   public List<Signature<Method>> createSignatures(Compayler compayler) {
     List<Signature<Method>> signatures = new LinkedList<>();
@@ -65,11 +52,11 @@ public class DefaultSignatureFactory implements SignatureFactory<Method> {
     for (Method method : interfaceClass.getMethods()) {
       // simple strings
       String name = method.getName();
-      Type returnType = buildType(method.getReturnType());
+      Type returnType = Type.forClass(method.getReturnType());
       // collect exception type names
       List<Type> throwables = new ArrayList<>();
       for (Class<?> exceptionType : method.getExceptionTypes())
-        throwables.add(buildType(exceptionType));
+        throwables.add(Type.forClass(exceptionType));
       // parse parameters to fields
       List<Field> fields = new ArrayList<>();
       int lastIndex = method.getParameterTypes().length - 1;
@@ -78,7 +65,7 @@ public class DefaultSignatureFactory implements SignatureFactory<Method> {
         field.setIndex(index);
         field.setName("p" + index);
         field.setTime(isExecutionTimePresent(method.getParameterAnnotations()[index]));
-        field.setType(buildType(method.getParameterTypes()[index]));
+        field.setType(Type.forClass(method.getParameterTypes()[index]));
         field.setVariable(index == lastIndex && method.isVarArgs());
         fields.add(field);
       }
