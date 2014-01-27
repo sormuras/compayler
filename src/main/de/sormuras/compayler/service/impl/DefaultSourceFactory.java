@@ -9,9 +9,24 @@ import java.util.TimeZone;
 import de.sormuras.compayler.Compayler;
 import de.sormuras.compayler.Source;
 import de.sormuras.compayler.model.Description;
+import de.sormuras.compayler.model.Type;
 import de.sormuras.compayler.service.SourceFactory;
 
 public class DefaultSourceFactory implements SourceFactory {
+
+  public static String merge(String head, String tail, String separator, Object... objects) {
+    StringBuilder builder = new StringBuilder();
+    int count = 0;
+    builder.append(head);
+    for (Object var : objects) {
+      if (count > 0)
+        builder.append(separator);
+      builder.append(var);
+      count++;
+    }
+    builder.append(tail);
+    return count > 0 ? builder.toString() : "";
+  }
 
   public static String now() {
     TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -33,10 +48,12 @@ public class DefaultSourceFactory implements SourceFactory {
   }
 
   protected void addDecoratorClass(List<Description<?>> descriptions) {
+    Type closeableType = Type.forName("java.io.Closeable");
+    Type interfaceType = Type.forName(compayler.getInterfaceClassName(), ""); // TODO Care about type arguments.
     StringBuilder line = new StringBuilder();
     line.append("public class ").append(compayler.getDecoratorName());
     line.append(" extends ").append(compayler.getSuperClassName());
-    line.append(" implements ")/* .append(compayler.getInterfaceName()).append(", ") */.append("java.io.Closeable");
+    line.append(" implements ").append(merge("", "", ", ", closeableType, interfaceType));
     line.append(" {");
     lines.add(line.toString()).pushIndention();
 
@@ -50,14 +67,6 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.popIndention().add("", "}");
   }
 
-  protected void addPackage() {
-    String name = compayler.getDecoratorPackage();
-    if (name == null || name.isEmpty())
-      return;
-    // no empty line before package declaration
-    lines.add("package " + name + ";");
-  }
-
   protected void addExecutableClass(Description<?> description) {
     lines.add("");
     lines.add("class " + description.getSignature().getName().toUpperCase() + " {");
@@ -65,6 +74,14 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.add("// " + description.getSignature().getName());
     lines.popIndention();
     lines.add("}");
+  }
+
+  protected void addPackage() {
+    String name = compayler.getDecoratorPackage();
+    if (name == null || name.isEmpty())
+      return;
+    // no empty line before package declaration
+    lines.add("package " + name + ";");
   }
 
   @Override
