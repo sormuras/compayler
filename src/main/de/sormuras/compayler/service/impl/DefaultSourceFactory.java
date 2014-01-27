@@ -12,21 +12,25 @@ import de.sormuras.compayler.model.Description;
 import de.sormuras.compayler.service.SourceFactory;
 
 public class DefaultSourceFactory implements SourceFactory {
-  
+
   public static String now() {
     TimeZone tz = TimeZone.getTimeZone("UTC");
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
     df.setTimeZone(tz);
     return df.format(new Date());
-  } 
+  }
 
   @Override
   public <X> Source createSource(Compayler compayler, List<Description<X>> descriptions) {
     Lines lines = new Lines();
-    lines.add("/**", " * Class " + compayler.getDecoratorClassName() + " generated for " + compayler.getInterfaceName() + ".", " */");
+    if (!compayler.getDecoratorPackage().isEmpty())
+      lines.add("package " + compayler.getDecoratorPackage() + ";");
+    lines.add("", "/**", " * Class " + compayler.getDecoratorClassName() + " generated for " + compayler.getInterfaceName() + ".", " */");
+    lines.add("public class " + compayler.getDecoratorName() + " {");
     for (Description<X> description : descriptions) {
       lines.add("// " + description.getSignature().getName());
     }
+    lines.add("}", "");
     return new Source(compayler.getDecoratorPackage(), compayler.getDecoratorName(), lines.getLines());
   }
 

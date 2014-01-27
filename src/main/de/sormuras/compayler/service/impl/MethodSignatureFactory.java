@@ -15,7 +15,7 @@ import de.sormuras.compayler.model.Signature;
 import de.sormuras.compayler.model.Type;
 import de.sormuras.compayler.service.SignatureFactory;
 
-public class DefaultSignatureFactory implements SignatureFactory<Method> {
+public class MethodSignatureFactory implements SignatureFactory<Method> {
 
   public static boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, Annotation... annotations) {
     for (Annotation annotation : annotations)
@@ -40,6 +40,24 @@ public class DefaultSignatureFactory implements SignatureFactory<Method> {
     return uniques;
   }
 
+  protected Signature<Method> createSignature(Method method, boolean unique) {
+    List<Field> fields = new ArrayList<>();
+    int lastIndex = method.getParameterTypes().length - 1;
+    for (int index = 0; index <= lastIndex; index++) {
+      Field field = new Field();
+      field.setIndex(index);
+      field.setName("p" + index);
+      field.setTime(isExecutionTimePresent(method.getParameterAnnotations()[index]));
+      field.setType(Type.forClass(method.getParameterTypes()[index]));
+      field.setVariable(index == lastIndex && method.isVarArgs());
+      fields.add(field);
+    }
+    List<Type> throwables = new ArrayList<>();
+    for (Class<?> exceptionType : method.getExceptionTypes())
+      throwables.add(Type.forClass(exceptionType));
+    return new Signature<>(method, method.getName(), Type.forClass(method.getReturnType()), fields, throwables, unique);
+  }
+
   @Override
   public List<Signature<Method>> createSignatures(Compayler compayler) {
     List<Signature<Method>> signatures = new LinkedList<>();
@@ -49,30 +67,8 @@ public class DefaultSignatureFactory implements SignatureFactory<Method> {
       throw new RuntimeException("Can't create signatures for " + compayler.getInterfaceClassName());
 
     Map<String, Boolean> uniques = buildNameIsUniqueMap(interfaceClass);
-    for (Method method : interfaceClass.getMethods()) {
-      // simple strings
-      String name = method.getName();
-      Type returnType = Type.forClass(method.getReturnType());
-      // collect exception type names
-      List<Type> throwables = new ArrayList<>();
-      for (Class<?> exceptionType : method.getExceptionTypes())
-        throwables.add(Type.forClass(exceptionType));
-      // parse parameters to fields
-      List<Field> fields = new ArrayList<>();
-      int lastIndex = method.getParameterTypes().length - 1;
-      for (int index = 0; index <= lastIndex; index++) {
-        Field field = new Field();
-        field.setIndex(index);
-        field.setName("p" + index);
-        field.setTime(isExecutionTimePresent(method.getParameterAnnotations()[index]));
-        field.setType(Type.forClass(method.getParameterTypes()[index]));
-        field.setVariable(index == lastIndex && method.isVarArgs());
-        fields.add(field);
-      }
-      // create signature
-      Signature<Method> signature = new Signature<>(method, name, returnType, fields, throwables, uniques.get(name));
-      signatures.add(signature);
-    }
+    for (Method method : interfaceClass.getMethods())
+      signatures.add(createSignature(method, uniques.get(method.getName())));
 
     return signatures;
   }

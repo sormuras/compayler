@@ -2,7 +2,6 @@ package de.sormuras.compayler;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.prevayler.Prevayler;
@@ -13,8 +12,10 @@ import de.sormuras.compayler.service.DescriptionVisitor;
 import de.sormuras.compayler.service.PrevaylerFactory;
 import de.sormuras.compayler.service.SignatureFactory;
 import de.sormuras.compayler.service.SourceFactory;
-import de.sormuras.compayler.service.impl.DefaultSignatureFactory;
+import de.sormuras.compayler.service.impl.DefaultDescriptionVisitor;
+import de.sormuras.compayler.service.impl.MethodSignatureFactory;
 import de.sormuras.compayler.service.impl.DefaultSourceFactory;
+import de.sormuras.compayler.service.impl.MethodDescriptionVisitor;
 
 public class Compayler {
 
@@ -135,16 +136,19 @@ public class Compayler {
   }
 
   public Source build() {
-    List<DescriptionVisitor<Method>> visitors = Collections.emptyList();
-    return build(new DefaultSignatureFactory(), visitors, new DefaultSourceFactory());
+    SignatureFactory<Method> signatureFactory = new MethodSignatureFactory();
+    List<DescriptionVisitor<Method>> visitors = new ArrayList<>();
+    visitors.add(new DefaultDescriptionVisitor<Method>());
+    visitors.add(new MethodDescriptionVisitor());
+    return build(signatureFactory, visitors, new DefaultSourceFactory());
   }
 
-  public <X> Source build(SignatureFactory<X> signatureFactory, List<DescriptionVisitor<X>> descriptionVisitors, SourceFactory sourceFactory) {
+  public <X> Source build(SignatureFactory<X> signatureFactory, List<DescriptionVisitor<X>> visitors, SourceFactory sourceFactory) {
     List<Signature<X>> signatures = signatureFactory.createSignatures(this);
     List<Description<X>> descriptions = new ArrayList<>();
     SignatureLoop: for (Signature<X> signature : signatures) {
       Description<X> description = new Description<>(this, signature);
-      for (DescriptionVisitor<X> descriptionVisitor : descriptionVisitors) {
+      for (DescriptionVisitor<X> descriptionVisitor : visitors) {
         if (!descriptionVisitor.visit(this, description))
           continue SignatureLoop;
       }
