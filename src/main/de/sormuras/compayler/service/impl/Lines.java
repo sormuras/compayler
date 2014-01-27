@@ -15,33 +15,39 @@ public class Lines {
     this.lines = new LinkedList<>();
   }
 
-  public void add(CharSequence... csqs) {
+  public Lines add(CharSequence... csqs) {
     for (CharSequence csq : csqs) {
-      resetBuilder();
+      builder.setLength(0);
+      if (csq.length() > 0)
+        for (int i = 0; i < depth; i++) {
+          builder.append(indentation);
+        }
       builder.append(csq);
       lines.add(builder.toString());
     }
+    return this;
+  }
+
+  public Lines clear() {
+    builder.setLength(0);
+    lines.clear();
+    return this;
   }
 
   public List<String> getLines() {
     return lines;
   }
 
-  public void popIndention() {
+  public Lines popIndention() {
     depth--;
     if (depth < 0)
       depth = 0;
+    return this;
   }
 
-  public void pushIndention() {
+  public Lines pushIndention() {
     depth++;
-  }
-
-  private void resetBuilder() {
-    builder.setLength(0);
-    for (int i = 0; i < depth; i++) {
-      builder.append(indentation);
-    }
+    return this;
   }
 
 }

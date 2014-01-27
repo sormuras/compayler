@@ -8,6 +8,6 @@ import de.sormuras.compayler.model.Description;
 
 public interface SourceFactory {
 
-  <X> Source createSource(Compayler compayler, List<Description<X>> descriptions);
+  Source createSource(Compayler compayler, List<Description<?>> descriptions);
 
 }

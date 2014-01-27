@@ -89,6 +89,11 @@ public class Compayler {
   private final String interfacePackage;
 
   /**
+   * "java.lang.Object"
+   */
+  private String superClassName;
+
+  /**
    * @param interfaceClass
    *          the runtime interface representation
    */
@@ -133,6 +138,7 @@ public class Compayler {
     this.interfaceClass = Tool.load(getInterfaceClassName(), getInterfaceLoader());
     setDecoratorPackage(interfacePackage.startsWith("java.") ? interfaceName.toLowerCase() : interfacePackage);
     setDecoratorName(interfaceName.replaceAll("\\$", "") + "Decorator");
+    setSuperClassName("java.lang.Object");
   }
 
   public Source build() {
@@ -145,7 +151,7 @@ public class Compayler {
 
   public <X> Source build(SignatureFactory<X> signatureFactory, List<DescriptionVisitor<X>> visitors, SourceFactory sourceFactory) {
     List<Signature<X>> signatures = signatureFactory.createSignatures(this);
-    List<Description<X>> descriptions = new ArrayList<>();
+    List<Description<?>> descriptions = new ArrayList<>();
     SignatureLoop: for (Signature<X> signature : signatures) {
       Description<X> description = new Description<>(this, signature);
       for (DescriptionVisitor<X> descriptionVisitor : visitors) {
@@ -209,12 +215,20 @@ public class Compayler {
     return interfacePackage;
   }
 
+  public String getSuperClassName() {
+    return superClassName;
+  }
+
   public void setDecoratorName(String decoratorName) {
     this.decoratorName = decoratorName;
   }
 
   public void setDecoratorPackage(String decoratorPackage) {
     this.decoratorPackage = decoratorPackage;
+  }
+
+  public void setSuperClassName(String superClassName) {
+    this.superClassName = superClassName;
   }
 
 }
