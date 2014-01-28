@@ -34,7 +34,10 @@ public class Type {
   }
 
   public static Type forClass(Class<?> classType) {
-    return forName(classType.getCanonicalName(), dimension(classType));
+    String name = classType.getCanonicalName();
+    if (classType.isArray())
+      name = name.substring(0, name.indexOf('['));
+    return forName(name, dimension(classType));
   }
 
   /**
@@ -129,9 +132,17 @@ public class Type {
     return !name.equals(wrapped);
   }
 
+  public boolean isVoid() {
+    return "void".equals(name);
+  }
+
   @Override
   public String toString() {
     return name + typeargs + brackets(dimension, false);
+  }
+
+  public String toString(boolean variable) {
+    return name + typeargs + brackets(dimension, variable);
   }
 
 }

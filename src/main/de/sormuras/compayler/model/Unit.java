@@ -37,4 +37,42 @@ public class Unit<X> extends Description<X> {
     return typeVarBuilder.toString();
   }
 
+  public Kind generateKind() {
+    if (getMode() == Mode.QUERY)
+      return Kind.QUERY;
+    if (getSignature().getReturnType().isVoid())
+      return Kind.TRANSACTION;
+    if (getSignature().getThrowables().isEmpty())
+      return Kind.TRANSACTION_QUERY;
+    // if nothing applies...
+    return Kind.TRANSACTION_QUERY_EXCEPTION;
+  }
+
+  public String generateImplements() {
+    StringBuilder builder = new StringBuilder();
+    Kind kind = generateKind();
+    builder.append(kind.getExecutableType());
+    builder.append('<');
+    builder.append(getCompayler().getInterfaceClassName());
+    // builder.append(getCompayler().getTypeParameterParenthesis()); TODO Introduce InterfaceType!
+    if (kind != Kind.TRANSACTION) {
+      builder.append(',').append(' ').append(getSignature().getReturnType().getWrapped());
+    }
+    builder.append('>');
+    return builder.toString();
+  }
+
+  public String generateParameterSignature() {
+    StringBuilder builder = new StringBuilder();
+    builder.append('(');
+    for (Field field : getSignature().getFields()) {
+      if (field.getIndex() > 0)
+        builder.append(", ");
+      builder.append(field.getType().toString(field.isVariable()));
+      builder.append(' ').append(field.getName());
+    }
+    builder.append(')');
+    return builder.toString();
+  }
+
 }

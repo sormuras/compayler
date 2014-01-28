@@ -8,6 +8,7 @@ import java.util.TimeZone;
 
 import de.sormuras.compayler.Compayler;
 import de.sormuras.compayler.Source;
+import de.sormuras.compayler.model.Field;
 import de.sormuras.compayler.model.Type;
 import de.sormuras.compayler.model.Unit;
 import de.sormuras.compayler.service.SourceFactory;
@@ -69,11 +70,29 @@ public class DefaultSourceFactory implements SourceFactory {
 
   protected void addExecutableClass(Unit<?> unit) {
     lines.add("");
-    lines.add("class " + unit.generateClassNameWithTypeVariables() + " {");
+    lines.add("class " + unit.generateClassNameWithTypeVariables() + " implements " + unit.generateImplements() + " {");
     lines.pushIndention();
-    lines.add("// " + unit.getSignature());
-    lines.popIndention();
-    lines.add("}");
+    lines.add("");
+    lines.add("  private static final long serialVersionUID = " + unit.getSerialVersionUID() + "L;");
+    addExecutableClassFieldsAndConstructor(unit);
+    lines.popIndention().add("", "}");
+  }
+  
+  protected void addExecutableClassFieldsAndConstructor(Unit<?> unit) {
+    if (unit.getSignature().getFields().isEmpty())
+      return;
+    lines.add("");
+    for (Field field : unit.getSignature().getFields()) {
+      if (field.isTime())
+        lines.add("  @SuppressWarnings(\"unused\")");
+      lines.add("  private final " + field.getType().toString(false) + " " + field.getName() + ";");
+    }
+    lines.add("");
+    lines.add("  public " + compayler.getDecoratorName() + unit.generateParameterSignature() + " {");
+    for (Field field : unit.getSignature().getFields()) {
+      lines.add("    this." + field.getName() + " = " + field.getName() + ";");
+    }
+    lines.add("  }");    
   }
 
   protected void addPackage() {

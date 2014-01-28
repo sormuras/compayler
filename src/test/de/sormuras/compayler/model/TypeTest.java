@@ -2,9 +2,12 @@ package de.sormuras.compayler.model;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import org.junit.Test;
+
+import de.sormuras.compayler.Apis;
 
 public class TypeTest {
 
@@ -32,6 +35,13 @@ public class TypeTest {
     assertEquals("java.util.HashMap", Type.forName(new HashMap<String, String>().getClass().getCanonicalName()).toString());
     assertEquals("java.util.HashMap<String, String>", Type.forName("java.util.HashMap", "<String, String>").toString());
     assertEquals("java.util.HashMap[][]", Type.forName("java.util.HashMap", 2).toString());
+  }
+  
+  @Test
+  public void testVariableArgumentDimension() throws Exception {
+    assertEquals(1, Type.dimension(Object[].class));
+    Method method = Apis.Nested.Deeply.class.getDeclaredMethod("variable", Object[].class);
+    assertEquals(1, Type.dimension(method.getParameterTypes()[0]));
   }
 
 }

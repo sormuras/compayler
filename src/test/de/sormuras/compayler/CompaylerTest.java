@@ -8,10 +8,13 @@ import de.sormuras.compayler.Apis.Nested;
 import de.sormuras.compayler.Apis.Nested.Deeply;
 
 public class CompaylerTest {
-  
+
   @Test
   public void test() {
-    Source source = new Compayler(Appendable.class).build();
+    // Source source = new Compayler(Appendable.class).build();
+    // Source source = new Compayler(Comparable.class).build();
+    // Source source = new Compayler(Parsable.class).build();
+    Source source = new Compayler(Deeply.class).build();
     System.out.println(source.getCharContent(true));
     assertNotNull(source);
   }
