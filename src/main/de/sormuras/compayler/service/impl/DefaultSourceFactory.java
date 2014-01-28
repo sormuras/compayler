@@ -8,8 +8,8 @@ import java.util.TimeZone;
 
 import de.sormuras.compayler.Compayler;
 import de.sormuras.compayler.Source;
-import de.sormuras.compayler.model.Description;
 import de.sormuras.compayler.model.Type;
+import de.sormuras.compayler.model.Unit;
 import de.sormuras.compayler.service.SourceFactory;
 
 public class DefaultSourceFactory implements SourceFactory {
@@ -47,7 +47,7 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.add(" */");
   }
 
-  protected void addDecoratorClass(List<Description<?>> descriptions) {
+  protected void addDecoratorClass(List<Unit<?>> units) {
     Type closeableType = Type.forName("java.io.Closeable");
     Type interfaceType = Type.forName(compayler.getInterfaceClassName(), ""); // TODO Care about type arguments.
     StringBuilder line = new StringBuilder();
@@ -59,19 +59,19 @@ public class DefaultSourceFactory implements SourceFactory {
 
     lines.add("");
     lines.add("private interface Executable {").pushIndention();
-    for (Description<?> description : descriptions) {
-      addExecutableClass(description);
+    for (Unit<?> unit : units) {
+      addExecutableClass(unit);
     }
     lines.popIndention().add("", "}");
 
     lines.popIndention().add("", "}");
   }
 
-  protected void addExecutableClass(Description<?> description) {
+  protected void addExecutableClass(Unit<?> unit) {
     lines.add("");
-    lines.add("class " + description.getSignature().getName().toUpperCase() + " {");
+    lines.add("class " + unit.generateClassNameWithTypeVariables() + " {");
     lines.pushIndention();
-    lines.add("// " + description.getSignature().getName());
+    lines.add("// " + unit.getSignature());
     lines.popIndention();
     lines.add("}");
   }
@@ -85,7 +85,7 @@ public class DefaultSourceFactory implements SourceFactory {
   }
 
   @Override
-  public Source createSource(Compayler compayler, List<Description<?>> descriptions) {
+  public Source createSource(Compayler compayler, List<Unit<?>> descriptions) {
     this.compayler = compayler;
     this.lines = new Lines();
     addPackage();

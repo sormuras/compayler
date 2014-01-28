@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.prevayler.Prevayler;
 
-import de.sormuras.compayler.model.Description;
 import de.sormuras.compayler.model.Signature;
+import de.sormuras.compayler.model.Unit;
 import de.sormuras.compayler.service.DescriptionVisitor;
 import de.sormuras.compayler.service.PrevaylerFactory;
 import de.sormuras.compayler.service.SignatureFactory;
@@ -151,18 +151,36 @@ public class Compayler {
 
   public <X> Source build(SignatureFactory<X> signatureFactory, List<DescriptionVisitor<X>> visitors, SourceFactory sourceFactory) {
     List<Signature<X>> signatures = signatureFactory.createSignatures(this);
-    List<Description<?>> descriptions = new ArrayList<>();
-    SignatureLoop: for (Signature<X> signature : signatures) {
-      Description<X> description = new Description<>(this, signature);
-      for (DescriptionVisitor<X> descriptionVisitor : visitors) {
-        if (!descriptionVisitor.visit(this, description))
-          continue SignatureLoop;
-      }
-      descriptions.add(description);
-    }
+    
+//    List<Description<?>> descriptions = new ArrayList<>();
+//    SignatureLoop: for (Signature<X> signature : signatures) {
+//      Description<X> description = new Description<>(this, signature);
+//      for (DescriptionVisitor<X> descriptionVisitor : visitors) {
+//        if (!descriptionVisitor.visit(description))
+//          continue SignatureLoop;
+//      }
+//      descriptions.add(description);
+//    }
+    
     // if (descriptions.isEmpty())
     // throw new IllegalStateException("No descriptions available?!");
-    return sourceFactory.createSource(this, descriptions);
+    
+    List<Unit<?>> units = new ArrayList<>();
+//    for (Description<?> description : descriptions) {
+//      units.add(new Unit(description));
+//    }
+    
+    SignatureLoop: for (Signature<X> signature : signatures) {
+      Unit<X> unit = new Unit<>(this, signature);
+      for (DescriptionVisitor<X> descriptionVisitor : visitors) {
+        if (!descriptionVisitor.visit(unit))
+          continue SignatureLoop;
+      }
+      units.add(unit);
+    }
+    
+    
+    return sourceFactory.createSource(this, units);    
   }
 
   // TODO compile decorator source

@@ -4,10 +4,10 @@ import java.util.List;
 
 import de.sormuras.compayler.Compayler;
 import de.sormuras.compayler.Source;
-import de.sormuras.compayler.model.Description;
+import de.sormuras.compayler.model.Unit;
 
 public interface SourceFactory {
 
-  Source createSource(Compayler compayler, List<Description<?>> descriptions);
+  Source createSource(Compayler compayler, List<Unit<?>> units);
 
 }
