@@ -42,9 +42,9 @@ public class DefaultSourceFactory implements SourceFactory {
   protected void addClassComment() {
     lines.add("");
     lines.add("/**");
-    lines.add(" * Class " + compayler.getDecoratorClassName() + " generated for " + compayler.getInterfaceName() + ".");
+    lines.add(" * Class %s generated for %s.", compayler.getDecoratorClassName(), compayler.getInterfaceName());
     lines.add(" *");
-    lines.add(" * Generated at " + now());
+    lines.add(" * Generated on %s.", now());
     lines.add(" */");
   }
 
@@ -56,28 +56,41 @@ public class DefaultSourceFactory implements SourceFactory {
     line.append(" extends ").append(compayler.getSuperClassName());
     line.append(" implements ").append(merge("", "", ", ", closeableType, interfaceType));
     line.append(" {");
-    lines.add(line.toString()).pushIndention();
+    lines.add(line.toString());
 
+    lines.pushIndention();
     lines.add("");
-    lines.add("private interface Executable {").pushIndention();
+    lines.add("private interface Executable {");
+
+    lines.pushIndention();
     for (Unit<?> unit : units) {
       addExecutableClass(unit);
     }
-    lines.popIndention().add("", "}");
+    lines.popIndention();
+    lines.add("");
+    lines.add("}"); // end of interface
 
-    lines.popIndention().add("", "}");
+    // TODO add fields and c'tor
+    // TODO add basic and helper methods
+    // TODO add implementations using Executable classes from above
+
+    lines.popIndention();
+    lines.add("");
+    lines.add("}"); // end of decorator class
   }
 
   protected void addExecutableClass(Unit<?> unit) {
     lines.add("");
-    lines.add("class " + unit.generateClassNameWithTypeVariables() + " implements " + unit.generateImplements() + " {");
+    lines.add("class %s implements %s {", unit.generateClassNameWithTypeVariables(), unit.generateImplements());
     lines.pushIndention();
     lines.add("");
-    lines.add("private static final long serialVersionUID = " + unit.getSerialVersionUID() + "L;");
+    lines.add("private static final long serialVersionUID = %dL;", unit.getSerialVersionUID());
     addExecutableClassFieldsAndConstructor(unit);
-    lines.popIndention().add("", "}");
+    lines.popIndention();
+    lines.add("");
+    lines.add("}");
   }
-  
+
   protected void addExecutableClassFieldsAndConstructor(Unit<?> unit) {
     if (unit.getSignature().getFields().isEmpty())
       return;
@@ -85,16 +98,16 @@ public class DefaultSourceFactory implements SourceFactory {
     for (Field field : unit.getSignature().getFields()) {
       if (field.isTime())
         lines.add("@SuppressWarnings(\"unused\")");
-      lines.add("private final " + field.getType().toString(false) + " " + field.getName() + ";");
+      lines.add("private final %s %s;", field.getType().toString(false), field.getName());
     }
     lines.add("");
-    lines.add("public " + compayler.getDecoratorName() + unit.generateParameterSignature() + " {");
+    lines.add("public %s%s {", compayler.getDecoratorName(), unit.generateParameterSignature());
     lines.pushIndention();
     for (Field field : unit.getSignature().getFields()) {
-      lines.add("this." + field.getName() + " = " + field.getName() + ";");
+      lines.add("this.%s = %1$s;", field.getName());
     }
     lines.popIndention();
-    lines.add("}");    
+    lines.add("}");
   }
 
   protected void addPackage() {
@@ -102,7 +115,7 @@ public class DefaultSourceFactory implements SourceFactory {
     if (name == null || name.isEmpty())
       return;
     // no empty line before package declaration
-    lines.add("package " + name + ";");
+    lines.add("package %s;", name);
   }
 
   @Override

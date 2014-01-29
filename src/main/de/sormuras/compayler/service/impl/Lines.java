@@ -15,16 +15,13 @@ public class Lines {
     this.lines = new LinkedList<>();
   }
 
-  public Lines add(CharSequence... csqs) {
-    for (CharSequence csq : csqs) {
-      builder.setLength(0);
-      if (csq.length() > 0)
-        for (int i = 0; i < depth; i++) {
-          builder.append(indentation);
-        }
-      builder.append(csq);
-      lines.add(builder.toString());
+  public Lines add(String format, Object... args) {
+    builder.setLength(0);
+    for (int i = 0; i < depth; i++) {
+      builder.append(indentation);
     }
+    builder.append(args.length == 0 ? format : String.format(format, args));
+    lines.add(builder.toString());
     return this;
   }
 
