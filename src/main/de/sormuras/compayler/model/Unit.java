@@ -37,17 +37,6 @@ public class Unit<X> extends Description<X> {
     return typeVarBuilder.toString();
   }
 
-  public Kind generateKind() {
-    if (getMode() == Mode.QUERY)
-      return Kind.QUERY;
-    if (getSignature().getReturnType().isVoid())
-      return Kind.TRANSACTION;
-    if (getSignature().getThrowables().isEmpty())
-      return Kind.TRANSACTION_QUERY;
-    // if nothing applies...
-    return Kind.TRANSACTION_QUERY_EXCEPTION;
-  }
-
   public String generateImplements() {
     StringBuilder builder = new StringBuilder();
     Kind kind = generateKind();
@@ -60,6 +49,17 @@ public class Unit<X> extends Description<X> {
     }
     builder.append('>');
     return builder.toString();
+  }
+
+  public Kind generateKind() {
+    if (getMode() == Mode.QUERY)
+      return Kind.QUERY;
+    if (getSignature().getReturnType().isVoid())
+      return Kind.TRANSACTION;
+    if (getSignature().getThrowables().isEmpty())
+      return Kind.TRANSACTION_QUERY;
+    // if nothing applies...
+    return Kind.TRANSACTION_QUERY_EXCEPTION;
   }
 
   public String generateParameterSignature() {

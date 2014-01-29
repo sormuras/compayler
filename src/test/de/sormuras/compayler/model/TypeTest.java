@@ -39,9 +39,9 @@ public class TypeTest {
   
   @Test
   public void testVariableArgumentDimension() throws Exception {
-    assertEquals(1, Type.dimension(Object[].class));
+    assertEquals(1, Type.forClass(Object[].class).getDimension());
     Method method = Apis.Nested.Deeply.class.getDeclaredMethod("variable", Object[].class);
-    assertEquals(1, Type.dimension(method.getParameterTypes()[0]));
+    assertEquals(1, Type.forClass(method.getParameterTypes()[0]).getDimension());
   }
 
 }

@@ -73,7 +73,7 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.add("class " + unit.generateClassNameWithTypeVariables() + " implements " + unit.generateImplements() + " {");
     lines.pushIndention();
     lines.add("");
-    lines.add("  private static final long serialVersionUID = " + unit.getSerialVersionUID() + "L;");
+    lines.add("private static final long serialVersionUID = " + unit.getSerialVersionUID() + "L;");
     addExecutableClassFieldsAndConstructor(unit);
     lines.popIndention().add("", "}");
   }
@@ -84,15 +84,17 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.add("");
     for (Field field : unit.getSignature().getFields()) {
       if (field.isTime())
-        lines.add("  @SuppressWarnings(\"unused\")");
-      lines.add("  private final " + field.getType().toString(false) + " " + field.getName() + ";");
+        lines.add("@SuppressWarnings(\"unused\")");
+      lines.add("private final " + field.getType().toString(false) + " " + field.getName() + ";");
     }
     lines.add("");
-    lines.add("  public " + compayler.getDecoratorName() + unit.generateParameterSignature() + " {");
+    lines.add("public " + compayler.getDecoratorName() + unit.generateParameterSignature() + " {");
+    lines.pushIndention();
     for (Field field : unit.getSignature().getFields()) {
-      lines.add("    this." + field.getName() + " = " + field.getName() + ";");
+      lines.add("this." + field.getName() + " = " + field.getName() + ";");
     }
-    lines.add("  }");    
+    lines.popIndention();
+    lines.add("}");    
   }
 
   protected void addPackage() {

@@ -24,20 +24,13 @@ public class Type {
     return builder.toString();
   }
 
-  public static int dimension(Class<?> classType) {
+  public static Type forClass(Class<?> classType) {
     int dimension = 0;
     while (classType.isArray()) {
       classType = classType.getComponentType();
       dimension++;
     }
-    return dimension;
-  }
-
-  public static Type forClass(Class<?> classType) {
-    String name = classType.getCanonicalName();
-    if (classType.isArray())
-      name = name.substring(0, name.indexOf('['));
-    return forName(name, dimension(classType));
+    return forName(classType.getCanonicalName(), dimension);
   }
 
   /**
@@ -126,6 +119,10 @@ public class Type {
 
   public boolean isArray() {
     return dimension > 0;
+  }
+
+  public boolean isGeneric() {
+    return !typeargs.isEmpty();
   }
 
   public boolean isPrimitive() {
