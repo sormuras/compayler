@@ -88,17 +88,23 @@ public class Type {
     return name;
   }
 
+  private final String binaryName;
   private final int dimension;
   private final String name;
   private final String typeargs;
 
   private final String wrapped;
 
-  private Type(String name, String typeargs, int dimension) {
-    this.name = name;
+  private Type(String binaryName, String typeargs, int dimension) {
+    this.binaryName = binaryName;
+    this.name = binaryName.replace('$', '.');
     this.typeargs = typeargs;
     this.dimension = dimension;
-    this.wrapped = wrap(name);
+    this.wrapped = wrap(binaryName);
+  }
+
+  public String getBinaryName() {
+    return binaryName;
   }
 
   public int getDimension() {

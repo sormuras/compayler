@@ -1,5 +1,6 @@
 package de.sormuras.compayler.model;
 
+import java.util.List;
 import java.util.zip.CRC32;
 
 import de.sormuras.compayler.Compayler;
@@ -42,7 +43,7 @@ public class Unit<X> extends Description<X> {
     Kind kind = generateKind();
     builder.append(kind.getExecutableType());
     builder.append('<');
-    builder.append(getCompayler().getInterfaceClassName());
+    builder.append(getCompayler().getInterfaceClassName().replace('$', '.'));
     // builder.append(getCompayler().getTypeParameterParenthesis()); TODO Introduce InterfaceType!
     if (kind != Kind.TRANSACTION) {
       builder.append(',').append(' ').append(getSignature().getReturnType().getWrapped());
@@ -74,5 +75,30 @@ public class Unit<X> extends Description<X> {
     builder.append(')');
     return builder.toString();
   }
+  
+  public String generateParameterParentheses() {
+    List<Field> fields = getSignature().getFields();
+    int length = fields.size();
+    if (length == 0)
+      return "()";
+    if (length == 1)
+      return "(" + fields.get(0).getName() + ")";
+    StringBuilder builder = new StringBuilder();
+    builder.append("(").append(fields.get(0).getName());
+    for (int index = 1; index < length; index++) {
+      builder.append(", ").append(fields.get(index).getName());
+    }
+    builder.append(")");
+    return builder.toString();
+  }
+  
+  public String generateParameterParenthesesWithExecutionTime() {
+    String parantheses = generateParameterParentheses();
+    for (Field field : getSignature().getFields()) {
+      if (field.isTime())
+        return parantheses.replace(field.getName(), "executionTime");
+    }
+    return parantheses;
+  }  
 
 }

@@ -86,6 +86,7 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.add("");
     lines.add("private static final long serialVersionUID = %dL;", unit.getSerialVersionUID());
     addExecutableClassFieldsAndConstructor(unit);
+    addExecutableImplementation(unit);
     lines.popIndention();
     lines.add("");
     lines.add("}");
@@ -101,13 +102,43 @@ public class DefaultSourceFactory implements SourceFactory {
       lines.add("private final %s %s;", field.getType().toString(false), field.getName());
     }
     lines.add("");
-    lines.add("public %s%s {", compayler.getDecoratorName(), unit.generateParameterSignature());
+    lines.add("public %s%s {", unit.generateClassName(), unit.generateParameterSignature());
     lines.pushIndention();
     for (Field field : unit.getSignature().getFields()) {
       lines.add("this.%s = %1$s;", field.getName());
     }
     lines.popIndention();
     lines.add("}");
+  }
+
+  protected void addExecutableImplementation(Unit<?> unit) {
+    // implementation
+    String typeVariables = ""; // TODO configuration.getTypeParameterParenthesis();
+    String parameters = compayler.getInterfaceClassName().replace('$', '.') + typeVariables
+        + " prevalentSystem, java.util.Date executionTime";
+    String returnType = unit.getSignature().getReturnType().getWrapped().replace('$', '.');
+    String methodCall = unit.getSignature().getName() + unit.generateParameterParenthesesWithExecutionTime();
+    lines.add("");
+    lines.add("@Override");
+    switch (unit.generateKind()) {
+    case QUERY:
+      lines.add("public %s query(%s) throws java.lang.Exception {", returnType, parameters);
+      lines.pushIndention().add("return prevalentSystem.%s;", methodCall).popIndention();
+      break;
+    case TRANSACTION:
+      lines.add("public void executeOn(%s) {", parameters);
+      lines.pushIndention().add("prevalentSystem." + methodCall + ";").popIndention();
+      break;
+    case TRANSACTION_QUERY:
+      lines.add("public %s executeAndQuery(%s) {", returnType, parameters);
+      lines.pushIndention().add("return prevalentSystem.%s;", methodCall).popIndention();
+      break;
+    case TRANSACTION_QUERY_EXCEPTION:
+      lines.add("public %s executeAndQuery(%s) throws java.lang.Exception {", returnType, parameters);
+      lines.pushIndention().add("return prevalentSystem.%s;", methodCall).popIndention();
+      break;
+    }
+    lines.add("}"); // end of implementation
   }
 
   protected void addPackage() {
