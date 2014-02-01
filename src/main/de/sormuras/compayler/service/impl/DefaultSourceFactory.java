@@ -132,10 +132,10 @@ public class DefaultSourceFactory implements SourceFactory {
     lines.add("public org.prevayler.Prevayler<? extends " + interfaceName + "> prevayler() {");
     lines.pushIndention().add("return prevayler;").popIndention();
     lines.add("}");
-    lines.add("");
-    lines.add("protected " + interfaceName + " redirect(" + interfaceName + " result) {");
-    lines.pushIndention().add("return result == prevalentSystem ? this : result;").popIndention();
-    lines.add("}");
+    // lines.add("");
+    // lines.add("protected " + interfaceName + " redirect(" + interfaceName + " result) {");
+    // lines.pushIndention().add("return result == prevalentSystem ? this : result;").popIndention();
+    // lines.add("}");
   }
 
   protected void addDecoratorMethod(Unit<?> unit) {
@@ -153,11 +153,8 @@ public class DefaultSourceFactory implements SourceFactory {
 
     // method head
     lines.add("");
-    boolean redirect = returns.toString().equals(compayler.getInterfaceClassName());
-
-    // Generate javadoc for decorated method.
     lines.add("/**");
-    lines.add(" * " + unit);
+    lines.add(" * " + unit.generateMethodDeclaration());
     lines.add(" */ ");
     lines.add("@Override");
     lines.add("public " + unit.generateMethodDeclaration() + " {");
@@ -166,8 +163,12 @@ public class DefaultSourceFactory implements SourceFactory {
     // direct?
     if (unit.getMode() == Mode.DIRECT) {
       String invokeMethodDirect = "prevalentSystem." + name + unit.generateParameterParentheses();
-      lines.add(returns.isVoid() ? "%s;" : redirect ? "return redirect(%s);" : "return %s;", invokeMethodDirect);
-
+      if (returns.isVoid())
+        lines.add("%s;", invokeMethodDirect);
+      else {
+        lines.add("%s result = %s;", returns, invokeMethodDirect);
+        lines.add("return result == prevalentSystem ? this : result;");
+      }
       lines.popIndention();
       lines.add("}"); // end of method
       return;
@@ -189,10 +190,7 @@ public class DefaultSourceFactory implements SourceFactory {
       lines.add(executeAction + ";");
     } else {
       lines.add(returns + " result = " + executeAction + ";");
-      if (redirect) {
-        lines.add("return redirect(result);");
-      } else
-        lines.add("return result;");
+      lines.add("return result == prevalentSystem ? this : result;");
     }
 
     if (kind.isThrowingException()) {

@@ -13,6 +13,12 @@ public class JavaTest {
     Assert.assertTrue(m3.getClass().getComponentType().getComponentType().isArray());
     Assert.assertEquals(int.class, m3.getClass().getComponentType().getComponentType().getComponentType());
   }
+  
+  @Test
+  public void testAssignable() {
+    Assert.assertTrue(Number.class.isAssignableFrom(Integer.class));
+    Assert.assertFalse(Integer.class.isAssignableFrom(Number.class));
+  }
 
   @Test
   public void testClassNames() {

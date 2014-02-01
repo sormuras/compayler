@@ -67,7 +67,7 @@ public class MethodSignatureFactory implements SignatureFactory<Method> {
       throw new RuntimeException("Can't create signatures for " + compayler.getInterfaceClassName());
 
     Map<String, Boolean> uniques = buildNameIsUniqueMap(interfaceClass);
-    for (Method method : interfaceClass.getMethods())
+    for (Method method : interfaceClass.getDeclaredMethods())      
       signatures.add(createSignature(method, uniques.get(method.getName())));
 
     return signatures;
