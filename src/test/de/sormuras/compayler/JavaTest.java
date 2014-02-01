@@ -24,7 +24,7 @@ public class JavaTest {
   }
 
   @Test
-  public void testClassNames() {
+  public void testClassNames() throws ClassNotFoundException {
     Class<Apis.Nested.Deeply> deeplyClass = Apis.Nested.Deeply.class;
     assertEquals("interface de.sormuras.compayler.Apis$Nested$Deeply", deeplyClass.toString());
     assertEquals("de.sormuras.compayler.Apis$Nested$Deeply", deeplyClass.getName());
@@ -37,6 +37,9 @@ public class JavaTest {
     assertEquals("int[][][]", m3.getClass().getCanonicalName());
     assertEquals("int[][][]", m3.getClass().getSimpleName());
     assertEquals(null, m3.getClass().getPackage());
+
+    assertEquals(m3.getClass(), Class.forName("[[[I"));
+    assertEquals("[Lde.sormuras.compayler.Apis$Nested$Deeply;", new Apis.Nested.Deeply[1].getClass().getName());
   }
 
 }
