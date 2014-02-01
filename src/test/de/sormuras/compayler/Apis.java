@@ -6,7 +6,7 @@ public interface Apis {
 
     interface Deeply extends Appendable {
 
-      Object[] variable(Object... ignore);
+      Deeply variable(Object... ignore);
 
     }
 

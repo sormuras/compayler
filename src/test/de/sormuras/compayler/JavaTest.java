@@ -14,4 +14,13 @@ public class JavaTest {
     Assert.assertEquals(int.class, m3.getClass().getComponentType().getComponentType().getComponentType());
   }
 
+  @Test
+  public void testClassNames() {
+    Class<Apis.Nested.Deeply> deeplyClass = Apis.Nested.Deeply.class;
+    Assert.assertEquals("interface de.sormuras.compayler.Apis$Nested$Deeply", deeplyClass.toString());
+    Assert.assertEquals("Deeply", deeplyClass.getSimpleName());
+    Assert.assertEquals("de.sormuras.compayler.Apis$Nested$Deeply", deeplyClass.getName());
+    Assert.assertEquals("de.sormuras.compayler.Apis.Nested.Deeply", deeplyClass.getCanonicalName());
+  }
+
 }

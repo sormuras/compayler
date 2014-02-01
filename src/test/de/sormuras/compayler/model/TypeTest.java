@@ -2,7 +2,6 @@ package de.sormuras.compayler.model;
 
 import static org.junit.Assert.assertEquals;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -31,17 +30,19 @@ public class TypeTest {
   public void testToString() {
     int[][][] m3 = new int[1][1][1];
     assertEquals("int[][][]", Type.forName(m3.getClass().getCanonicalName()).toString());
-    assertEquals("java.lang.Integer", Type.forName(new Integer(3).getClass().getCanonicalName()).toString());
+    assertEquals("java.lang.Integer", Type.forName(Integer.class.getCanonicalName()).toString());
     assertEquals("java.util.HashMap", Type.forName(new HashMap<String, String>().getClass().getCanonicalName()).toString());
     assertEquals("java.util.HashMap<String, String>", Type.forName("java.util.HashMap", "<String, String>").toString());
     assertEquals("java.util.HashMap[][]", Type.forName("java.util.HashMap", 2).toString());
+    assertEquals("java.lang.Object[]", Type.forName("java.lang.Object", 1).toString());
+    assertEquals("java.lang.Object[]", Type.forClass(Object[].class).toString());
   }
-  
+
   @Test
   public void testVariableArgumentDimension() throws Exception {
     assertEquals(1, Type.forClass(Object[].class).getDimension());
-    Method method = Apis.Nested.Deeply.class.getDeclaredMethod("variable", Object[].class);
-    assertEquals(1, Type.forClass(method.getParameterTypes()[0]).getDimension());
+    Class<?>[] types = Apis.Nested.Deeply.class.getDeclaredMethod("variable", Object[].class).getParameterTypes();
+    assertEquals(1, Type.forClass(types[types.length - 1]).getDimension());
   }
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.zip.CRC32;
 
 import de.sormuras.compayler.Compayler;
+import de.sormuras.compayler.service.impl.DefaultSourceFactory;
 
 public class Unit<X> extends Description<X> {
 
@@ -37,6 +38,20 @@ public class Unit<X> extends Description<X> {
     // }
     return typeVarBuilder.toString();
   }
+  
+  public String generateExceptions(String separator) {
+    StringBuilder builder = new StringBuilder();
+    boolean comma = false;
+    for (Type throwable : getSignature().getThrowables()) {
+      if (comma) {
+        builder.append(separator);
+      }
+      builder.append(" ");
+      builder.append(throwable);
+      comma = true;
+    }
+    return builder.toString().trim();
+  }  
 
   public String generateImplements() {
     StringBuilder builder = new StringBuilder();
@@ -46,7 +61,8 @@ public class Unit<X> extends Description<X> {
     builder.append(getCompayler().getInterfaceClassName().replace('$', '.'));
     // builder.append(getCompayler().getTypeParameterParenthesis()); TODO Introduce InterfaceType!
     if (kind != Kind.TRANSACTION) {
-      builder.append(',').append(' ').append(getSignature().getReturnType().getWrapped());
+      Type returnType = getSignature().getReturnType();
+      builder.append(',').append(' ').append(returnType.isPrimitive() ? returnType.getWrapped() : returnType);
     }
     builder.append('>');
     return builder.toString();
@@ -63,19 +79,27 @@ public class Unit<X> extends Description<X> {
     return Kind.TRANSACTION_QUERY_EXCEPTION;
   }
 
-  public String generateParameterSignature() {
+  public String generateMethodDeclaration() {
     StringBuilder builder = new StringBuilder();
-    builder.append('(');
-    for (Field field : getSignature().getFields()) {
-      if (field.getIndex() > 0)
-        builder.append(", ");
-      builder.append(field.getType().toString(field.isVariable()));
-      builder.append(' ').append(field.getName());
-    }
-    builder.append(')');
+    // if (!getVariable().getTypeParameters().isEmpty()) {
+    // builder.append("<");
+    // for (String var : getVariable().getTypeParameters()) {
+    // builder.append(var);
+    // }
+    // builder.append("> ");
+    // }
+    builder.append(getSignature().getReturnType());
+    builder.append(" ");
+    builder.append(getSignature().getName());
+    builder.append(generateParameterSignature());
+    if (getSignature().getThrowables().isEmpty())
+      return builder.toString();
+
+    builder.append(" throws ");
+    builder.append(DefaultSourceFactory.merge("", "", ", ", getSignature().getThrowables().toArray()));
     return builder.toString();
   }
-  
+
   public String generateParameterParentheses() {
     List<Field> fields = getSignature().getFields();
     int length = fields.size();
@@ -91,7 +115,7 @@ public class Unit<X> extends Description<X> {
     builder.append(")");
     return builder.toString();
   }
-  
+
   public String generateParameterParenthesesWithExecutionTime() {
     String parantheses = generateParameterParentheses();
     for (Field field : getSignature().getFields()) {
@@ -99,6 +123,19 @@ public class Unit<X> extends Description<X> {
         return parantheses.replace(field.getName(), "executionTime");
     }
     return parantheses;
-  }  
+  }
+
+  public String generateParameterSignature() {
+    StringBuilder builder = new StringBuilder();
+    builder.append('(');
+    for (Field field : getSignature().getFields()) {
+      if (field.getIndex() > 0)
+        builder.append(", ");
+      builder.append(field.getType().toString(field.isVariable()));
+      builder.append(' ').append(field.getName());
+    }
+    builder.append(')');
+    return builder.toString();
+  }
 
 }
