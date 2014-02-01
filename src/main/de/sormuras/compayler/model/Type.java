@@ -92,7 +92,6 @@ public class Type {
   private final int dimension;
   private final String name;
   private final String typeargs;
-
   private final String wrapped;
 
   private Type(String binaryName, String typeargs, int dimension) {
@@ -141,7 +140,7 @@ public class Type {
 
   @Override
   public String toString() {
-    return name + typeargs + brackets(dimension, false);
+    return toString(false);
   }
 
   public String toString(boolean variable) {
