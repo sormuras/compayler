@@ -16,7 +16,7 @@ import de.sormuras.compayler.model.Type;
 import de.sormuras.compayler.service.SignatureFactory;
 
 public class MethodSignatureFactory implements SignatureFactory<Method> {
-
+  
   public static boolean isAnnotationPresent(Class<? extends Annotation> annotationClass, Annotation... annotations) {
     for (Annotation annotation : annotations)
       if (annotation.annotationType() == annotationClass)
@@ -48,14 +48,14 @@ public class MethodSignatureFactory implements SignatureFactory<Method> {
       field.setIndex(index);
       field.setName("p" + index);
       field.setTime(isExecutionTimePresent(method.getParameterAnnotations()[index]));
-      field.setType(Type.forClass(method.getParameterTypes()[index]));
+      field.setType(new Type(method.getParameterTypes()[index]));
       field.setVariable(index == lastIndex && method.isVarArgs());
       fields.add(field);
     }
     List<Type> throwables = new ArrayList<>();
     for (Class<?> exceptionType : method.getExceptionTypes())
-      throwables.add(Type.forClass(exceptionType));
-    return new Signature<>(method, method.getName(), Type.forClass(method.getReturnType()), fields, throwables, unique);
+      throwables.add(new Type(exceptionType));
+    return new Signature<>(method, method.getName(), new Type(method.getReturnType()), fields, throwables, unique);
   }
 
   @Override
@@ -67,7 +67,7 @@ public class MethodSignatureFactory implements SignatureFactory<Method> {
       throw new RuntimeException("Can't create signatures for " + compayler.getInterfaceClassName());
 
     Map<String, Boolean> uniques = buildNameIsUniqueMap(interfaceClass);
-    for (Method method : interfaceClass.getDeclaredMethods())      
+    for (Method method : interfaceClass.getMethods())      
       signatures.add(createSignature(method, uniques.get(method.getName())));
 
     return signatures;

@@ -16,7 +16,7 @@ public class Unit<X> extends Description<X> {
     CRC32 crc32 = new CRC32();
     crc32.reset();
     for (Field field : getSignature().getFields()) {
-      crc32.update(field.getType().getName().getBytes());
+      crc32.update(field.getType().getBinaryName().getBytes());
     }
     return Long.toString(crc32.getValue(), Character.MAX_RADIX).toUpperCase();
   }
@@ -62,7 +62,7 @@ public class Unit<X> extends Description<X> {
     // builder.append(getCompayler().getTypeParameterParenthesis()); TODO Introduce InterfaceType!
     if (kind != Kind.TRANSACTION) {
       Type returnType = getSignature().getReturnType();
-      builder.append(',').append(' ').append(returnType.isPrimitive() ? returnType.getWrapped() : returnType);
+      builder.append(',').append(' ').append(returnType.isPrimitive() ? returnType.getWrappedName() : returnType);
     }
     builder.append('>');
     return builder.toString();

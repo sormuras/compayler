@@ -5,7 +5,7 @@ public class Field {
   private int index;
   private String name = "";
   private boolean time = false;
-  private Type type = Type.VOID;
+  private Type type = null;
   private boolean variable;
 
   public int getIndex() {

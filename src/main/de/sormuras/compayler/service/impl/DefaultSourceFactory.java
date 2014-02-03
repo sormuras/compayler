@@ -51,8 +51,8 @@ public class DefaultSourceFactory implements SourceFactory {
   }
 
   protected void addDecoratorClass(List<Unit<?>> units) {
-    Type closeableType = Type.forName("java.io.Closeable");
-    Type interfaceType = Type.forName(compayler.getInterfaceClassName(), ""); // TODO Care about type arguments.
+    Type closeableType = new Type("java.io.Closeable");
+    Type interfaceType = new Type(compayler.getInterfaceClassName(), ""); // TODO Care about type arguments.
     StringBuilder line = new StringBuilder();
     line.append("public class ").append(compayler.getDecoratorName());
     line.append(" extends ").append(compayler.getSuperClassName());
@@ -141,7 +141,7 @@ public class DefaultSourceFactory implements SourceFactory {
   protected void addDecoratorMethod(Unit<?> unit) {
     String name = unit.getSignature().getName();
     List<Field> fields = unit.getSignature().getFields();
-    if (name.equals("equals") && fields.size() == 1 && fields.get(0).getType().getName().equals("java.lang.Object"))
+    if (name.equals("equals") && fields.size() == 1 && fields.get(0).getType().getBinaryName().equals("java.lang.Object"))
       return;
     if (name.equals("hashCode") && fields.isEmpty())
       return;
@@ -199,7 +199,7 @@ public class DefaultSourceFactory implements SourceFactory {
         lines.add("} catch (" + unit.generateExceptions("|") + " e) {");
         lines.pushIndention().add("throw e;").popIndention();
       }
-      if (!unit.getSignature().getThrowables().contains(Type.forClass(Exception.class))) {
+      if (!unit.getSignature().getThrowables().contains(Exception.class)) { // FIXME scan for binary name or use type instance
         lines.add("} catch (java.lang.Exception e) {");
         lines.pushIndention().add("throw new RuntimeException(e);").popIndention();
       }
@@ -282,12 +282,12 @@ public class DefaultSourceFactory implements SourceFactory {
   }
 
   @Override
-  public Source createSource(Compayler compayler, List<Unit<?>> descriptions) {
+  public Source createSource(Compayler compayler, List<Unit<?>> units) {
     this.compayler = compayler;
     this.lines = new Lines();
     addPackage();
     addClassComment();
-    addDecoratorClass(descriptions);
+    addDecoratorClass(units);
     return new Source(compayler.getDecoratorPackage(), compayler.getDecoratorName(), lines.getLines());
   }
 

@@ -1,13 +1,6 @@
 package de.sormuras.compayler.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Type {
-
-  private static final Map<String, Type> TYPES = new HashMap<>();
-
-  public static final Type VOID = forName("void");
 
   public static String brackets(int dimension, boolean variable) {
     if (dimension == 0)
@@ -24,44 +17,59 @@ public class Type {
     return builder.toString();
   }
 
-  public static Type forClass(Class<?> classType) {
+  public static String canonical(String binaryName) {
+    String canonical = binaryName.replace('$', '.');
+    // array?
+    if (canonical.startsWith("[")) {
+      int dimension = canonical.length() - canonical.replace("[", "").length();
+      if (canonical.endsWith(";")) {
+        canonical = canonical.substring(dimension + 1, canonical.length() - 1);
+      } else {
+        canonical = element(canonical.charAt(canonical.length() - 1)).getCanonicalName();
+      }
+      canonical = canonical + brackets(dimension, false);
+    }
+    return canonical;
+  }
+
+  public static int dimension(Class<?> classType) {
     int dimension = 0;
     while (classType.isArray()) {
       classType = classType.getComponentType();
       dimension++;
     }
-    return forName(classType.getCanonicalName(), dimension);
+    return dimension;
   }
 
-  /**
-   * Simple getter.
-   */
-  public static Type forName(String name) {
-    return forName(name, "", 0);
-  }
-
-  /**
-   * Array getter.
-   */
-  public static Type forName(String name, int dimension) {
-    return forName(name, "", dimension);
-  }
-
-  /**
-   * Parameterized getter with actual type arguments.
-   */
-  public static Type forName(String name, String typeargs) {
-    return forName(name, typeargs, 0);
-  }
-
-  private static Type forName(String name, String typeargs, int dimension) {
-    String key = name + typeargs + dimension;
-    Type type = TYPES.get(key);
-    if (type == null) {
-      type = new Type(name, typeargs, dimension);
-      TYPES.put(key, type);
+  public static Class<?> element(char encoding) {
+    switch (encoding) {
+    case 'Z':
+      return boolean.class;
+    case 'B':
+      return byte.class;
+    case 'C':
+      return char.class;
+    case 'D':
+      return double.class;
+    case 'F':
+      return float.class;
+    case 'I':
+      return int.class;
+    case 'J':
+      return long.class;
+    case 'S':
+      return short.class;
     }
-    return type;
+    throw new IllegalArgumentException("Unsupported encoding: " + encoding);
+  }
+
+  public static String simple(String binaryName) {
+    int i = binaryName.lastIndexOf('$');
+    if (i < 0)
+      i = binaryName.lastIndexOf('.');
+    if (i >= 0)
+      return binaryName.substring(i);
+    return binaryName;
   }
 
   public static String wrap(String name) {
@@ -89,53 +97,104 @@ public class Type {
   }
 
   private final String binaryName;
-  private final int dimension;
-  private final String name;
-  private final String typeargs;
-  private final String wrapped;
+  private final String canonicalName;
+  private final String simpleName;
+  private final String typeParameterSuffix;
+  private final String wrappedName;
 
-  private Type(String binaryName, String typeargs, int dimension) {
+  public Type(Class<?> type) {
+    this(type, "");
+  }
+
+  public Type(Class<?> type, String typeParameterSuffix) {
+    this(type.getName(), type.getCanonicalName(), type.getSimpleName(), typeParameterSuffix);
+    assert this.isArray() == type.isArray();
+    assert this.isPrimitive() == type.isPrimitive();
+    assert this.isVoid() == (type == void.class || type == Void.class);
+    assert this.getArrayDimension() == dimension(type);
+  }
+
+  /**
+   * The binary name of the type as returned by {@link Class#getName()}.
+   * 
+   * @param binaryName
+   */
+  public Type(String binaryName) {
+    this(binaryName, "");
+  }
+
+  public Type(String binaryName, String typeParameterSuffix) {
+    this(binaryName, canonical(binaryName), simple(binaryName), typeParameterSuffix);
+  }
+
+  public Type(String binaryName, String canonicalName, String simpleName, String typeParameterSuffix) {
     this.binaryName = binaryName;
-    this.name = binaryName.replace('$', '.');
-    this.typeargs = typeargs;
-    this.dimension = dimension;
-    this.wrapped = wrap(binaryName);
+    this.canonicalName = canonicalName;
+    this.simpleName = simpleName;
+    this.typeParameterSuffix = typeParameterSuffix;
+    this.wrappedName = wrap(getBinaryName());
+  }
+
+  public int getArrayDimension() {
+    return binaryName.length() - binaryName.replace("[", "").length();
+  }
+
+  public Type getArrayType() {
+    if (!isArray())
+      throw new IllegalStateException(binaryName + " isn't an array!");
+    // primitive element type
+    String elementType = binaryName.substring(getArrayDimension());
+    if (elementType.length() == 1) {
+      return new Type(element(elementType.charAt(0)));
+    }
+    // class or interface element type
+    assert elementType.startsWith("L") && elementType.endsWith(";");
+    elementType = elementType.substring(1, elementType.length() - 1);
+    try {
+      return new Type(Class.forName(elementType));
+    } catch (ClassNotFoundException e) {
+      // ignore and fall back to string manipulation magic
+    }
+    return new Type(elementType);
   }
 
   public String getBinaryName() {
     return binaryName;
   }
 
-  public int getDimension() {
-    return dimension;
+  public String getCanonicalName() {
+    return canonicalName;
   }
 
-  public String getName() {
-    return name;
+  public String getPackageName() {
+    int lastDot = binaryName.lastIndexOf('.');
+    if (lastDot < 0)
+      return "";
+    return binaryName.substring(0, lastDot);
   }
 
-  public String getTypeArgs() {
-    return typeargs;
+  public String getSimpleName() {
+    return simpleName;
   }
 
-  public String getWrapped() {
-    return wrapped;
+  public String getTypeParameterSuffix() {
+    return typeParameterSuffix;
+  }
+
+  public String getWrappedName() {
+    return wrappedName;
   }
 
   public boolean isArray() {
-    return dimension > 0;
-  }
-
-  public boolean isGeneric() {
-    return !typeargs.isEmpty();
+    return binaryName.startsWith("[");
   }
 
   public boolean isPrimitive() {
-    return !name.equals(wrapped);
+    return !binaryName.equals(wrappedName);
   }
 
   public boolean isVoid() {
-    return "void".equals(name);
+    return binaryName.equals("void") || binaryName.equals("java.lang.Void");
   }
 
   @Override
@@ -144,7 +203,10 @@ public class Type {
   }
 
   public String toString(boolean variable) {
-    return name + typeargs + brackets(dimension, variable);
+    if (variable && isArray()) {
+      return getArrayType() + brackets(getArrayDimension(), true);
+    }
+    return canonicalName + typeParameterSuffix;
   }
 
 }

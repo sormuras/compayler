@@ -14,7 +14,7 @@ public enum Kind {
   private final boolean throwingException;
 
   private Kind(String executableInterfaceName, boolean throwingException) {
-    this.executableType = Type.forName(executableInterfaceName);
+    this.executableType = new Type(executableInterfaceName);
     this.throwingException = throwingException;
   }
 

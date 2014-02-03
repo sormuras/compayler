@@ -2,13 +2,44 @@ package de.sormuras.compayler.model;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Test;
 
 import de.sormuras.compayler.Apis;
+import de.sormuras.compayler.Apis.Nested.Deeply;
 
 public class TypeTest {
+
+  @Test
+  public void testArrayDimension() {
+    assertEquals(0, new Type(int.class).getArrayDimension());
+    assertEquals(1, new Type(int[].class).getArrayDimension());
+    assertEquals(2, new Type(int[][].class).getArrayDimension());
+    assertEquals(3, new Type(int[][][].class).getArrayDimension());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testArrayType() {
+    assertEquals(Deeply.class.getName(), new Type(new Deeply[1][1].getClass()).getArrayType().getBinaryName());
+    assertEquals("int", new Type(int[][][].class).getArrayType().toString());
+    assertEquals("int", new Type(int[][].class).getArrayType().toString());
+    assertEquals("int", new Type(int[].class).getArrayType().toString());
+    assertEquals("bug", new Type(int.class).getArrayType().toString());
+  }
+
+  @Test
+  public void testGetPackageName() {
+    assertEquals("", new Type(int[].class).getPackageName());
+    assertEquals("", new Type(void.class).getPackageName());
+    assertEquals("java.lang", new Type(Void.class).getPackageName());
+    assertEquals("java.lang", new Type(Appendable.class).getPackageName());
+    assertEquals("java.util", new Type(new ArrayList<Integer>().getClass()).getPackageName());
+    assertEquals("java.util", new Type(List.class, "<java.lang.Integer>").getPackageName());
+    assertEquals("de.sormuras.compayler", new Type(Deeply.class).getPackageName());
+  }
 
   @Test
   public void testBrackets() {
@@ -29,20 +60,29 @@ public class TypeTest {
   @Test
   public void testToString() {
     int[][][] m3 = new int[1][1][1];
-    assertEquals("int[][][]", Type.forName(m3.getClass().getCanonicalName()).toString());
-    assertEquals("java.lang.Integer", Type.forName(Integer.class.getCanonicalName()).toString());
-    assertEquals("java.util.HashMap", Type.forName(new HashMap<String, String>().getClass().getCanonicalName()).toString());
-    assertEquals("java.util.HashMap<String, String>", Type.forName("java.util.HashMap", "<String, String>").toString());
-    assertEquals("java.util.HashMap[][]", Type.forName("java.util.HashMap", 2).toString());
-    assertEquals("java.lang.Object[]", Type.forName("java.lang.Object", 1).toString());
-    assertEquals("java.lang.Object[]", Type.forClass(Object[].class).toString());
+    assertEquals("int[][][]", new Type(m3.getClass()).toString());
+    assertEquals("java.lang.Integer", new Type(Integer.class).toString());
+    assertEquals("java.util.HashMap", new Type(new HashMap<String, String>().getClass()).toString());
+    assertEquals("java.lang.Object[]", new Type(Object[].class).toString());
+    assertEquals("void", new Type(void.class).toString());
+    assertEquals("java.lang.Void", new Type(Void.class).toString());
+    assertEquals("java.lang.Appendable", new Type(Appendable.class).toString());
+    assertEquals("java.util.ArrayList", new Type(new ArrayList<Integer>().getClass()).toString());
+    assertEquals("java.util.List<java.lang.Integer>", new Type(List.class, "<java.lang.Integer>").toString());
+
+    assertEquals("java.util.HashMap<String, String>", new Type("java.util.HashMap", "<String, String>").toString());
+    assertEquals("java.util.HashMap[][]", new Type(HashMap[][].class).toString());
+    assertEquals("[[Ljava.util.HashMap;", new Type(HashMap[][].class).getBinaryName());
+    assertEquals("java.util.HashMap[][]", new Type("[[Ljava.util.HashMap;").toString());
+    assertEquals("[[Ljava.util.HashMap;", new Type("[[Ljava.util.HashMap;").getBinaryName());
+    assertEquals("java.lang.Object[]", new Type("[Ljava.lang.Object;").toString());
   }
 
   @Test
   public void testVariableArgumentDimension() throws Exception {
-    assertEquals(1, Type.forClass(Object[].class).getDimension());
+    assertEquals(1, new Type(Object[].class).getArrayDimension());
     Class<?>[] types = Apis.Nested.Deeply.class.getDeclaredMethod("variable", Object[].class).getParameterTypes();
-    assertEquals(1, Type.forClass(types[types.length - 1]).getDimension());
+    assertEquals(1, new Type(types[types.length - 1]).getArrayDimension());
   }
 
 }
