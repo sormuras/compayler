@@ -5,7 +5,7 @@ Prevayler Decorator Compiler
 ## Generated decorator source 
 
 ### Generate "AppendableDecorator"
-	java -jar compayler java.lang.Appendable
+	java -jar compayler.jar java.lang.Appendable
 
 ### Use decorator over standard prevayler instance
 	Prevayler prevayler = createPrevayler(new StringBuilder());
