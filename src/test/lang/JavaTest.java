@@ -2,11 +2,16 @@ package lang;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 import org.junit.Test;
 
 import de.sormuras.compayler.Apis;
+import de.sormuras.compayler.Parsable;
 
 public class JavaTest {
 
@@ -42,6 +47,18 @@ public class JavaTest {
 
     assertEquals(m3.getClass(), Class.forName("[[[I"));
     assertEquals("[Lde.sormuras.compayler.Apis$Nested$Deeply;", new Apis.Nested.Deeply[1].getClass().getName());
+  }
+
+  @Test
+  public void testTypeParameters() throws Exception {
+    assertEquals("T", Comparable.class.getTypeParameters()[0].getName());
+    assertSame(Object.class, Comparable.class.getTypeParameters()[0].getBounds()[0]);
+    assertEquals("T", Field.class.getDeclaredMethod("getAnnotation", Class.class).getTypeParameters()[0].getName());
+    assertSame(Annotation.class, Field.class.getDeclaredMethod("getAnnotation", Class.class).getTypeParameters()[0].getBounds()[0]);
+    assertEquals("E", Parsable.class.getTypeParameters()[0].getName());
+    assertSame(Object.class, Parsable.class.getTypeParameters()[0].getBounds()[0]);
+    assertEquals("T", Parsable.class.getTypeParameters()[1].getName());
+    assertEquals("E", Parsable.class.getTypeParameters()[1].getBounds()[0].toString());
   }
 
 }
