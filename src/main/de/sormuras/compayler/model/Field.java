@@ -57,7 +57,6 @@ public class Field {
       builder.append("...");
     builder.append(" ");
     builder.append(name);
-    builder.append("");
     return builder.toString();
   }
 
