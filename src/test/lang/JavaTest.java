@@ -46,6 +46,7 @@ public class JavaTest {
     assertEquals(null, m3.getClass().getPackage());
 
     assertEquals(m3.getClass(), Class.forName("[[[I"));
+    assertEquals(Apis.Nested.Deeply[].class, Class.forName("[Lde.sormuras.compayler.Apis$Nested$Deeply;"));
     assertEquals("[Lde.sormuras.compayler.Apis$Nested$Deeply;", new Apis.Nested.Deeply[1].getClass().getName());
   }
 
