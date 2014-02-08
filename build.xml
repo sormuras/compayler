@@ -27,6 +27,7 @@
 		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
 			<classpath refid="compile.class.path" />
 			<src path="src/main" />
+			<src path="src/core" />
 		</javac>
 		<jar destfile="${dir.out}/compayler.jar">
 			<fileset dir="${dir.out}/classes" />

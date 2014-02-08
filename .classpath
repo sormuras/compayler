@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="src/core"/>
 	<classpathentry kind="src" path="src/demo"/>
 	<classpathentry kind="src" path="src/main"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry excluding=".gitignore" kind="src" path="src/generated"/>
+	<classpathentry kind="src" path="src/sandbox"/>
 	<classpathentry kind="lib" path="lib/prevayler-core-2.6.jar" sourcepath="lib/prevayler-core-2.6-sources.jar"/>
 	<classpathentry kind="lib" path="lib/qdox-2.0-M1.jar" sourcepath="lib/qdox-2.0-M1-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
