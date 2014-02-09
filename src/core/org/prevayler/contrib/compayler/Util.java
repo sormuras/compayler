@@ -8,13 +8,12 @@ import java.util.ArrayList;
  * @author Christian Stein
  */
 public class Util {
-  
-  public static Object[] array(Iterable<?> elements)
-  {
-      final ArrayList<Object> arrayElements = new ArrayList<>();
-      for (Object element : elements)
-          arrayElements.add(element);
-      return arrayElements.toArray();
+
+  public static Object[] array(Iterable<?> elements) {
+    final ArrayList<Object> list = new ArrayList<>();
+    for (Object element : elements)
+      list.add(element);
+    return list.toArray(new Object[list.size()]);
   }
 
   public static String brackets(int dimension, boolean variable) {
@@ -70,6 +69,10 @@ public class Util {
     throw new IllegalArgumentException("Illegal encoding: " + encoding);
   }
 
+  public static String merge(String head, String tail, String separator, Iterable<?> iterable) {
+    return merge(head, tail, separator, array(iterable));
+  }
+
   public static String merge(String head, String tail, String separator, Iterable<?>... iterables) {
     if (iterables.length == 0)
       return "";
@@ -85,7 +88,7 @@ public class Util {
     builder.append(tail);
     return builder.toString();
   }
-  
+
   public static String merge(String head, String tail, String separator, Object... objects) {
     if (objects.length == 0)
       return "";

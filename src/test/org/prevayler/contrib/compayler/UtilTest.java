@@ -73,6 +73,7 @@ public class UtilTest {
     def.add("d");
     def.add("e");
     def.add("f");
+    assertEquals("(d|e|f)", merge("(", ")", "|", def));
     String[] ghi = { "g", "h", "i" };
     assertEquals("(a|b|c|d|e|f|g|h|i)", merge("(", ")", "|", Arrays.asList("a", "b", "c"), def, Arrays.asList(ghi)));
   }
