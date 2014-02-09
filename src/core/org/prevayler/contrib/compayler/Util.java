@@ -1,11 +1,21 @@
 package org.prevayler.contrib.compayler;
 
+import java.util.ArrayList;
+
 /**
  * Utility methods.
  * 
  * @author Christian Stein
  */
 public class Util {
+  
+  public static Object[] array(Iterable<?> elements)
+  {
+      final ArrayList<Object> arrayElements = new ArrayList<>();
+      for (Object element : elements)
+          arrayElements.add(element);
+      return arrayElements.toArray();
+  }
 
   public static String brackets(int dimension, boolean variable) {
     if (dimension < 0)
@@ -60,6 +70,22 @@ public class Util {
     throw new IllegalArgumentException("Illegal encoding: " + encoding);
   }
 
+  public static String merge(String head, String tail, String separator, Iterable<?>... iterables) {
+    if (iterables.length == 0)
+      return "";
+    int count = 0;
+    StringBuilder builder = new StringBuilder();
+    builder.append(head);
+    for (Iterable<?> iterable : iterables) {
+      if (count > 0)
+        builder.append(separator);
+      merge(builder, "", "", separator, array(iterable));
+      count++;
+    }
+    builder.append(tail);
+    return builder.toString();
+  }
+  
   public static String merge(String head, String tail, String separator, Object... objects) {
     if (objects.length == 0)
       return "";

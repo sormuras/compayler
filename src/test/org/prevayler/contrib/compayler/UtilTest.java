@@ -5,9 +5,14 @@ import static org.junit.Assert.assertSame;
 import static org.prevayler.contrib.compayler.Util.brackets;
 import static org.prevayler.contrib.compayler.Util.canonical;
 import static org.prevayler.contrib.compayler.Util.element;
+import static org.prevayler.contrib.compayler.Util.merge;
 import static org.prevayler.contrib.compayler.Util.packaged;
 import static org.prevayler.contrib.compayler.Util.simple;
 import static org.prevayler.contrib.compayler.Util.wrap;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -56,6 +61,20 @@ public class UtilTest {
     assertSame(long.class, element('J'));
     assertSame(short.class, element('S'));
     element('V');
+  }
+
+  @Test
+  public void testMerge() {
+    assertEquals("", merge("(", ")", "|"));
+    assertEquals("(1)", merge("(", ")", "|", 1));
+    assertEquals("(1|2)", merge("(", ")", "|", 1, 2));
+    assertEquals("(1|2|3)", merge("(", ")", "|", 1, 2, 3));
+    List<String> def = new ArrayList<>();
+    def.add("d");
+    def.add("e");
+    def.add("f");
+    String[] ghi = { "g", "h", "i" };
+    assertEquals("(a|b|c|d|e|f|g|h|i)", merge("(", ")", "|", Arrays.asList("a", "b", "c"), def, Arrays.asList(ghi)));
   }
 
   @Test
