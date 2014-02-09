@@ -132,16 +132,27 @@ public class Type {
     return binaryName.hashCode();
   }
 
+  /**
+   * @return true if this object represents an array class; false otherwise.
+   * @see Class#isArray()
+   */
   public boolean isArray() {
     return binaryName.startsWith("[");
   }
 
+  /**
+   * @return true if this object represents a simple data type; false otherwise.
+   * @see Class#isPrimitive()
+   */
   public boolean isPrimitive() {
     return binaryName.equals("boolean") || binaryName.equals("byte") || binaryName.equals("char") || binaryName.equals("double")
         || binaryName.equals("float") || binaryName.equals("int") || binaryName.equals("long") || binaryName.equals("short")
         || binaryName.equals("void");
   }
 
+  /**
+   * @return true if this object represents the void/Void data type; false otherwise.
+   */
   public boolean isVoid() {
     return binaryName.equals("void") || binaryName.equals("java.lang.Void");
   }
