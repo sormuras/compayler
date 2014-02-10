@@ -2,6 +2,11 @@ package org.prevayler.contrib.compayler;
 
 import org.prevayler.contrib.compayler.Type;
 
+/**
+ * Parameter describing class.
+ * 
+ * @author Christian Stein
+ */
 public class Param {
 
   private int index;

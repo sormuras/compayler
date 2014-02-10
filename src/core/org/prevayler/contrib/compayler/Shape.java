@@ -8,6 +8,11 @@ import java.util.List;
 import org.prevayler.contrib.compayler.Type;
 import org.prevayler.contrib.compayler.Util;
 
+/**
+ * Method signature class.
+ * 
+ * @author Christian Stein
+ */
 public class Shape {
 
   private final List<Param> params;
