@@ -11,11 +11,17 @@ public class Param {
   private boolean variable;
   
   public Param() {
+    this("", null, false);
   }
   
   public Param(String name, Type type) {
+    this(name, type, false);
+  }
+  
+  public Param(String name, Type type, boolean variable) {
     setName(name);
     setType(type);
+    setVariable(variable);
   }
 
   public int getIndex() {
