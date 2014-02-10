@@ -2,6 +2,7 @@ package org.prevayler.contrib.compayler;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -33,6 +34,11 @@ public class TypeTest {
     assertEquals(new Type(type).hashCode(), new Type(binaryName).hashCode());
   }
 
+  @Test
+  public void testToURI() {
+    assertEquals(URI.create("compayler://java/lang/Void.java"), new Type(Void.class).toURI());
+    assertEquals(URI.create("compayler://java/lang/Thread$State.java"), new Type(Thread.State.class).toURI());
+  }
 
   @Test
   public void testWrap() {
@@ -46,5 +52,5 @@ public class TypeTest {
     assertEquals("java.lang.Short", new Type(short.class).getCanonicalName(true));
     assertEquals("java.lang.Void", new Type(void.class).getCanonicalName(true));
   }
-  
+
 }

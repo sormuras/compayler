@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +36,8 @@ public class Source extends SimpleJavaFileObject {
 
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1000);
 
-    public JavaClassObject(String name, JavaFileObject.Kind kind) {
-      super(URI.create("string:///" + name.replace('.', '/') + kind.extension), kind);
+    public JavaClassObject(URI uri) {
+      super(uri, Kind.SOURCE);
     }
 
     public byte[] getBytes() {
@@ -80,7 +81,7 @@ public class Source extends SimpleJavaFileObject {
     @Override
     public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling)
         throws IOException {
-      JavaClassObject object = new JavaClassObject(className, kind);
+      JavaClassObject object = new JavaClassObject(URI.create(className));
       map.put(className, object);
       return object;
     }
@@ -89,31 +90,17 @@ public class Source extends SimpleJavaFileObject {
   /**
    * To be compiled.
    */
-  private List<String> linesOfCode;
-
-  /**
-   * Like "java.util"
-   */
-  private String packageName;
-
-  /**
-   * Like "Date"
-   */
-  private String simpleClassName;
+  private List<String> code;
 
   /**
    * This constructor will store the source code and register it as a source code, using a URI containing the class full name.
    * 
-   * @param className
-   *          name of the public class in the source code
    * @param linesOfCode
    *          source code to compile
    */
-  public Source(String packageName, String simpleClassName, List<String> linesOfCode) {
-    super(URI.create("string:///" + packageName.replace('.', '/') + '/' + simpleClassName + Kind.SOURCE.extension), Kind.SOURCE);
-    this.packageName = packageName;
-    this.simpleClassName = simpleClassName;
-    this.linesOfCode = linesOfCode;
+  public Source(URI uri, List<String> code) {
+    super(uri, Kind.SOURCE);
+    this.code = code;
   }
 
   public ClassLoader compile() {
@@ -140,33 +127,25 @@ public class Source extends SimpleJavaFileObject {
   @Override
   public CharSequence getCharContent(boolean ignoreEncodingErrors) {
     StringBuilder builder = new StringBuilder();
-    for (String line : linesOfCode) {
+    for (String line : code) {
       builder.append(line).append(System.lineSeparator());
     }
     return builder.toString();
   }
 
-  public List<String> getLinesOfCode() {
-    return linesOfCode;
-  }
-
-  public String getPackageName() {
-    return packageName;
-  }
-
-  public String getSimpleClassName() {
-    return simpleClassName;
+  public List<String> getCode() {
+    return code;
   }
 
   public Charset getCharset() {
     return Charset.forName("UTF-8");
   }
 
-  public void save(String targetPath) throws Exception {
-    String pathname = targetPath + "/" + getPackageName().replace('.', '/');
-    File parent = Files.createDirectories(new File(pathname).toPath().toAbsolutePath()).toFile();
-    File file = new File(parent, getSimpleClassName() + getKind().extension);
-    Files.write(file.toPath(), getLinesOfCode(), getCharset());
+  public Path save(String targetPath) throws Exception {
+    File base = new File(targetPath); // System.getProperty("user.dir");
+    File file = new File(base, uri.getPath());
+    file.getParentFile().mkdirs();
+    return Files.write(file.toPath(), getCode(), getCharset());
   }
 
 }

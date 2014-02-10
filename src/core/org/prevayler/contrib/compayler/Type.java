@@ -6,6 +6,7 @@ import static org.prevayler.contrib.compayler.Util.packaged;
 import static org.prevayler.contrib.compayler.Util.simple;
 import static org.prevayler.contrib.compayler.Util.wrap;
 
+import java.net.URI;
 import java.util.Objects;
 
 /**
@@ -148,10 +149,17 @@ public class Type {
   public boolean isVoid() {
     return binaryName.equals("void") || binaryName.equals("java.lang.Void");
   }
-  
+
   @Override
   public String toString() {
     return canonicalName;
+  }
+
+  /**
+   * @return binary name without dots and ".java" appended.
+   */
+  public URI toURI() {
+    return URI.create("compayler://" + binaryName.replace('.', '/') + ".java");
   }
 
 }
