@@ -9,6 +9,14 @@ public class Param {
   private boolean time = false;
   private Type type = null;
   private boolean variable;
+  
+  public Param() {
+  }
+  
+  public Param(String name, Type type) {
+    setName(name);
+    setType(type);
+  }
 
   public int getIndex() {
     return index;
