@@ -8,16 +8,19 @@ import static org.prevayler.contrib.compayler.Util.wrap;
 
 import java.util.Objects;
 
+/**
+ * Data type.
+ * 
+ * @author Christian Stein
+ */
 public class Type {
 
   private final String binaryName;
   private final String canonicalName;
   private final String simpleName;
-  private final Type superType;
 
   public Type(Class<?> type) {
-    this(type.getName(), type.getCanonicalName(), type.getSimpleName(), type.getSuperclass() != null ? new Type(type.getSuperclass())
-        : null);
+    this(type.getName(), type.getCanonicalName(), type.getSimpleName());
     assert type.getCanonicalName().equals(canonical(binaryName));
     assert type.getSimpleName().equals(simple(canonical(binaryName)));
     assert type.isArray() == isArray();
@@ -26,15 +29,14 @@ public class Type {
   }
 
   public Type(String binaryName) {
-    this(binaryName, canonical(binaryName), simple(canonical(binaryName)), new Type(Object.class));
+    this(binaryName, canonical(binaryName), simple(canonical(binaryName)));
   }
 
-  public Type(String binaryName, String canonicalName, String simpleName, Type superType) {
+  public Type(String binaryName, String canonicalName, String simpleName) {
     Objects.requireNonNull(binaryName);
     this.binaryName = binaryName;
     this.canonicalName = canonicalName;
     this.simpleName = simpleName;
-    this.superType = superType;
   }
 
   @Override
@@ -94,8 +96,8 @@ public class Type {
   /**
    * @return same as {@link #getCanonicalName()}, but wrapper class type for primitives
    */
-  public String getCanonicalNameWrapped() {
-    return isPrimitive() ? wrap(canonicalName).getCanonicalName() : canonicalName;
+  public String getCanonicalName(boolean wrap) {
+    return wrap ? isPrimitive() ? wrap(canonicalName).getCanonicalName() : canonicalName : canonicalName;
   }
 
   /**
@@ -115,16 +117,6 @@ public class Type {
    */
   public String getSimpleName() {
     return simpleName;
-  }
-
-  /**
-   * Returns the simple name of the underlying class as given in the source code.
-   * 
-   * @return the supertype of the type represented by this object.
-   * @see Class#getSuperclass()
-   */
-  public Type getSuperType() {
-    return superType;
   }
 
   @Override
@@ -155,6 +147,11 @@ public class Type {
    */
   public boolean isVoid() {
     return binaryName.equals("void") || binaryName.equals("java.lang.Void");
+  }
+  
+  @Override
+  public String toString() {
+    return canonicalName;
   }
 
 }
