@@ -16,10 +16,11 @@ public class Listing {
   }
 
   public Listing add(String format, Object... args) {
-    builder.setLength(0);
-    for (int i = 0; i < depth; i++) {
-      builder.append(indentation);
+    if (format.isEmpty()) {
+      lines.add("");
+      return this;
     }
+    indentation();
     builder.append(args.length == 0 ? format : String.format(format, args));
     lines.add(builder.toString());
     return this;
@@ -41,6 +42,14 @@ public class Listing {
   public Listing inc() {
     depth++;
     return this;
+  }
+
+  public String indentation() {
+    builder.setLength(0);
+    for (int i = 0; i < depth; i++) {
+      builder.append(indentation);
+    }
+    return builder.toString();
   }
 
   public List<String> list() {
