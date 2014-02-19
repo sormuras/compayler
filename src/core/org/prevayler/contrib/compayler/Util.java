@@ -1,6 +1,8 @@
 package org.prevayler.contrib.compayler;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Utility methods.
@@ -124,6 +126,11 @@ public class Util {
       throw new IllegalArgumentException(canoncicalName + " isn't canonical!");
     int i = canoncicalName.lastIndexOf('.');
     return i < 0 ? canoncicalName : canoncicalName.substring(i + 1);
+  }
+
+  public static <T> List<T> unmodifiable(List<T> list) {
+    List<T> empty = Collections.emptyList();
+    return (list == null || list.isEmpty()) ? empty : Collections.unmodifiableList(list);
   }
 
   public static Class<?> wrap(String name) {

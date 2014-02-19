@@ -1,5 +1,6 @@
 package org.prevayler.contrib.compayler;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.prevayler.contrib.compayler.Util.brackets;
@@ -8,10 +9,10 @@ import static org.prevayler.contrib.compayler.Util.element;
 import static org.prevayler.contrib.compayler.Util.merge;
 import static org.prevayler.contrib.compayler.Util.packaged;
 import static org.prevayler.contrib.compayler.Util.simple;
+import static org.prevayler.contrib.compayler.Util.unmodifiable;
 import static org.prevayler.contrib.compayler.Util.wrap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class UtilTest {
     def.add("f");
     assertEquals("(d|e|f)", merge("(", ")", "|", def));
     String[] ghi = { "g", "h", "i" };
-    assertEquals("(a|b|c|d|e|f|g|h|i)", merge("(", ")", "|", Arrays.asList("a", "b", "c"), def, Arrays.asList(ghi)));
+    assertEquals("(a|b|c|d|e|f|g|h|i)", merge("(", ")", "|", asList("a", "b", "c"), def, asList(ghi)));
     assertEquals("d | e | f", merge("", "", " | ", def));
   }
 
@@ -94,6 +95,11 @@ public class UtilTest {
     assertEquals("Object[][][]", simple("java.lang.Object[][][]"));
     assertEquals("Entry", simple("java.util.Map.Entry"));
     simple("java.util.Map$Entry");
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testUnmodifiable() {
+    unmodifiable(asList(1, 2, 3)).add(Integer.valueOf(4));
   }
 
   @Test(expected = IllegalArgumentException.class)
