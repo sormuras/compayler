@@ -1,22 +1,20 @@
 package org.prevayler.contrib.compayler;
 
-import static org.prevayler.contrib.compayler.Util.merge;
+import static org.prevayler.contrib.compayler.Util.unmodifiable;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.prevayler.contrib.compayler.Type;
-import org.prevayler.contrib.compayler.Util;
-
 /**
- * Method signature class.
+ * Method signature shape bean class.
  * 
  * @author Christian Stein
  */
-public class Shape {
+public class Shape implements Unit {
 
+  private Mode mode;
   private final String name;
   private final List<Param> params;
+  private Long serialVersionUID;
   private final Type returnType;
   private final List<Type> throwables;
   private final boolean unique;
@@ -29,6 +27,8 @@ public class Shape {
     this.params = unmodifiable(fields);
     this.throwables = unmodifiable(throwables);
     this.unique = unique;
+    setMode(Mode.TRANSACTION);
+    setSerialVersionUID(null);
   }
 
   @Override
@@ -49,18 +49,32 @@ public class Shape {
     return true;
   }
 
+  @Override
+  public Mode getMode() {
+    return mode;
+  }
+
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public List<Param> getParams() {
     return params;
   }
 
+  @Override
+  public Long getSerialVersionUID() {
+    return serialVersionUID;
+  }
+
+  @Override
   public Type getReturnType() {
     return returnType;
   }
 
+  @Override
   public List<Type> getThrowables() {
     return throwables;
   }
@@ -75,29 +89,17 @@ public class Shape {
     return result;
   }
 
+  @Override
   public boolean isUnique() {
     return unique;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("public");
-    builder.append(" ");
-    builder.append(getReturnType().getCanonicalName());
-    builder.append(" ");
-    builder.append(getName());
-    builder.append(getParams().isEmpty() ? "()" : merge("(", ")", ", ", getParams()));
-    if (getThrowables().isEmpty())
-      return builder.toString();
-    builder.append(" throws ");
-    builder.append(Util.merge("", "", ", ", getThrowables().toArray()));
-    return builder.toString();
+  public void setMode(Mode mode) {
+    this.mode = mode;
   }
 
-  private <T> List<T> unmodifiable(List<T> list) {
-    List<T> empty = Collections.emptyList();
-    return (list == null || list.isEmpty()) ? empty : Collections.unmodifiableList(list);
+  public void setSerialVersionUID(Long serialVersionUID) {
+    this.serialVersionUID = serialVersionUID;
   }
 
 }

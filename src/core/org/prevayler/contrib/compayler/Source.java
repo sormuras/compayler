@@ -133,12 +133,12 @@ public class Source extends SimpleJavaFileObject {
     return builder.toString();
   }
 
-  public List<String> getCode() {
-    return code;
-  }
-
   public Charset getCharset() {
     return Charset.forName("UTF-8");
+  }
+
+  public List<String> getCode() {
+    return code;
   }
 
   public Path save(String targetPath) throws Exception {

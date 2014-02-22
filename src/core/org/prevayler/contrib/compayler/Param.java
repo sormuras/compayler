@@ -1,7 +1,5 @@
 package org.prevayler.contrib.compayler;
 
-import org.prevayler.contrib.compayler.Type;
-
 /**
  * Parameter describing class.
  * 
@@ -14,15 +12,15 @@ public class Param {
   private boolean time = false;
   private Type type = null;
   private boolean variable;
-  
+
   public Param() {
     this("", null, false);
   }
-  
+
   public Param(String name, Type type) {
     this(name, type, false);
   }
-  
+
   public Param(String name, Type type, boolean variable) {
     setName(name);
     setType(type);
