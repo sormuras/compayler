@@ -6,11 +6,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.github.sormuras.compayler.Loader;
 
 public class E101Test {
 
@@ -40,10 +39,11 @@ public class E101Test {
   }
 
   @Test
+  @Ignore
   public void testE101AsCompayled() throws Exception {
-    E101 e101 = Loader.load(E101.class, new Root());
-    test(e101);
-    ((AutoCloseable) e101).close();
+    // E101 e101 = Loader.load(E101.class, new Root());
+    // test(e101);
+    // ((Closeable) e101).close();
   }
 
 }

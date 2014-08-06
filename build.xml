@@ -10,7 +10,6 @@
 
 	<path id="compile.class.path">
 		<pathelement path="lib/prevayler-core-2.6.jar" />
-		<pathelement path="lib/qdox-2.0-M1.jar" />
 	</path>
 
 	<target name="clean">
@@ -26,7 +25,6 @@
 		<mkdir dir="${dir.out}/classes" />
 		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
 			<classpath refid="compile.class.path" />
-			<src path="src/main" />
 			<src path="src/core" />
 		</javac>
 		<jar destfile="${dir.out}/compayler.jar">
@@ -46,12 +44,14 @@
 			<pathelement path="lib/hamcrest-core-1.3.jar" />
 		</path>
 
+		<!--
 		<java classpathref="junit.class.path" classname="com.github.sormuras.compayler.Compayler">
 			<arg value="src/generated" />
 			<arg value="java.lang.Appendable" />
 			<arg value="java.lang.CharSequence" />
 			<arg value="http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/lang/Comparable.java/?v=source" />
 		</java>
+		-->
 
 		<mkdir dir="${dir.out}/junit/classes" />
 		<mkdir dir="${dir.out}/junit/reports" />
