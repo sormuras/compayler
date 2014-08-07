@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/core"/>
-	<classpathentry kind="src" path="src/demo"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry excluding=".gitignore" kind="src" path="src/generated">
 		<attributes>
