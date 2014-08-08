@@ -43,7 +43,7 @@ public class Compayler {
     Class<?> superClass() default Object.class;
 
     /**
-     * @return the binary name of the decorator class, or an empty string indicating automatic generation of the name.
+     * @return the canonical name of the decorator class, or an empty string indicating automatic generation of the name.
      */
     String value() default "";
   }
