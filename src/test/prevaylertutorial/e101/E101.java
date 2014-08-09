@@ -1,5 +1,6 @@
 package prevaylertutorial.e101;
 
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.DIRECT;
 import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.QUERY;
 
 import org.prevayler.contrib.compayler.Compayler.Decorate;
@@ -15,7 +16,7 @@ public interface E101 {
   @Execute(QUERY)
   Person getPerson(String identity);
 
-  @Execute(QUERY)
+  @Execute(DIRECT)
   boolean isEmpty();
 
   void updatePersonName(String identity, String name);
