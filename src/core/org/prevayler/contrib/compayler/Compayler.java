@@ -17,7 +17,7 @@ public class Compayler {
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
-  public static @interface Decorate {
+  public @interface Decorate {
 
     /**
      * @return the regular expression matching method names for direct execution mode.
@@ -53,14 +53,14 @@ public class Compayler {
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
-  public static @interface Executable {
+  public @interface Executable {
     ExecutionMode value() default ExecutionMode.TRANSACTION;
   }
 
   /**
    * Execution mode.
    */
-  public static enum ExecutionMode {
+  public enum ExecutionMode {
 
     /**
      * By-pass decorator/prevayler and work directly on the underlying prevalent system.
