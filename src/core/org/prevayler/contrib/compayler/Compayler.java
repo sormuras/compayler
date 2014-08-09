@@ -53,7 +53,7 @@ public class Compayler {
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
-  public @interface Executable {
+  public @interface Execute {
     ExecutionMode value() default ExecutionMode.TRANSACTION;
   }
 
