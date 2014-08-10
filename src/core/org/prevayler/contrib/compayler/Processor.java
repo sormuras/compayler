@@ -32,8 +32,7 @@ import org.prevayler.contrib.compayler.Compayler.Decorate;
 import org.prevayler.contrib.compayler.Compayler.Execute;
 import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 import org.prevayler.contrib.compayler.Compayler.ExecutionTime;
-import org.prevayler.contrib.compayler.model.Unit;
-import org.prevayler.contrib.compayler.model.Unit.Parameter;
+import org.prevayler.contrib.compayler.Unit.Parameter;
 
 public class Processor extends AbstractProcessor {
 

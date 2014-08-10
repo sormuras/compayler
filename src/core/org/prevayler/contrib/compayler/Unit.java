@@ -1,9 +1,8 @@
-package org.prevayler.contrib.compayler.model;
+package org.prevayler.contrib.compayler;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.prevayler.contrib.compayler.Compayler;
 import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 
 public class Unit {
@@ -51,7 +50,7 @@ public class Unit {
 
   private boolean chainable;
   private boolean defaults;
-  private Compayler.ExecutionMode mode = ExecutionMode.TRANSACTION;
+  private ExecutionMode mode = ExecutionMode.TRANSACTION;
   private String name;
   private List<Parameter> parameters = new ArrayList<>();
   private String returns;
@@ -66,7 +65,7 @@ public class Unit {
     return parameter;
   }
 
-  public Compayler.ExecutionMode getMode() {
+  public ExecutionMode getMode() {
     return mode;
   }
 
@@ -114,7 +113,7 @@ public class Unit {
     this.defaults = defaults;
   }
 
-  public void setMode(Compayler.ExecutionMode mode) {
+  public void setMode(ExecutionMode mode) {
     this.mode = mode;
   }
 

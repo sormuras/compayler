@@ -57,7 +57,7 @@ public class Compayler {
     
     ExecutionMode value() default ExecutionMode.TRANSACTION;
     
-    long serialVersionUID() default Long.MIN_VALUE;
+    long serialVersionUID() default 0L;
     
   }
 

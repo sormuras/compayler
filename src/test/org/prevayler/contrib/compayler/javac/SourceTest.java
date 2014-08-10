@@ -28,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.prevayler.contrib.compayler.Compayler.Decorate;
-import org.prevayler.contrib.compayler.Util;
 
 public class SourceTest {
 
@@ -54,21 +53,21 @@ public class SourceTest {
       if (roundEnv.processingOver())
         return true;
 
-      // annotations.forEach(System.out::println);
-
-      for (Element annotated : roundEnv.getElementsAnnotatedWith(Decorate.class)) {
+      for (Element annotated : roundEnv.getElementsAnnotatedWith(Tag.class)) {
         if (!annotated.getKind().isInterface())
           throw new IllegalStateException(Decorate.class + " expects an interface as target!");
 
         TypeElement interfaceElement = (TypeElement) annotated;
-        Decorate decorate = interfaceElement.getAnnotation(Decorate.class);
-        // System.out.println(decorate);
-
+        Tag tag = interfaceElement.getAnnotation(Tag.class);
+        
         try {
-          JavaFileObject jfo = processingEnv.getFiler().createSourceFile(decorate.value(), interfaceElement);
+          JavaFileObject jfo = processingEnv.getFiler().createSourceFile(tag.value(), interfaceElement);
           try (BufferedWriter bw = new BufferedWriter(jfo.openWriter())) {
-            bw.write("public class " + Util.simple(decorate.value()) + " {}");
+            bw.write("public class " + tag.value() + " implements " + interfaceElement.getQualifiedName() + " {");
             bw.newLine();
+            bw.write("  public String toString() { return \"generated\"; }");
+            bw.newLine();
+            bw.write("}");
           }
         } catch (IOException e) {
           e.printStackTrace();
@@ -111,17 +110,20 @@ public class SourceTest {
     lines.add("@" + Tag.class.getCanonicalName() + "(\"Deco\")");
     lines.add("public interface Test extends java.util.concurrent.Callable<Long> {");
     lines.add("  @Override");
-    lines.add("  Long call();");
+    lines.add("  default Long call() { return 123L; }");
     lines.add("}");
 
     Source source = new Source("Test", lines);
     ClassLoader loader = source.compile(new TagProcessor());
     @SuppressWarnings("unchecked")
     Class<Callable<Long>> test = (Class<Callable<Long>>) loader.loadClass("Test");
-    assertTrue(test.isInterface());
     Tag tag = test.getAnnotation(Tag.class);
     assertNotNull(tag);
     assertEquals("Deco", tag.value());
+    @SuppressWarnings("unchecked")
+    Class<Callable<Long>> deco = (Class<Callable<Long>>) loader.loadClass("Deco");
+    assertTrue(test.isAssignableFrom(deco));
+    assertEquals(Long.valueOf(123L), deco.newInstance().call());
   }
 
 }
