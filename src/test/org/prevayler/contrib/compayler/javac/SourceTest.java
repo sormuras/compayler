@@ -13,13 +13,9 @@ import java.lang.annotation.Retention;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -31,9 +27,7 @@ import javax.tools.JavaFileObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.prevayler.contrib.compayler.Compayler;
 import org.prevayler.contrib.compayler.Compayler.Decorate;
-import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 import org.prevayler.contrib.compayler.Util;
 
 public class SourceTest {
@@ -43,7 +37,7 @@ public class SourceTest {
     String value() default "<not set>";
   }
 
-  private class Processor extends AbstractProcessor {
+  private class TagProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
@@ -69,14 +63,6 @@ public class SourceTest {
         TypeElement interfaceElement = (TypeElement) annotated;
         Decorate decorate = interfaceElement.getAnnotation(Decorate.class);
         // System.out.println(decorate);
-
-        Map<Compayler.ExecutionMode, Matcher> matcher = new EnumMap<>(Compayler.ExecutionMode.class);
-        matcher.put(ExecutionMode.TRANSACTION, Pattern.compile(decorate.transactionRegex()).matcher(""));
-        matcher.put(ExecutionMode.QUERY, Pattern.compile(decorate.queryRegex()).matcher(""));
-        matcher.put(ExecutionMode.DIRECT, Pattern.compile(decorate.directRegex()).matcher(""));
-        // System.out.println(matcher.get(ExecutionMode.QUERY));
-        // System.out.println(matcher.get(ExecutionMode.QUERY).reset("call").matches());
-        // System.out.println(matcher.get(ExecutionMode.DIRECT).reset("calldirecte").matches());
 
         try {
           JavaFileObject jfo = processingEnv.getFiler().createSourceFile(decorate.value(), interfaceElement);
@@ -129,7 +115,7 @@ public class SourceTest {
     lines.add("}");
 
     Source source = new Source("Test", lines);
-    ClassLoader loader = source.compile(new Processor());
+    ClassLoader loader = source.compile(new TagProcessor());
     @SuppressWarnings("unchecked")
     Class<Callable<Long>> test = (Class<Callable<Long>>) loader.loadClass("Test");
     assertTrue(test.isInterface());

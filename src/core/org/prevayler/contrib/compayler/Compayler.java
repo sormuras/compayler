@@ -54,7 +54,11 @@ public class Compayler {
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Execute {
+    
     ExecutionMode value() default ExecutionMode.TRANSACTION;
+    
+    long serialVersionUID() default Long.MIN_VALUE;
+    
   }
 
   /**

@@ -29,9 +29,12 @@
 		</javac>
 		<jar destfile="${dir.out}/compayler.jar">
 			<fileset dir="${dir.out}/classes" />
-            <manifest>
-                <attribute name="Main-Class" value="com.github.sormuras.compayler.Compayler"/>
-            </manifest>
+			<manifest>
+				<attribute name="Main-Class" value="org.prevayler.contrib.compayler.Compayler" />
+			</manifest>
+			<service type="javax.annotation.processing.Processor">
+				<provider classname="org.prevayler.contrib.compayler.Processor" />
+			</service>
 		</jar>
 	</target>
 
