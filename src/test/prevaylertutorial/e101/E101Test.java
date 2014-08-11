@@ -52,7 +52,7 @@ public class E101Test {
 
     Source source = new Source(E101.class.getCanonicalName(), lines);
     ClassLoader loader = source.compile(new Processor());
-    Prevayler<E101> prevayler = prevayler(new Root(), loader);
+    Prevayler<E101> prevayler = prevayler(new Root(), loader, temp.newFolder());
 
     @SuppressWarnings("unchecked")
     Class<? extends E101> decoratorClass = (Class<? extends E101>) loader.loadClass(E101.class.getCanonicalName() + "Decorator");
