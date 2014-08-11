@@ -19,6 +19,10 @@ import javax.annotation.Generated;
 import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 import org.prevayler.contrib.compayler.Unit.Parameter;
 
+/**
+ * Generates java source code
+ * @author Sor
+ */
 public class Generator {
 
   /**
@@ -110,14 +114,6 @@ public class Generator {
     return binaryName.equals("boolean") || binaryName.equals("byte") || binaryName.equals("char") || binaryName.equals("double")
         || binaryName.equals("float") || binaryName.equals("int") || binaryName.equals("long") || binaryName.equals("short")
         || binaryName.equals("void");
-  }
-
-  private static String replaceLast(String string, String from, String to) {
-    int lastIndex = string.lastIndexOf(from);
-    if (lastIndex < 0)
-      return string;
-    String tail = string.substring(lastIndex).replaceFirst(from, to);
-    return string.substring(0, lastIndex) + tail;
   }
 
   public static String simple(String canoncicalName) {
@@ -452,9 +448,6 @@ public class Generator {
     builder.append(unit.getName());
     builder.append("(");
     String params = join(", ", unit.getParameters().stream().map(p -> p.toString()).collect(Collectors.toList()));
-    if (unit.isVarargs()) {
-      params = replaceLast(params, "\\[]", "...");
-    }
     builder.append(params);
 
     builder.append(")");

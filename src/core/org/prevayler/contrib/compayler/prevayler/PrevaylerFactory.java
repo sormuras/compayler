@@ -25,14 +25,23 @@ import org.prevayler.implementation.snapshot.GenericSnapshotManager;
 @FunctionalInterface
 public interface PrevaylerFactory<P> {
 
+  /**
+   * @return default prevayler using prevalent system classes class loader
+   */
   public static <P> Prevayler<P> prevayler(P prevalentSystem) throws Exception {
     return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader());
   }
 
+  /**
+   * @return default prevayler using given class loader and {@code PrevalenceBase/} as journaling folder
+   */
   public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader) throws Exception {
     return prevayler(prevalentSystem, loader, new File("PrevalenceBase"));
   }
 
+  /**
+   * @return default prevayler using given class loader and given journaling folder
+   */
   public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader, File folder) throws Exception {
     PrevaylerDirectory directory = new PrevaylerDirectory(folder);
     Monitor monitor = new SimpleMonitor(System.err);
@@ -51,7 +60,7 @@ public interface PrevaylerFactory<P> {
    * 
    * @param loader
    *          The class loader that must be used to (de-)serialize transaction objects.
-   * @return
+   * @return the prevayler instance
    */
   Prevayler<P> createPrevayler(ClassLoader loader) throws Exception;
 
