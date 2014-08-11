@@ -42,6 +42,7 @@
 
 	<target name="test" depends="compile" description="execute all tests">
 		<path id="junit.class.path">
+			<pathelement path="src/test" />
 			<pathelement path="${dir.out}/compayler.jar" />
 			<pathelement path="${dir.out}/junit/classes" />
 			<path refid="compile.class.path" />

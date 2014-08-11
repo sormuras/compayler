@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/core"/>
-	<classpathentry kind="src" path="src/test"/>
-	<classpathentry excluding=".gitignore" kind="src" path="src/generated">
-		<attributes>
-			<attribute name="ignore_optional_problems" value="true"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="src" output="src/test" path="src/test"/>
+	<classpathentry excluding=".gitignore" kind="src" path="src/generated"/>
 	<classpathentry excluding=".gitignore" kind="src" path="src/sandbox"/>
 	<classpathentry kind="lib" path="lib/prevayler-core-2.6.jar" sourcepath="lib/prevayler-core-2.6-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>

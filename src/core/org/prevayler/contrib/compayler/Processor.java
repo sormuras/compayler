@@ -203,7 +203,6 @@ public class Processor extends AbstractProcessor {
     Generator generator = new Generator(compayler, units);
 
     JavaFileObject jfo = processingEnv.getFiler().createSourceFile(compayler.getDecoratorName());
-    // System.out.println(jfo.toUri());
 
     try (BufferedWriter writer = new BufferedWriter(jfo.openWriter())) {
       for (String line : generator.generateSource()) {

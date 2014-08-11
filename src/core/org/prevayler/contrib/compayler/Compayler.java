@@ -1,11 +1,15 @@
 package org.prevayler.contrib.compayler;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.prevayler.Prevayler;
+import org.prevayler.contrib.compayler.javac.Source;
 import org.prevayler.contrib.compayler.prevayler.PrevaylerFactory;
 import org.prevayler.contrib.compayler.prevayler.VolatilePrevaylerFactory;
 
@@ -36,15 +40,15 @@ public class Compayler {
     String queryRegex() default "^get.*|^is.*|^find.*|^fetch.*|^retrieve.*";
 
     /**
+     * @return the class the generated decorator will extend.
+     */
+    Class<?> superClass() default Object.class;
+
+    /**
      * @return the regular expression matching method names for transaction execution mode.
      * @see ExecutionMode#TRANSACTION
      */
     String transactionRegex() default ".*";
-
-    /**
-     * @return the class the generated decorator will extend.
-     */
-    Class<?> superClass() default Object.class;
 
     /**
      * @return the canonical name of the decorator class, or an empty string indicating automatic generation of the name.
@@ -59,9 +63,9 @@ public class Compayler {
   @Target(ElementType.METHOD)
   public @interface Execute {
 
-    ExecutionMode value() default ExecutionMode.TRANSACTION;
-
     long serialVersionUID() default 0L;
+
+    ExecutionMode value() default ExecutionMode.TRANSACTION;
 
   }
 
@@ -115,6 +119,10 @@ public class Compayler {
 
   private final String interfaceName;
 
+  public Compayler(Class<?> interfaceClass) {
+    this(interfaceClass.getName());
+  }
+
   public Compayler(String interfaceName) {
     this.interfaceName = interfaceName;
   }
@@ -124,9 +132,13 @@ public class Compayler {
   }
 
   public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
-    ClassLoader loader = getClass().getClassLoader(); // TODO compile()
+    File file = new File(getClass().getClassLoader().getResource(interfaceName.replace('.', '/') + ".java").toURI());
+    List<String> lines = Files.readAllLines(file.toPath());
+    Source source = new Source(interfaceName, lines);
+    ClassLoader loader = source.compile(new Processor());
     return decorate(prevaylerFactory, loader);
   }
+
   public <P> P decorate(PrevaylerFactory<P> prevaylerFactory, ClassLoader loader) throws Exception {
     Prevayler<P> prevayler = prevaylerFactory.createPrevayler(loader);
     @SuppressWarnings("unchecked")
