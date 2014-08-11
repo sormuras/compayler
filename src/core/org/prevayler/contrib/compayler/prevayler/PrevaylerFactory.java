@@ -24,11 +24,15 @@ import org.prevayler.implementation.snapshot.GenericSnapshotManager;
  */
 @FunctionalInterface
 public interface PrevaylerFactory<P> {
-  
+
+  public static <P> Prevayler<P> prevayler(P prevalentSystem) throws Exception {
+    return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader());
+  }
+
   public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader) throws Exception {
     return prevayler(prevalentSystem, loader, new File("PrevalenceBase"));
   }
-  
+
   public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader, File folder) throws Exception {
     PrevaylerDirectory directory = new PrevaylerDirectory(folder);
     Monitor monitor = new SimpleMonitor(System.err);
