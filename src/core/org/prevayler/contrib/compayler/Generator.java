@@ -21,6 +21,7 @@ import org.prevayler.contrib.compayler.Unit.Parameter;
 
 /**
  * Generates java source code
+ * 
  * @author Sor
  */
 public class Generator {
@@ -263,7 +264,13 @@ public class Generator {
     add("");
     add("@Override");
     add("public void close() throws java.io.IOException {");
-    inc().add("prevayler.close();").dec();
+    inc();
+    add("prevayler.close();");
+    add("if (prevalentSystem instanceof java.io.Closeable)");
+    inc();
+    add("((java.io.Closeable) prevalentSystem).close();");
+    dec();
+    dec();
     add("}");
     add("");
     add("public org.prevayler.Prevayler<? extends " + interfaceName + "> prevayler() {");
