@@ -142,6 +142,8 @@ public class Processor extends AbstractProcessor {
 
     List<Unit> units = methods.stream().map(method -> processMethod(type, method, matcher)).collect(toList());
 
+    Unit.updateAllUniqueProperties(units);
+
     // units.forEach(unit -> message.append(unit).append("\n"));
 
     try {

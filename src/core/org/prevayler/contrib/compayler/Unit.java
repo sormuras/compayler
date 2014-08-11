@@ -1,7 +1,9 @@
 package org.prevayler.contrib.compayler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 
@@ -42,6 +44,11 @@ public class Unit {
       this.type = type;
     }
 
+    public void setVars(boolean vars) {
+      this.vars = vars;
+
+    }
+
     @Override
     public String toString() {
       StringBuilder builder = new StringBuilder();
@@ -58,11 +65,17 @@ public class Unit {
       return builder.toString();
     }
 
-    public void setVars(boolean vars) {
-      this.vars = vars;
+  }
 
-    }
-
+  public static void updateAllUniqueProperties(List<Unit> units) {
+    Map<String, Boolean> map = new HashMap<>();
+    units.forEach(unit -> {
+      Boolean old = map.put(unit.getName(), Boolean.TRUE);
+      if (old == null)
+        return;
+      map.put(unit.getName(), Boolean.FALSE);
+    });
+    units.forEach(unit -> unit.setUnique(map.get(unit.getName())));
   }
 
   private boolean chainable;
@@ -74,6 +87,7 @@ public class Unit {
   private Long serialVersionUID = Long.valueOf(0L);
   private List<String> throwns = new ArrayList<>();
   private boolean unique;
+
   private boolean varargs;
 
   public Parameter createParameter() {
