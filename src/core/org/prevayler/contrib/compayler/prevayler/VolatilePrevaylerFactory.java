@@ -4,8 +4,14 @@ import org.prevayler.Prevayler;
 
 public class VolatilePrevaylerFactory<P> implements PrevaylerFactory<P> {
 
+  private final P prevalentSystem;
+
+  public VolatilePrevaylerFactory(P prevalentSystem) {
+    this.prevalentSystem = prevalentSystem;
+  }
+
   @Override
-  public Prevayler<P> createPrevayler(P prevalentSystem, ClassLoader loader) {
+  public Prevayler<P> createPrevayler(ClassLoader loader) {
     return new VolatilePrevayler<>(prevalentSystem, loader);
   }
 

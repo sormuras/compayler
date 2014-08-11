@@ -1,8 +1,15 @@
 package org.prevayler.contrib.compayler;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 import static javax.lang.model.element.ElementKind.METHOD;
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.DIRECT;
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.QUERY;
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.TRANSACTION;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -27,6 +34,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 
 import org.prevayler.contrib.compayler.Compayler.Decorate;
 import org.prevayler.contrib.compayler.Compayler.Execute;
@@ -36,17 +44,7 @@ import org.prevayler.contrib.compayler.Unit.Parameter;
 
 public class Processor extends AbstractProcessor {
 
-  class E {
-
-    ExecutableElement hider;
-    ExecutableElement hidden;
-
-    E(ExecutableElement hider, ExecutableElement hidden) {
-      this.hider = hider;
-      this.hidden = hidden;
-    }
-
-  }
+  private static final List<ExecutionMode> modes = unmodifiableList(asList(TRANSACTION, QUERY, DIRECT));
 
   private Elements elements;
   private StringBuilder message;
@@ -92,6 +90,10 @@ public class Processor extends AbstractProcessor {
     return SourceVersion.RELEASE_8;
   }
 
+  protected boolean hides(ExecutableElement hider, ExecutableElement hidden, TypeElement type) {
+    return elements.hides(hider, hidden) || elements.overrides(hider, hidden, type);
+  }
+
   @Override
   public synchronized void init(ProcessingEnvironment processingEnv) {
     super.init(processingEnv);
@@ -105,28 +107,25 @@ public class Processor extends AbstractProcessor {
     if (roundEnv.processingOver())
       return false;
 
-    message.append("Requested procession for ");
-    annotations.forEach(a -> message.append('@').append(a.getSimpleName()).append(' '));
-    message.append('\n');
+    // message.append("Requested procession for ");
+    // annotations.forEach(a -> message.append('@').append(a.getSimpleName()).append(' '));
+    // message.append('\n');
 
     for (Element decorated : roundEnv.getElementsAnnotatedWith(Decorate.class)) {
       if (!decorated.getKind().isInterface())
         throw new IllegalStateException(Decorate.class + " expects an interface as target!");
 
       Decorate decorate = decorated.getAnnotation(Decorate.class);
-      message.append("Processing interface ").append(decorated).append(" using ").append(decorate).append('\n');
+      // message.append("Processing interface ").append(decorated).append(" using ").append(decorate).append('\n');
       processInterface((TypeElement) decorated, decorate);
 
-      message.append('\n');
-      processingEnv.getMessager().printMessage(Kind.NOTE, message.toString());
+      if (message.length() > 0) {
+        message.append('\n');
+        processingEnv.getMessager().printMessage(Kind.NOTE, message.toString());
+      }
     }
 
     return true;
-
-  }
-
-  protected boolean hides(ExecutableElement hider, ExecutableElement hidden, TypeElement type) {
-    return elements.hides(hider, hidden) || elements.overrides(hider, hidden, type);
   }
 
   protected void processInterface(TypeElement type, Decorate decorate) {
@@ -137,21 +136,52 @@ public class Processor extends AbstractProcessor {
     // methods.forEach(System.out::println);
 
     Map<ExecutionMode, Matcher> matcher = new EnumMap<>(ExecutionMode.class);
-    matcher.put(ExecutionMode.TRANSACTION, Pattern.compile(decorate.transactionRegex()).matcher(""));
-    matcher.put(ExecutionMode.QUERY, Pattern.compile(decorate.queryRegex()).matcher(""));
-    matcher.put(ExecutionMode.DIRECT, Pattern.compile(decorate.directRegex()).matcher(""));
+    matcher.put(TRANSACTION, Pattern.compile(decorate.transactionRegex()).matcher(""));
+    matcher.put(QUERY, Pattern.compile(decorate.queryRegex()).matcher(""));
+    matcher.put(DIRECT, Pattern.compile(decorate.directRegex()).matcher(""));
 
     List<Unit> units = methods.stream().map(method -> processMethod(type, method, matcher)).collect(toList());
 
-    units.forEach(unit -> message.append(unit).append("\n"));
+    // units.forEach(unit -> message.append(unit).append("\n"));
 
-    // Compayler compayler = new Compayler(new Type(binary(type)));
-    // compayler.setUnits(units);
-    // try {
-    // writeDecorator(compayler);
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
+    try {
+      writeDecorator(type, decorate, units);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  protected Unit processMethod(TypeElement type, ExecutableElement method, Map<ExecutionMode, Matcher> matcher) {
+    Unit unit = new Unit();
+    unit.setName(method.getSimpleName().toString());
+    unit.setReturns(method.getReturnType().toString());
+    unit.setDefaults(method.isDefault());
+    unit.setVarargs(method.isVarArgs());
+    unit.setChainable(types.isAssignable(type.asType(), method.getReturnType()));
+
+    modes.stream().filter(mode -> matcher.get(mode).reset(unit.getName()).matches()).forEachOrdered(unit::setMode);
+
+    Execute execute = method.getAnnotation(Execute.class);
+    if (execute != null) {
+      unit.setMode(execute.value());
+      unit.setSerialVersionUID(execute.serialVersionUID());
+    }
+
+    method.getThrownTypes().forEach(thrown -> unit.getThrowns().add(thrown.toString()));
+
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (!parameters.isEmpty()) {
+      VariableElement lastParameter = parameters.get(parameters.size() - 1);
+      for (VariableElement variable : parameters) {
+        Parameter parameter = unit.createParameter();
+        parameter.setName(variable.getSimpleName().toString());
+        parameter.setType(variable.asType().toString());
+        parameter.setTime(variable.getAnnotation(ExecutionTime.class) != null);
+        parameter.setVars(method.isVarArgs() && variable == lastParameter);
+      }
+    }
+
+    return unit;
   }
 
   protected List<ExecutableElement> scan(TypeElement type) {
@@ -168,51 +198,19 @@ public class Processor extends AbstractProcessor {
     return methods;
   }
 
-  private Unit processMethod(TypeElement type, ExecutableElement method, Map<ExecutionMode, Matcher> matcher) {
+  protected void writeDecorator(TypeElement type, Decorate decorate, List<Unit> units) throws IOException {
+    Compayler compayler = new Compayler(type.getQualifiedName().toString());
+    Generator generator = new Generator(compayler, units);
 
-    Unit unit = new Unit();
-    unit.setName(method.getSimpleName().toString());
-    unit.setReturns(method.getReturnType().toString());
-    unit.setDefaults(method.isDefault());
-    unit.setVarargs(method.isVarArgs());
-    unit.setChainable(types.isAssignable(type.asType(), method.getReturnType()));
-   
-    for (ExecutionMode mode : Arrays.asList(ExecutionMode.TRANSACTION, ExecutionMode.QUERY, ExecutionMode.DIRECT))
-      if (matcher.get(mode).reset(unit.getName()).matches())
-        unit.setMode(mode);
+    JavaFileObject jfo = processingEnv.getFiler().createSourceFile(compayler.getDecoratorName());
+    // System.out.println(jfo.toUri());
 
-    Execute execute = method.getAnnotation(Execute.class);
-    if (execute != null) {
-      unit.setMode(execute.value());
-      unit.setSerialVersionUID(execute.serialVersionUID());
+    try (BufferedWriter writer = new BufferedWriter(jfo.openWriter())) {
+      for (String line : generator.generateSource()) {
+        writer.write(line);
+        writer.newLine();
+      }
     }
-
-    method.getThrownTypes().forEach(thrown -> unit.getThrowns().add(thrown.toString()));
-
-    for (VariableElement variable : method.getParameters()) {
-      Parameter parameter = unit.createParameter();
-      parameter.setName(variable.getSimpleName().toString());
-      parameter.setType(variable.asType().toString());
-      parameter.setTime(variable.getAnnotation(ExecutionTime.class) != null);
-    }
-
-    return unit;
   }
-
-  // private void writeDecorator(Compayler compayler) throws IOException {
-  // Generator generator = new Generator(compayler);
-  // Source source = generator.generateSource();
-  //
-  // JavaFileObject jfo = processingEnv.getFiler().createSourceFile(compayler.getDecoratorType().getCanonicalName());
-  //
-  // try (BufferedWriter bw = new BufferedWriter(jfo.openWriter())) {
-  // for (String line : source.getCode()) {
-  // bw.write(line);
-  // bw.newLine();
-  // }
-  // } catch (IOException e) {
-  // e.printStackTrace();
-  // }
-  // }
 
 }

@@ -55,7 +55,7 @@ public class Source extends SimpleJavaFileObject {
     Manager manager = new Manager(compiler.getStandardFileManager(null, null, null), parent);
     List<String> options = new ArrayList<>();
     options.add("-parameters");
-    options.add("-Xlint:all");
+    // options.add("-Xlint:all");
     // options.add("-XprintRounds");
     CompilationTask task = compiler.getTask(null, manager, null, options, null, singleton(this));
     taskVisitor.visitTask(task);

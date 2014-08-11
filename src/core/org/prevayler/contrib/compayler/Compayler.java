@@ -5,6 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.prevayler.Prevayler;
+import org.prevayler.contrib.compayler.prevayler.PrevaylerFactory;
+import org.prevayler.contrib.compayler.prevayler.VolatilePrevaylerFactory;
+
 /**
  * Prevayler decorator compiler main class and configuration assets.
  * 
@@ -54,11 +58,11 @@ public class Compayler {
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Execute {
-    
+
     ExecutionMode value() default ExecutionMode.TRANSACTION;
-    
+
     long serialVersionUID() default 0L;
-    
+
   }
 
   /**
@@ -107,6 +111,35 @@ public class Compayler {
   @Target(ElementType.PARAMETER)
   public @interface ExecutionTime {
     // empty
+  }
+
+  private final String interfaceName;
+
+  public Compayler(String interfaceName) {
+    this.interfaceName = interfaceName;
+  }
+
+  public <P> P decorate(P prevalentSystem) throws Exception {
+    return decorate(new VolatilePrevaylerFactory<>(prevalentSystem));
+  }
+
+  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
+    ClassLoader loader = getClass().getClassLoader(); // TODO compile()
+    return decorate(prevaylerFactory, loader);
+  }
+  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory, ClassLoader loader) throws Exception {
+    Prevayler<P> prevayler = prevaylerFactory.createPrevayler(loader);
+    @SuppressWarnings("unchecked")
+    Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(getDecoratorName());
+    return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
+  }
+
+  public String getDecoratorName() {
+    return interfaceName + "Decorator";
+  }
+
+  public String getInterfaceName() {
+    return interfaceName;
   }
 
 }

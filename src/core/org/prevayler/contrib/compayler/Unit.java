@@ -12,6 +12,7 @@ public class Unit {
     private String name;
     private boolean time;
     private String type;
+    private boolean vars;
 
     public String getName() {
       return name;
@@ -23,6 +24,10 @@ public class Unit {
 
     public boolean isTime() {
       return time;
+    }
+
+    public boolean isVars() {
+      return vars;
     }
 
     public void setName(String name) {
@@ -41,9 +46,21 @@ public class Unit {
     public String toString() {
       StringBuilder builder = new StringBuilder();
       builder.append(type);
+      if (isVars()) {
+        // assert type.isArray() : type.toString();
+        assert builder.charAt(builder.length() - 2) == '[';
+        assert builder.charAt(builder.length() - 1) == ']';
+        builder.setLength(builder.length() - 2); // remove "[]" from end of the builder buffer
+        builder.append("...");
+      }
       builder.append(" ");
       builder.append(name);
       return builder.toString();
+    }
+
+    public void setVars(boolean vars) {
+      this.vars = vars;
+
     }
 
   }

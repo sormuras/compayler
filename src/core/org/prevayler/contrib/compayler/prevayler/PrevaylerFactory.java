@@ -22,6 +22,7 @@ import org.prevayler.implementation.snapshot.GenericSnapshotManager;
 /**
  * Used to instantiate a prevayler implementation.
  */
+@FunctionalInterface
 public interface PrevaylerFactory<P> {
   
   public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader) throws Exception {
@@ -48,8 +49,6 @@ public interface PrevaylerFactory<P> {
    *          The class loader that must be used to (de-)serialize transaction objects.
    * @return
    */
-  default Prevayler<P> createPrevayler(P prevalentSystem, ClassLoader loader) throws Exception {
-    return prevayler(prevalentSystem, loader);
-  }
+  Prevayler<P> createPrevayler(ClassLoader loader) throws Exception;
 
 }
