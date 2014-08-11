@@ -5,7 +5,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.prevayler.contrib.compayler.prevayler.PrevaylerFactory.prevayler;
 
-import java.io.Closeable;
 import java.util.UUID;
 
 import org.junit.Rule;
@@ -42,9 +41,10 @@ public class E101Test {
 
   @Test
   public void testE101AsCompayled() throws Exception {
-    E101 e101 = new Compayler(E101.class).decorate(loader -> prevayler(new Root(), loader, temp.newFolder()));
-    test(e101);
-    ((Closeable) e101).close();
+    Compayler compayler = new Compayler(E101.class);
+    try (E101 e101 = compayler.decorate(loader -> prevayler(new Root(), loader, temp.newFolder()))) {
+      test(e101);
+    }
   }
 
 }

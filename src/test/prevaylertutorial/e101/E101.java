@@ -3,11 +3,13 @@ package prevaylertutorial.e101;
 import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.DIRECT;
 import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.QUERY;
 
+import java.io.Closeable;
+
 import org.prevayler.contrib.compayler.Compayler.Decorate;
 import org.prevayler.contrib.compayler.Compayler.Execute;
 
-@Decorate("demo/DecorationOfExample101")
-public interface E101 {
+@Decorate
+public interface E101 extends Closeable {
 
   Person createPerson(String identity);
 

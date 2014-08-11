@@ -1,5 +1,6 @@
 package prevaylertutorial.e101;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,11 @@ public class Root implements Serializable, E101 {
   private static final long serialVersionUID = 1l;
 
   private Map<String, Person> persons = new HashMap<>();
+
+  @Override
+  public void close() throws IOException {
+    // no-op
+  }
 
   @Override
   public Person createPerson(String identity) {
