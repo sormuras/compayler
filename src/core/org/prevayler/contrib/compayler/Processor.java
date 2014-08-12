@@ -1,7 +1,5 @@
 package org.prevayler.contrib.compayler;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 import static javax.lang.model.element.ElementKind.METHOD;
 import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.DIRECT;
@@ -43,8 +41,6 @@ import org.prevayler.contrib.compayler.Compayler.ExecutionTime;
 import org.prevayler.contrib.compayler.Unit.Parameter;
 
 public class Processor extends AbstractProcessor {
-
-  private static final List<ExecutionMode> modes = unmodifiableList(asList(TRANSACTION, QUERY, DIRECT));
 
   private Elements elements;
   private StringBuilder message;
@@ -143,6 +139,7 @@ public class Processor extends AbstractProcessor {
     List<Unit> units = methods.stream().map(method -> processMethod(type, method, matcher)).collect(toList());
 
     Unit.updateAllUniqueProperties(units);
+    Unit.sort(units);
 
     // units.forEach(unit -> message.append(unit).append("\n"));
 
@@ -161,7 +158,7 @@ public class Processor extends AbstractProcessor {
     unit.setVarargs(method.isVarArgs());
     unit.setChainable(types.isAssignable(type.asType(), method.getReturnType()));
 
-    modes.stream().filter(mode -> matcher.get(mode).reset(unit.getName()).matches()).forEachOrdered(unit::setMode);
+    ExecutionMode.MODES.stream().filter(mode -> matcher.get(mode).reset(unit.getName()).matches()).forEachOrdered(unit::setMode);
 
     Execute execute = method.getAnnotation(Execute.class);
     if (execute != null) {

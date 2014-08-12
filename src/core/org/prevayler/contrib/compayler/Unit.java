@@ -1,6 +1,7 @@
 package org.prevayler.contrib.compayler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,10 @@ public class Unit {
       return builder.toString();
     }
 
+  }
+
+  public static void sort(List<Unit> units) {
+    Collections.sort(units, (u1, u2) -> u1.toString().compareTo(u2.toString()));
   }
 
   public static void updateAllUniqueProperties(List<Unit> units) {

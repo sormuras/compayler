@@ -106,6 +106,13 @@ public class Generator {
   public static String canonical(String canonicalName, boolean wrap) {
     return wrap ? primitive(canonicalName) ? wrap(canonicalName).getCanonicalName() : canonicalName : canonicalName;
   }
+  
+  public static String packaged(String binaryName) {
+    int lastDot = binaryName.lastIndexOf('.');
+    if (lastDot <= 0)
+      return "";
+    return binaryName.substring(0, lastDot);
+  }
 
   /**
    * @return true if this object represents a simple data type; false otherwise.

@@ -1,5 +1,8 @@
 package org.prevayler.contrib.compayler;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+
 import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +14,6 @@ import java.util.List;
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.compayler.javac.Source;
 import org.prevayler.contrib.compayler.prevayler.PrevaylerFactory;
-import org.prevayler.contrib.compayler.prevayler.VolatilePrevaylerFactory;
 
 /**
  * Prevayler decorator compiler main class and configuration assets.
@@ -103,7 +105,13 @@ public class Compayler {
      * Transactions. Implementations of this interface can log the given Transaction for crash or shutdown recovery, for example, or execute
      * it remotely on replicas of the prevalentSystem() for fault-tolerance and load-balancing purposes.
      */
-    TRANSACTION
+    TRANSACTION;
+
+    /**
+     * Ordered stream of all modes.
+     */
+    public static final List<ExecutionMode> MODES = unmodifiableList(asList(TRANSACTION, QUERY, DIRECT));
+
   }
 
   /**
@@ -127,15 +135,21 @@ public class Compayler {
     this.interfaceName = interfaceName;
   }
 
-  public <P> P decorate(P prevalentSystem) throws Exception {
-    return decorate(new VolatilePrevaylerFactory<>(prevalentSystem));
-  }
-
   public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
-    File file = new File(getClass().getClassLoader().getResource(interfaceName.replace('.', '/') + ".java").toURI());
-    List<String> lines = Files.readAllLines(file.toPath());
-    Source source = new Source(interfaceName, lines);
-    ClassLoader loader = source.compile(new Processor());
+    ClassLoader loader = getClass().getClassLoader();
+    try {
+      File file = new File(getClass().getClassLoader().getResource(interfaceName.replace('.', '/') + ".java").toURI());
+      List<String> lines = Files.readAllLines(file.toPath());
+      Source source = new Source(interfaceName, lines);
+      loader = source.compile(new Processor());
+    } catch (NullPointerException e) {
+      Reflector reflector = new Reflector();
+      reflector.createUnits(this);
+      Generator generator = new Generator(this, reflector.createUnits(this));
+      Source source = new Source(getDecoratorName(), generator.generateSource());
+      source.getLines().forEach(System.out::println);
+      loader = source.compile();
+    }
     return decorate(prevaylerFactory, loader);
   }
 
@@ -147,7 +161,10 @@ public class Compayler {
   }
 
   public String getDecoratorName() {
-    return interfaceName + "Decorator";
+    String simple = Generator.simple(interfaceName);
+    String interfacePackage = Generator.packaged(interfaceName);
+    String decoratorPackage = interfacePackage.startsWith("java.") ? simple.toLowerCase() : interfacePackage;
+    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + simple.replaceAll("\\$|\\.", "") + "Decorator";
   }
 
   public String getInterfaceName() {
