@@ -194,6 +194,7 @@ public class Generator {
   protected void addDecoratorClass() {
     StringBuilder line = new StringBuilder();
     add("@" + Generated.class.getCanonicalName() + "(value=\"" + getClass().getCanonicalName() + "\", date=\"" + now + "\")");
+    // TODO add("@SuppressWarnings({\"rawtypes\", \"unchecked\"})");
     line.append("public class ").append(simple(compayler.getDecoratorName()));
     // if (compayler.getSuperType() != null)
     // TODO line.append(" extends ").append(compayler.getSuperType());

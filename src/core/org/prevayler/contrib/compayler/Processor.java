@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +40,19 @@ import org.prevayler.contrib.compayler.Compayler.Execute;
 import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 import org.prevayler.contrib.compayler.Compayler.ExecutionTime;
 import org.prevayler.contrib.compayler.Unit.Parameter;
+import org.prevayler.contrib.compayler.javac.Source;
 
 public class Processor extends AbstractProcessor {
 
   private boolean debug;
   private Elements elements;
   private StringBuilder message;
+  private Map<String, Source> sources;
   private Types types;
+
+  public Map<String, Source> getSources() {
+    return sources;
+  }
 
   @Override
   public Set<String> getSupportedAnnotationTypes() {
@@ -73,6 +80,7 @@ public class Processor extends AbstractProcessor {
     elements = processingEnv.getElementUtils();
     types = processingEnv.getTypeUtils();
     message = new StringBuilder();
+    sources = new HashMap<>();
   }
 
   @Override
@@ -186,8 +194,11 @@ public class Processor extends AbstractProcessor {
 
     JavaFileObject jfo = processingEnv.getFiler().createSourceFile(compayler.getDecoratorName());
 
+    List<String> lines = generator.generateSource();
+    sources.put(compayler.getDecoratorName(), new Source(compayler.getDecoratorName(), lines));
+
     try (BufferedWriter writer = new BufferedWriter(jfo.openWriter())) {
-      for (String line : generator.generateSource()) {
+      for (String line : lines) {
         writer.write(line);
         writer.newLine();
       }

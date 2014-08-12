@@ -8,7 +8,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.prevayler.Prevayler;
@@ -125,6 +127,49 @@ public class Compayler {
     // empty
   }
 
+  /**
+   * Internal compilation result collector class.
+   */
+  private static class Result {
+
+    final ClassLoader loader;
+    final Source source;
+
+    Result(ClassLoader loader, Source source) {
+      this.loader = loader;
+      this.source = source;
+    }
+
+  }
+
+  /**
+   * Simple command line program converting an interface into decorator java file.
+   * 
+   * Usage example:
+   * 
+   * <pre>
+   * java Compayler java.lang.Appendable src/generated
+   * </pre>
+   */
+  public static void main(String[] args) throws Exception {
+    if (args.length < 2) {
+      System.out.println("Usage: java Compayler path interface [interfaces...]");
+      System.out.println("                      path = folder for generated source file(s) like '.' or 'src/generated'");
+      System.out.println("                           interface = prevalent system interface like 'java.lang.Appendable'");
+      System.out.println("                                      interfaces... = more interfaces to convert");
+      return;
+    }
+    String targetPath = args[0];
+    for (int i = 1; i < args.length; i++) {
+      String interfaceName = args[i];
+      System.out.print(interfaceName + "...");
+      Compayler compayler = new Compayler(interfaceName);
+      Path path = compayler.compile().source.save(targetPath);
+      System.out.println(" " + path.toAbsolutePath());
+      // Desktop.getDesktop().edit(path.toFile());
+    }
+  }
+
   private final String interfaceName;
 
   public Compayler(Class<?> interfaceClass) {
@@ -135,22 +180,27 @@ public class Compayler {
     this.interfaceName = interfaceName;
   }
 
-  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
+  public Result compile() throws Exception {
     ClassLoader loader = getClass().getClassLoader();
-    try {
-      File file = new File(getClass().getClassLoader().getResource(interfaceName.replace('.', '/') + ".java").toURI());
-      List<String> lines = Files.readAllLines(file.toPath());
-      Source source = new Source(interfaceName, lines);
-      // source.getLines().forEach(System.out::println);
-      loader = source.compile(new Processor());
-    } catch (NullPointerException e) {
-      Reflector reflector = new Reflector();
-      Generator generator = new Generator(this, reflector.createUnits(this));
-      Source source = new Source(getDecoratorName(), generator.generateSource());
-      // source.getLines().forEach(System.out::println);
-      loader = source.compile();
+    URL resource = loader.getResource(interfaceName.replace('.', '/') + ".java");
+
+    if (resource != null) {
+      File file = new File(resource.toURI());
+      Source source = new Source(interfaceName, Files.readAllLines(file.toPath()));
+      Processor processor = new Processor();
+
+      return new Result(source.compile(processor), processor.getSources().get(getDecoratorName()));
     }
-    return decorate(prevaylerFactory, loader);
+
+    Reflector reflector = new Reflector();
+    Generator generator = new Generator(this, reflector.createUnits(this));
+    Source source = new Source(getDecoratorName(), generator.generateSource());
+
+    return new Result(source.compile(), source);
+  }
+
+  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
+    return decorate(prevaylerFactory, compile().loader);
   }
 
   public <P> P decorate(PrevaylerFactory<P> prevaylerFactory, ClassLoader loader) throws Exception {

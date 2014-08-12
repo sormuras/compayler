@@ -24,6 +24,13 @@ import javax.tools.ToolProvider;
 public class Source extends SimpleJavaFileObject {
 
   @FunctionalInterface
+  public interface OptionsVisitor {
+
+    void visitOptions(List<String> options);
+
+  }
+
+  @FunctionalInterface
   public interface TaskVisitor {
 
     void visitTask(CompilationTask task);
@@ -38,14 +45,16 @@ public class Source extends SimpleJavaFileObject {
   }
 
   public ClassLoader compile() {
-    return compile(System::identityHashCode, getClass().getClassLoader());
+    return compile(System::identityHashCode, System::identityHashCode, getClass().getClassLoader());
   }
 
   public ClassLoader compile(Processor processor) {
-    return compile(task -> task.setProcessors(singleton(processor)), getClass().getClassLoader());
+    // options.add("-XprintRounds");
+    return compile(opts -> opts.add("-Aorg.prevayler.contrib.compayler.Processor.debug=true"),
+        task -> task.setProcessors(singleton(processor)), getClass().getClassLoader());
   }
 
-  public ClassLoader compile(TaskVisitor taskVisitor, ClassLoader parent) {
+  public ClassLoader compile(OptionsVisitor optionsVisitor, TaskVisitor taskVisitor, ClassLoader parent) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       throw new IllegalStateException("No system java compiler available. JDK is required!");
@@ -54,8 +63,8 @@ public class Source extends SimpleJavaFileObject {
     List<String> options = new ArrayList<>();
     options.add("-parameters");
     // options.add("-Xlint:all");
-    // options.add("-XprintRounds");
-    options.add("-Aorg.prevayler.contrib.compayler.Processor.debug=true");
+    optionsVisitor.visitOptions(options);
+
     CompilationTask task = compiler.getTask(null, manager, null, options, null, singleton(this));
     taskVisitor.visitTask(task);
     task.call();
