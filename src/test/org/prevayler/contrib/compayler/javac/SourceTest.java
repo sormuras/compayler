@@ -19,6 +19,7 @@ import java.util.concurrent.Callable;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -36,6 +37,7 @@ public class SourceTest {
     String value() default "<not set>";
   }
 
+  @SupportedOptions("org.prevayler.contrib.compayler.Processor.debug")
   private class TagProcessor extends AbstractProcessor {
 
     @Override
@@ -59,7 +61,7 @@ public class SourceTest {
 
         TypeElement interfaceElement = (TypeElement) annotated;
         Tag tag = interfaceElement.getAnnotation(Tag.class);
-        
+
         try {
           JavaFileObject jfo = processingEnv.getFiler().createSourceFile(tag.value(), interfaceElement);
           try (BufferedWriter bw = new BufferedWriter(jfo.openWriter())) {

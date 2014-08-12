@@ -63,19 +63,20 @@ public class Reflector {
 
     Decorate decorate = interfaceClass.getAnnotation(Decorate.class);
     Map<ExecutionMode, Matcher> matcher = new EnumMap<>(ExecutionMode.class);
-
-    if (decorate != null) {
-      matcher.put(TRANSACTION, Pattern.compile(decorate.transactionRegex()).matcher(""));
-      matcher.put(QUERY, Pattern.compile(decorate.queryRegex()).matcher(""));
-      matcher.put(DIRECT, Pattern.compile(decorate.directRegex()).matcher(""));
-    } else {
-      try {
-        matcher.put(TRANSACTION, Pattern.compile((String) Decorate.class.getMethod("transactionRegex").getDefaultValue()).matcher(""));
-        matcher.put(QUERY, Pattern.compile((String) Decorate.class.getMethod("queryRegex").getDefaultValue()).matcher(""));
-        matcher.put(DIRECT, Pattern.compile((String) Decorate.class.getMethod("directRegex").getDefaultValue()).matcher(""));
-      } catch (NoSuchMethodException e) {
-        throw new IllegalStateException("Could not retrieve default value from " + Decorate.class, e);
+    try {
+      String transactionRegex = (String) Decorate.class.getMethod("transactionRegex").getDefaultValue();
+      String queryRegex = (String) Decorate.class.getMethod("queryRegex").getDefaultValue();
+      String directRegex = (String) Decorate.class.getMethod("directRegex").getDefaultValue();
+      if (decorate != null) {
+        transactionRegex = decorate.transactionRegex();
+        queryRegex = decorate.queryRegex();
+        directRegex = decorate.directRegex();
       }
+      matcher.put(TRANSACTION, Pattern.compile(transactionRegex).matcher(""));
+      matcher.put(QUERY, Pattern.compile(queryRegex).matcher(""));
+      matcher.put(DIRECT, Pattern.compile(directRegex).matcher(""));
+    } catch (NoSuchMethodException e) {
+      throw new IllegalStateException("Could not retrieve default value from " + Decorate.class, e);
     }
 
     List<Unit> units = new LinkedList<>();
@@ -88,5 +89,4 @@ public class Reflector {
     Unit.sort(units);
     return units;
   }
-
 }

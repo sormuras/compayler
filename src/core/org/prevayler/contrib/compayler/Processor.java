@@ -42,43 +42,19 @@ import org.prevayler.contrib.compayler.Unit.Parameter;
 
 public class Processor extends AbstractProcessor {
 
+  private boolean debug;
   private Elements elements;
   private StringBuilder message;
   private Types types;
 
-  protected String binary(TypeElement element) {
-    return elements.getBinaryName(element).toString();
-  }
-
-  protected String binary(TypeMirror mirror) {
-    try {
-      TypeElement element = (TypeElement) types.asElement(mirror);
-      if (element != null)
-        return binary(element);
-    } catch (ClassCastException e) {
-      // ignore
-    }
-    return mirror.toString();
-  }
-
-  protected String canonical(TypeElement element) {
-    return element.getQualifiedName().toString();
-  }
-
-  protected String canonical(TypeMirror mirror) {
-    try {
-      TypeElement element = (TypeElement) types.asElement(mirror);
-      if (element != null)
-        return canonical(element);
-    } catch (ClassCastException e) {
-      // ignore
-    }
-    return mirror.toString();
-  }
-
   @Override
   public Set<String> getSupportedAnnotationTypes() {
     return new HashSet<>(Arrays.asList(Decorate.class.getCanonicalName(), Execute.class.getCanonicalName()));
+  }
+
+  @Override
+  public Set<String> getSupportedOptions() {
+    return new HashSet<>(Arrays.asList("org.prevayler.contrib.compayler.Processor.debug"));
   }
 
   @Override
@@ -93,6 +69,7 @@ public class Processor extends AbstractProcessor {
   @Override
   public synchronized void init(ProcessingEnvironment processingEnv) {
     super.init(processingEnv);
+    debug = Boolean.parseBoolean(processingEnv.getOptions().get("org.prevayler.contrib.compayler.Processor.debug"));
     elements = processingEnv.getElementUtils();
     types = processingEnv.getTypeUtils();
     message = new StringBuilder();
@@ -103,21 +80,26 @@ public class Processor extends AbstractProcessor {
     if (roundEnv.processingOver())
       return false;
 
-    // message.append("Requested procession for ");
-    // annotations.forEach(a -> message.append('@').append(a.getSimpleName()).append(' '));
-    // message.append('\n');
+    if (debug) {
+      message.append("Requested procession for ");
+      annotations.forEach(a -> message.append('@').append(a.getSimpleName()).append(' '));
+      message.append('\n');
+    }
 
     for (Element decorated : roundEnv.getElementsAnnotatedWith(Decorate.class)) {
       if (!decorated.getKind().isInterface())
         throw new IllegalStateException(Decorate.class + " expects an interface as target!");
 
       Decorate decorate = decorated.getAnnotation(Decorate.class);
-      // message.append("Processing interface ").append(decorated).append(" using ").append(decorate).append('\n');
+      if (debug) {
+        message.append("Processing interface ").append(decorated).append(" using ").append(decorate).append('\n');
+      }
       processInterface((TypeElement) decorated, decorate);
 
-      if (message.length() > 0) {
+      if (debug) {
         message.append('\n');
         processingEnv.getMessager().printMessage(Kind.NOTE, message.toString());
+        message.setLength(0);
       }
     }
 
@@ -140,8 +122,9 @@ public class Processor extends AbstractProcessor {
 
     Unit.updateAllUniqueProperties(units);
     Unit.sort(units);
-
-    // units.forEach(unit -> message.append(unit).append("\n"));
+    if (debug) {
+      units.forEach(unit -> message.append(unit).append("\n"));
+    }
 
     try {
       writeDecorator(type, decorate, units);

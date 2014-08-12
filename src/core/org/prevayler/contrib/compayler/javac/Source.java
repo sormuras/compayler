@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.processing.Processor;
 import javax.tools.JavaCompiler;
@@ -47,7 +46,6 @@ public class Source extends SimpleJavaFileObject {
   }
 
   public ClassLoader compile(TaskVisitor taskVisitor, ClassLoader parent) {
-    Objects.requireNonNull(taskVisitor);
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       throw new IllegalStateException("No system java compiler available. JDK is required!");
@@ -57,6 +55,7 @@ public class Source extends SimpleJavaFileObject {
     options.add("-parameters");
     // options.add("-Xlint:all");
     // options.add("-XprintRounds");
+    options.add("-Aorg.prevayler.contrib.compayler.Processor.debug=true");
     CompilationTask task = compiler.getTask(null, manager, null, options, null, singleton(this));
     taskVisitor.visitTask(task);
     task.call();

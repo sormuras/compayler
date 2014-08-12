@@ -141,13 +141,13 @@ public class Compayler {
       File file = new File(getClass().getClassLoader().getResource(interfaceName.replace('.', '/') + ".java").toURI());
       List<String> lines = Files.readAllLines(file.toPath());
       Source source = new Source(interfaceName, lines);
+      // source.getLines().forEach(System.out::println);
       loader = source.compile(new Processor());
     } catch (NullPointerException e) {
       Reflector reflector = new Reflector();
-      reflector.createUnits(this);
       Generator generator = new Generator(this, reflector.createUnits(this));
       Source source = new Source(getDecoratorName(), generator.generateSource());
-      source.getLines().forEach(System.out::println);
+      // source.getLines().forEach(System.out::println);
       loader = source.compile();
     }
     return decorate(prevaylerFactory, loader);
