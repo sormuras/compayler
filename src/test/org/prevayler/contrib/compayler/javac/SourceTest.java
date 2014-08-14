@@ -116,7 +116,8 @@ public class SourceTest {
     lines.add("}");
 
     Source source = new Source("Test", lines);
-    ClassLoader loader = source.compile(new TagProcessor());
+    source.getCompilerProcessors().add(new TagProcessor());
+    ClassLoader loader = source.compile();
     @SuppressWarnings("unchecked")
     Class<Callable<Long>> test = (Class<Callable<Long>>) loader.loadClass("Test");
     Tag tag = test.getAnnotation(Tag.class);

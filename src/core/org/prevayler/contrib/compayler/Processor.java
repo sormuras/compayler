@@ -192,17 +192,18 @@ public class Processor extends AbstractProcessor {
     Compayler compayler = new Compayler(type.getQualifiedName().toString());
     Generator generator = new Generator(compayler, units);
 
-    JavaFileObject jfo = processingEnv.getFiler().createSourceFile(compayler.getDecoratorName());
+    String name = compayler.getDecoratorName();
+    JavaFileObject jfo = processingEnv.getFiler().createSourceFile(name);
 
     List<String> lines = generator.generateSource();
-    sources.put(compayler.getDecoratorName(), new Source(compayler.getDecoratorName(), lines));
-
     try (BufferedWriter writer = new BufferedWriter(jfo.openWriter())) {
       for (String line : lines) {
         writer.write(line);
         writer.newLine();
       }
     }
+
+    sources.put(name, new Source(name, lines));
   }
 
 }

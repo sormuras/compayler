@@ -19,6 +19,9 @@ import org.prevayler.contrib.compayler.Compayler.Execute;
 import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 import org.prevayler.contrib.compayler.Compayler.ExecutionTime;
 
+//Reflector reflector = new Reflector();
+//Generator generator = new Generator(this, reflector.createUnits(this));
+//Source source = new Source(getDecoratorName(), generator.generateSource());
 public class Reflector {
 
   protected Unit createUnit(Method method, Map<ExecutionMode, Matcher> matcher) {

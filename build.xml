@@ -31,9 +31,11 @@
 			<fileset dir="${dir.out}/classes">
 				<!-- <exclude name="org/prevayler/contrib/compayler/javac/**/*" /> -->
 			</fileset>
+			<!-- 
 			<manifest>
 				<attribute name="Main-Class" value="org.prevayler.contrib.compayler.Compayler" />
 			</manifest>
+			 -->
 			<service type="javax.annotation.processing.Processor">
 				<provider classname="org.prevayler.contrib.compayler.Processor" />
 			</service>
@@ -50,18 +52,17 @@
 			<pathelement path="lib/hamcrest-core-1.3.jar" />
 		</path>
 
+		<!--
 		<java classname="org.prevayler.contrib.compayler.Compayler" fork="yes">
 			<classpath>
 				<pathelement path="${dir.out}/compayler.jar" />
-				<pathelement path="lib/prevayler-core-2.6.jar" />
 			</classpath>
 			<arg value="src/generated" />
 			<arg value="java.lang.Appendable" />
 			<arg value="java.lang.CharSequence" />
-			<!--
 			<arg value="http://grepcode.com/file_/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/lang/Comparable.java/?v=source" />
-			-->
 		</java>
+		-->
 
 		<mkdir dir="${dir.out}/junit/classes" />
 		<mkdir dir="${dir.out}/junit/reports" />

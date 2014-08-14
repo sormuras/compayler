@@ -23,50 +23,30 @@ import javax.tools.ToolProvider;
  */
 public class Source extends SimpleJavaFileObject {
 
-  @FunctionalInterface
-  public interface OptionsVisitor {
-
-    void visitOptions(List<String> options);
-
-  }
-
-  @FunctionalInterface
-  public interface TaskVisitor {
-
-    void visitTask(CompilationTask task);
-
-  }
-
+  private List<String> compilerOptions;
+  private List<Processor> compilerProcessors;
   private List<String> lines;
 
   public Source(String canonical, List<String> lines) {
     super(URI.create("source:///" + canonical.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
     this.lines = lines;
+    this.compilerOptions = new ArrayList<>();
+    this.compilerProcessors = new ArrayList<>();
   }
 
   public ClassLoader compile() {
-    return compile(System::identityHashCode, System::identityHashCode, getClass().getClassLoader());
+    return compile(getClass().getClassLoader());
   }
 
-  public ClassLoader compile(Processor processor) {
-    // options.add("-XprintRounds");
-    return compile(opts -> opts.add("-Aorg.prevayler.contrib.compayler.Processor.debug=true"),
-        task -> task.setProcessors(singleton(processor)), getClass().getClassLoader());
-  }
-
-  public ClassLoader compile(OptionsVisitor optionsVisitor, TaskVisitor taskVisitor, ClassLoader parent) {
+  public ClassLoader compile(ClassLoader parent) {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       throw new IllegalStateException("No system java compiler available. JDK is required!");
     }
     Manager manager = new Manager(compiler.getStandardFileManager(null, null, null), parent);
-    List<String> options = new ArrayList<>();
-    options.add("-parameters");
-    // options.add("-Xlint:all");
-    optionsVisitor.visitOptions(options);
-
-    CompilationTask task = compiler.getTask(null, manager, null, options, null, singleton(this));
-    taskVisitor.visitTask(task);
+    CompilationTask task = compiler.getTask(null, manager, null, compilerOptions, null, singleton(this));
+    if (!compilerProcessors.isEmpty())
+      task.setProcessors(compilerProcessors);
     task.call();
     return manager.getClassLoader(null);
   }
@@ -80,6 +60,24 @@ public class Source extends SimpleJavaFileObject {
 
   public Charset getCharset() {
     return Charset.forName("UTF-8");
+  }
+
+  /**
+   * <code>
+   *   .add("-parameters");
+   *   .add("-Xlint:all");
+   *   .add("-XprintRounds");
+   *   .add("-Aorg.prevayler.contrib.compayler.Processor.debug=true"),
+   * </code>
+   * 
+   * @return
+   */
+  public List<String> getCompilerOptions() {
+    return compilerOptions;
+  }
+
+  public List<Processor> getCompilerProcessors() {
+    return compilerProcessors;
   }
 
   public List<String> getLines() {

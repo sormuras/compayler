@@ -18,7 +18,8 @@ public class ProcessorTest {
     List<String> lines = Files.readAllLines(file.toPath());
 
     Source source = new Source(Simplicissimus.class.getCanonicalName(), lines);
-    ClassLoader loader = source.compile(new Processor());
+    source.getCompilerProcessors().add(new Processor());
+    ClassLoader loader = source.compile();
     @SuppressWarnings("unchecked")
     Class<Simplicissimus> test = (Class<Simplicissimus>) loader.loadClass(Simplicissimus.class.getName());
     assertTrue(test.isInterface());
