@@ -22,8 +22,6 @@ or http://www.eclipse.org/jdt/apt/introToAPT.php
 or http://www.jetbrains.com/idea/webhelp/annotation-processors-support.html
 or https://netbeans.org/kb/docs/java/annotations.html
 
-### Generate via command line
-	java -jar compayler.jar java.lang.Appendable
 
 ## On-the-fly decoration with default Prevayler instance
 
