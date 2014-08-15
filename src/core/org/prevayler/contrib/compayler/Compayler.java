@@ -137,25 +137,25 @@ public class Compayler {
     // empty
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T> T decorate(Class<T> interfaceClass, T prevalentSystem, File folder) throws Exception {
+    Compayler compayler = new Compayler(interfaceClass);
+    Prevayler<T> prevayler = prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader(), folder);
+    return (T) Class.forName(compayler.getDecoratorName()).getConstructor(Prevayler.class).newInstance(prevayler);
+  }
+
   /**
    * @return default prevayler using prevalent system class loader
    */
   public static <P> Prevayler<P> prevayler(P prevalentSystem) throws Exception {
     return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader());
   }
-
+  
   /**
    * @return default prevayler using given class loader and {@code PrevalenceBase/} as journaling folder
    */
   public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader) throws Exception {
     return prevayler(prevalentSystem, loader, new File("PrevalenceBase"));
-  }
-  
-  /**
-   * @return default prevayler using prevalent system class loader and given journaling folder
-   */
-  public static <P> Prevayler<P> prevayler(P prevalentSystem, File folder) throws Exception {
-    return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader(), folder);
   }
 
   /**
@@ -174,9 +174,16 @@ public class Compayler {
     return new PrevaylerImpl<>(snapshotManager, publisher, serializer, transactionDeepCopyMode);
   }
 
+  /**
+   * @return default prevayler using prevalent system class loader and given journaling folder
+   */
+  public static <P> Prevayler<P> prevayler(P prevalentSystem, File folder) throws Exception {
+    return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader(), folder);
+  }
   private String decoratorName;
   private final String interfaceName;
   private final String interfacePackage;
+
   private final String interfaceSimple;
 
   public Compayler(Class<?> interfaceClass) {
@@ -194,12 +201,6 @@ public class Compayler {
   protected String buildDecoratorName() {
     String decoratorPackage = interfacePackage.startsWith("java.") ? interfaceSimple.toLowerCase() : interfacePackage;
     return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + interfaceSimple.replaceAll("\\$", "") + "Decorator";
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T> T decorate(T prevalentSystem, File folder) throws Exception {
-    Prevayler<T> prevayler = Compayler.prevayler(prevalentSystem, getClass().getClassLoader(), folder);
-    return (T) Class.forName(getDecoratorName()).getConstructor(Prevayler.class).newInstance(prevayler);
   }
 
   public String getDecoratorName() {

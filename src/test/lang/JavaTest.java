@@ -12,6 +12,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +40,9 @@ public class JavaTest {
 
   @Test
   public void testClassNames() throws ClassNotFoundException {
+    assertEquals("java.util.Map$Entry", Map.Entry.class.getName());
+    assertEquals("java.util.Map.Entry", Map.Entry.class.getCanonicalName());
+    assertEquals("Entry", Map.Entry.class.getSimpleName());
     int[][][] m3 = new int[1][1][1];
     assertEquals("class [[[I", m3.getClass().toString());
     assertEquals("[[[I", m3.getClass().getName());

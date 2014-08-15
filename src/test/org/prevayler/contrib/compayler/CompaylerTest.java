@@ -47,11 +47,11 @@ public class CompaylerTest {
 
   @Test
   public void testDecoratorNew() throws Exception {
-    assumeTrue("Ant not running.", Boolean.getBoolean("ant.running"));
-    Simple simple = new Compayler(Simple.class).decorate(new SimpleImpl(), temp.newFolder());
+    assumeTrue("Ant not running.", Boolean.getBoolean("ant.running")); // quit if NOT inside ant/junit execution
+    Simple simple = Compayler.decorate(Simple.class, new SimpleImpl(), temp.newFolder());
     assertNotNull(simple);
-    int base = simple.getSum();
-    assertEquals(base + 123, simple.add(123));
+    assertEquals(0, simple.getSum());
+    assertEquals(123, simple.add(123));
   }
 
 }
