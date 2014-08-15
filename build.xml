@@ -17,10 +17,9 @@
 		<mkdir dir="${dir.out}" />
 	</target>
 
-	<target name="compile" depends="init">
-
+	<target name="compile" depends="init" description="compile and jar core sources">
 		<mkdir dir="${dir.out}/classes" />
-		<javac destdir="${dir.out}/classes" debug="yes" deprecation="no" optimize="no" encoding="UTF-8" includeantruntime="no">
+		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
 			<classpath>
 				<pathelement path="lib/prevayler-core-2.6.jar" />
 			</classpath>
@@ -29,30 +28,14 @@
 
 		<jar destfile="${dir.out}/compayler.jar">
 			<fileset dir="${dir.out}/classes" />
-			<!-- 
-			<manifest>
-				<attribute name="Main-Class" value="org.prevayler.contrib.compayler.Compayler" />
-			</manifest>
-			 -->
 			<service type="javax.annotation.processing.Processor">
 				<provider classname="org.prevayler.contrib.compayler.Processor" />
 			</service>
 		</jar>
-
-		<mkdir dir="${dir.out}/generated" />
-		<javac destdir="${dir.out}/generated" srcdir="src/test" includeantruntime="no">
-			<classpath>
-				<pathelement path="${dir.out}/compayler.jar" />
-				<pathelement path="lib/prevayler-core-2.6.jar" />
-			</classpath>
-			<!-- compilerarg value="-proc:only" / -->
-			<filename name="**/Simplicissimus.java" />
-		</javac>
 	</target>
 
 	<target name="test" depends="compile" description="execute all tests">
 		<path id="junit.class.path">
-			<pathelement path="src/test" />
 			<pathelement path="${dir.out}/compayler.jar" />
 			<pathelement path="${dir.out}/junit/classes" />
 			<pathelement path="lib/prevayler-core-2.6.jar" />
@@ -61,15 +44,15 @@
 		</path>
 
 		<mkdir dir="${dir.out}/junit/classes" />
-		<mkdir dir="${dir.out}/junit/reports" />
 		<javac destdir="${dir.out}/junit/classes" encoding="UTF-8" includeantruntime="no">
 			<classpath refid="junit.class.path" />
+			<compilerarg value="-Aorg.prevayler.contrib.compayler.Processor.debug=true" />
 			<src path="src/test" />
-			<src path="src/generated" />
 		</javac>
 
+		<mkdir dir="${dir.out}/junit/reports" />
 		<junit printsummary="yes" fork="yes" haltonfailure="no">
-			<sysproperty key="junit.running" value="${ant.version}" />
+			<sysproperty key="ant.running" value="true" />
 			<classpath refid="junit.class.path" />
 			<formatter type="plain" />
 			<batchtest todir="${dir.out}/junit/reports">
