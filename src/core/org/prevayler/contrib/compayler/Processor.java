@@ -77,12 +77,15 @@ public class Processor extends AbstractProcessor {
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
     if (roundEnv.processingOver())
+      return true;
+
+    if (annotations.isEmpty())
       return false;
 
     if (debug) {
       message.append("Requested procession for ");
-      annotations.forEach(a -> message.append('@').append(a.getSimpleName()).append(' '));
-      message.append('\n');
+      annotations.forEach(annotation -> message.append('@').append(annotation.getSimpleName()).append(' '));
+      processingEnv.getMessager().printMessage(Kind.NOTE, message.toString());
     }
 
     for (Element decorated : roundEnv.getElementsAnnotatedWith(Decorate.class)) {
@@ -91,14 +94,13 @@ public class Processor extends AbstractProcessor {
 
       Decorate decorate = decorated.getAnnotation(Decorate.class);
       if (debug) {
+        message.setLength(0);
         message.append("Processing interface ").append(decorated).append(" using ").append(decorate).append('\n');
       }
       processInterface((TypeElement) decorated, decorate);
-
       if (debug) {
-        message.append('\n');
+        // message.append('\n');
         processingEnv.getMessager().printMessage(Kind.NOTE, message.toString());
-        message.setLength(0);
       }
     }
 

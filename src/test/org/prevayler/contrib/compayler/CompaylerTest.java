@@ -3,6 +3,7 @@ package org.prevayler.contrib.compayler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
+import static org.prevayler.contrib.compayler.TestTool.decorate;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,10 +49,11 @@ public class CompaylerTest {
   @Test
   public void testDecoratorNew() throws Exception {
     assumeTrue("Ant not running.", Boolean.getBoolean("ant.running")); // quit if NOT inside ant/junit execution
-    Simple simple = Compayler.decorate(Simple.class, new SimpleImpl(), temp.newFolder());
+    Simple simple = decorate(Simple.class, new SimpleImpl(), temp.newFolder());
     assertNotNull(simple);
     assertEquals(0, simple.getSum());
     assertEquals(123, simple.add(123));
+    assertEquals(123, simple.getSum());
   }
 
 }

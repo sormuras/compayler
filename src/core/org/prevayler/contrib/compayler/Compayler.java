@@ -120,7 +120,7 @@ public class Compayler {
     TRANSACTION;
 
     /**
-     * Ordered stream of all modes.
+     * Ordered list of all modes.
      */
     public static final List<ExecutionMode> MODES = unmodifiableList(asList(TRANSACTION, QUERY, DIRECT));
 
@@ -137,31 +137,17 @@ public class Compayler {
     // empty
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> T decorate(Class<T> interfaceClass, T prevalentSystem, File folder) throws Exception {
-    Compayler compayler = new Compayler(interfaceClass);
-    Prevayler<T> prevayler = prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader(), folder);
-    return (T) Class.forName(compayler.getDecoratorName()).getConstructor(Prevayler.class).newInstance(prevayler);
-  }
-
   /**
-   * @return default prevayler using prevalent system class loader
+   * @return default prevayler using prevalent system class loader and given journaling folder
    */
-  public static <P> Prevayler<P> prevayler(P prevalentSystem) throws Exception {
-    return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader());
-  }
-  
-  /**
-   * @return default prevayler using given class loader and {@code PrevalenceBase/} as journaling folder
-   */
-  public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader) throws Exception {
-    return prevayler(prevalentSystem, loader, new File("PrevalenceBase"));
+  public static <P> Prevayler<P> prevayler(P prevalentSystem, File folder) throws Exception {
+    return prevayler(prevalentSystem, folder, prevalentSystem.getClass().getClassLoader());
   }
 
   /**
    * @return default prevayler using given class loader and given journaling folder
    */
-  public static <P> Prevayler<P> prevayler(P prevalentSystem, ClassLoader loader, File folder) throws Exception {
+  public static <P> Prevayler<P> prevayler(P prevalentSystem, File folder, ClassLoader loader) throws Exception {
     PrevaylerDirectory directory = new PrevaylerDirectory(folder);
     Monitor monitor = new SimpleMonitor(System.err);
     Journal journal = new PersistentJournal(directory, 0, 0, true, "journal", monitor);
@@ -174,12 +160,6 @@ public class Compayler {
     return new PrevaylerImpl<>(snapshotManager, publisher, serializer, transactionDeepCopyMode);
   }
 
-  /**
-   * @return default prevayler using prevalent system class loader and given journaling folder
-   */
-  public static <P> Prevayler<P> prevayler(P prevalentSystem, File folder) throws Exception {
-    return prevayler(prevalentSystem, prevalentSystem.getClass().getClassLoader(), folder);
-  }
   private String decoratorName;
   private final String interfaceName;
   private final String interfacePackage;
@@ -200,7 +180,7 @@ public class Compayler {
 
   protected String buildDecoratorName() {
     String decoratorPackage = interfacePackage.startsWith("java.") ? interfaceSimple.toLowerCase() : interfacePackage;
-    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + interfaceSimple.replaceAll("\\$", "") + "Decorator";
+    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + interfaceSimple + "Decorator";
   }
 
   public String getDecoratorName() {
