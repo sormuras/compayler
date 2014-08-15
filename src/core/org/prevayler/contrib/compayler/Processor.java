@@ -7,7 +7,6 @@ import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.QUERY;
 import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.TRANSACTION;
 
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -128,7 +127,7 @@ public class Processor extends AbstractProcessor {
 
     try {
       writeDecorator(type, decorate, units);
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -180,8 +179,9 @@ public class Processor extends AbstractProcessor {
     return methods;
   }
 
-  protected void writeDecorator(TypeElement type, Decorate decorate, List<Unit> units) throws IOException {
-    Compayler compayler = new Compayler(type.getQualifiedName().toString());
+  protected void writeDecorator(TypeElement type, Decorate decorate, List<Unit> units) throws Exception {
+    String packageName = elements.getPackageOf(type).toString();
+    Compayler compayler = new Compayler(packageName, type.getQualifiedName().toString(), type.getSimpleName().toString());
     Generator generator = new Generator(compayler, units);
 
     String name = compayler.getDecoratorName();

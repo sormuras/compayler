@@ -119,26 +119,42 @@ public class Compayler {
     // empty
   }
 
+  private String decoratorName;
   private final String interfaceName;
+  private final String interfacePackage;
+  private final String interfaceSimple;
 
   public Compayler(Class<?> interfaceClass) {
-    this(interfaceClass.getName());
+    this(interfaceClass.getPackage().getName(), interfaceClass.getName(), interfaceClass.getSimpleName());
     assert interfaceClass.isInterface() : "Interface expected, but got " + interfaceClass;
   }
 
-  public Compayler(String interfaceName) {
+  public Compayler(String interfacePackage, String interfaceName, String interfaceSimple) {
+    this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
+    this.interfaceSimple = interfaceSimple;
+    this.decoratorName = buildDecoratorName();
+  }
+
+  protected String buildDecoratorName() {
+    String decoratorPackage = interfacePackage.startsWith("java.") ? interfaceSimple.toLowerCase() : interfacePackage;
+    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + interfaceSimple.replaceAll("\\$", "") + "Decorator";
   }
 
   public String getDecoratorName() {
-    String simple = Generator.simple(interfaceName);
-    String interfacePackage = Generator.packaged(interfaceName);
-    String decoratorPackage = interfacePackage.startsWith("java.") ? simple.toLowerCase() : interfacePackage;
-    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + simple.replaceAll("\\$", "") + "Decorator";
+    return decoratorName;
   }
 
   public String getInterfaceName() {
     return interfaceName;
+  }
+
+  public String getInterfacePackage() {
+    return interfacePackage;
+  }
+
+  public void setDecoratorName(String decoratorName) {
+    this.decoratorName = decoratorName;
   }
 
 }
