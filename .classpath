@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/core"/>
-	<classpathentry kind="src" output="src/test" path="src/test"/>
+	<classpathentry kind="src" path="src/test"/>
 	<classpathentry excluding=".gitignore" kind="src" path="src/generated"/>
 	<classpathentry excluding=".gitignore" kind="src" path="src/sandbox"/>
 	<classpathentry kind="lib" path="lib/prevayler-core-2.6.jar" sourcepath="lib/prevayler-core-2.6-sources.jar"/>

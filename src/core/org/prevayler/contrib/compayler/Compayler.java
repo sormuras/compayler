@@ -3,18 +3,11 @@ package org.prevayler.contrib.compayler;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
-import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.net.URL;
-import java.nio.file.Files;
 import java.util.List;
-
-import org.prevayler.Prevayler;
-import org.prevayler.contrib.compayler.javac.Source;
-import org.prevayler.contrib.compayler.prevayler.PrevaylerFactory;
 
 /**
  * Prevayler decorator compiler main class and configuration assets.
@@ -137,35 +130,11 @@ public class Compayler {
     this.interfaceName = interfaceName;
   }
 
-  public Source compile() throws Exception {
-    ClassLoader loader = getClass().getClassLoader();
-    URL resource = loader.getResource(interfaceName.replace('.', '/') + ".java");
-
-    File file = new File(resource.toURI());
-    Processor processor = new Processor();
-    Source source = new Source(interfaceName, Files.readAllLines(file.toPath()));
-    // source.getCompilerOptions().add("-proc:only");
-    source.getCompilerProcessors().add(processor);
-
-    return source;
-  }
-
-  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory) throws Exception {
-    return decorate(prevaylerFactory, compile().compile());
-  }
-
-  public <P> P decorate(PrevaylerFactory<P> prevaylerFactory, ClassLoader loader) throws Exception {
-    Prevayler<P> prevayler = prevaylerFactory.createPrevayler(loader);
-    @SuppressWarnings("unchecked")
-    Class<? extends P> decoratorClass = (Class<? extends P>) loader.loadClass(getDecoratorName());
-    return decoratorClass.getConstructor(Prevayler.class).newInstance(prevayler);
-  }
-
   public String getDecoratorName() {
     String simple = Generator.simple(interfaceName);
     String interfacePackage = Generator.packaged(interfaceName);
     String decoratorPackage = interfacePackage.startsWith("java.") ? simple.toLowerCase() : interfacePackage;
-    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + simple.replaceAll("\\$|\\.", "") + "Decorator";
+    return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + simple.replaceAll("\\$", "") + "Decorator";
   }
 
   public String getInterfaceName() {
