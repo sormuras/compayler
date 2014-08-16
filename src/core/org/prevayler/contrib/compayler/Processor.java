@@ -182,7 +182,7 @@ public class Processor extends AbstractProcessor {
   }
 
   protected void writeDecorator(TypeElement type, Decorate decorate, List<Unit> units) throws Exception {
-    String packageName = elements.getPackageOf(type).toString();
+    String packageName = elements.getPackageOf(type).getQualifiedName().toString();
     Compayler compayler = new Compayler(packageName, type.getQualifiedName().toString(), type.getSimpleName().toString());
     Generator generator = new Generator(compayler, units);
 
