@@ -2,22 +2,15 @@ package org.prevayler.contrib.compayler;
 
 import static java.util.stream.Collectors.toList;
 import static javax.lang.model.element.ElementKind.METHOD;
-import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.DIRECT;
-import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.QUERY;
-import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.TRANSACTION;
 
 import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -114,12 +107,10 @@ public class Processor extends AbstractProcessor {
 
     // methods.forEach(System.out::println);
 
-    Map<ExecutionMode, Matcher> matcher = new EnumMap<>(ExecutionMode.class);
-    matcher.put(TRANSACTION, Pattern.compile(decorate.transactionRegex()).matcher(""));
-    matcher.put(QUERY, Pattern.compile(decorate.queryRegex()).matcher(""));
-    matcher.put(DIRECT, Pattern.compile(decorate.directRegex()).matcher(""));
+    String packageName = elements.getPackageOf(type).getQualifiedName().toString();
+    Compayler compayler = new Compayler(decorate, packageName, type.getQualifiedName().toString(), type.getSimpleName().toString());
 
-    List<Unit> units = methods.stream().map(method -> processMethod(type, method, matcher)).collect(toList());
+    List<Unit> units = methods.stream().map(method -> processMethod(type, method, compayler)).collect(toList());
 
     Unit.updateAllUniqueProperties(units);
     Unit.sort(units);
@@ -128,13 +119,13 @@ public class Processor extends AbstractProcessor {
     }
 
     try {
-      writeDecorator(type, decorate, units);
+      writeDecorator(type, compayler, units);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  protected Unit processMethod(TypeElement type, ExecutableElement method, Map<ExecutionMode, Matcher> matcher) {
+  protected Unit processMethod(TypeElement type, ExecutableElement method, Compayler compayler) {
     Unit unit = new Unit();
     unit.setName(method.getSimpleName().toString());
     unit.setReturns(method.getReturnType().toString());
@@ -142,7 +133,7 @@ public class Processor extends AbstractProcessor {
     unit.setVarargs(method.isVarArgs());
     unit.setChainable(types.isAssignable(type.asType(), method.getReturnType()));
 
-    ExecutionMode.MODES.stream().filter(mode -> matcher.get(mode).reset(unit.getName()).matches()).forEachOrdered(unit::setMode);
+    unit.setMode(ExecutionMode.forName(unit.getName(), compayler.getExecutionModeMatchers()));
 
     Execute execute = method.getAnnotation(Execute.class);
     if (execute != null) {
@@ -181,9 +172,7 @@ public class Processor extends AbstractProcessor {
     return methods;
   }
 
-  protected void writeDecorator(TypeElement type, Decorate decorate, List<Unit> units) throws Exception {
-    String packageName = elements.getPackageOf(type).getQualifiedName().toString();
-    Compayler compayler = new Compayler(packageName, type.getQualifiedName().toString(), type.getSimpleName().toString());
+  protected void writeDecorator(TypeElement type, Compayler compayler, List<Unit> units) throws Exception {
     Generator generator = new Generator(compayler, units);
 
     String name = compayler.getDecoratorName();

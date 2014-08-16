@@ -20,7 +20,7 @@ import org.prevayler.implementation.publishing.TransactionPublisher;
 import org.prevayler.implementation.snapshot.GenericSnapshotManager;
 
 public class TestTool {
-  
+
   @SuppressWarnings("unchecked")
   public static <T> T decorate(Class<T> interfaceClass, T prevalentSystem, File folder) throws Exception {
     Compayler compayler = new Compayler(interfaceClass);

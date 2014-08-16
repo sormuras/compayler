@@ -2,8 +2,11 @@ package org.prevayler.contrib.compayler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.prevayler.contrib.compayler.TestTool.decorate;
+
+import java.util.Observable;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,7 +15,7 @@ import org.prevayler.contrib.compayler.Compayler.Decorate;
 
 public class CompaylerTest {
 
-  @Decorate
+  @Decorate(superClass = Observable.class, value = "com.back.sun.Sidec")
   public interface Simple {
 
     int add(int amount);
@@ -41,16 +44,25 @@ public class CompaylerTest {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void testDecoratorName() throws Exception {
-    Compayler compayler = new Compayler(Simple.class);
-    assertEquals(Simple.class.getPackage().getName() + "." + Simple.class.getSimpleName() + "Decorator", compayler.getDecoratorName());
+  public void testAppendableDecoratorName() throws Exception {
+    Compayler compayler = new Compayler(Appendable.class);
+    assertEquals("appendable.AppendableDecorator", compayler.getDecoratorName());
+    assertEquals(Object.class, compayler.getSuperClass());
   }
 
   @Test
-  public void testDecoratorNew() throws Exception {
+  public void testSimpleDecoratorName() throws Exception {
+    Compayler compayler = new Compayler(Simple.class);
+    assertEquals("com.back.sun.Sidec", compayler.getDecoratorName());
+    assertEquals(Observable.class, compayler.getSuperClass());
+  }
+
+  @Test
+  public void testSimpleDecoratorNew() throws Exception {
     assumeTrue("Ant not running.", Boolean.getBoolean("ant.running")); // quit if NOT inside ant/junit execution
     Simple simple = decorate(Simple.class, new SimpleImpl(), temp.newFolder());
     assertNotNull(simple);
+    assertTrue(simple instanceof Observable);
     assertEquals(0, simple.getSum());
     assertEquals(123, simple.add(123));
     assertEquals(123, simple.getSum());

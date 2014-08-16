@@ -1,13 +1,19 @@
 package org.prevayler.contrib.compayler;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.DIRECT;
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.QUERY;
+import static org.prevayler.contrib.compayler.Compayler.ExecutionMode.TRANSACTION;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.lang.model.type.MirroredTypeException;
 
 /**
  * Prevayler decorator compiler main class and configuration assets.
@@ -21,6 +27,7 @@ public class Compayler {
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
+  @Decorate
   public @interface Decorate {
 
     /**
@@ -104,7 +111,13 @@ public class Compayler {
     /**
      * Ordered list of all modes.
      */
-    public static final List<ExecutionMode> MODES = unmodifiableList(asList(TRANSACTION, QUERY, DIRECT));
+    public static ExecutionMode forName(String name, Map<ExecutionMode, Matcher> matchers) {
+      for (ExecutionMode mode : values()) {
+        if (matchers.get(mode).reset(name).matches())
+          return mode;
+      }
+      throw new IllegalArgumentException(String.format("No match for name \"%s\" in %s", name, matchers));
+    }
 
   }
 
@@ -118,23 +131,26 @@ public class Compayler {
   public @interface ExecutionTime {
     // empty
   }
-  
-  private String decoratorName;
+
+  private final Decorate decorate;
+  private final Map<ExecutionMode, Matcher> executionModeMatchers;
   private final String interfaceName;
   private final String interfacePackage;
-
   private final String interfaceSimple;
 
   public Compayler(Class<?> interfaceClass) {
-    this(interfaceClass.getPackage().getName(), interfaceClass.getName(), interfaceClass.getSimpleName());
+    this(interfaceClass.getAnnotation(Decorate.class), interfaceClass.getPackage().getName(), interfaceClass.getName(), interfaceClass
+        .getSimpleName());
     assert interfaceClass.isInterface() : "Interface expected, but got " + interfaceClass;
+    assert decorate != null : "Not even a default @Decorate annotation found?!";
   }
 
-  public Compayler(String interfacePackage, String interfaceName, String interfaceSimple) {
+  public Compayler(Decorate decorate, String interfacePackage, String interfaceName, String interfaceSimple) {
+    this.decorate = decorate == null ? Decorate.class.getAnnotation(Decorate.class) : decorate;
     this.interfacePackage = interfacePackage;
     this.interfaceName = interfaceName;
     this.interfaceSimple = interfaceSimple;
-    this.decoratorName = buildDecoratorName();
+    this.executionModeMatchers = buildExecutionModeMatchers();
   }
 
   protected String buildDecoratorName() {
@@ -142,8 +158,24 @@ public class Compayler {
     return (decoratorPackage.isEmpty() ? "" : decoratorPackage + ".") + interfaceSimple + "Decorator";
   }
 
+  protected Map<ExecutionMode, Matcher> buildExecutionModeMatchers() {
+    Map<ExecutionMode, Matcher> map = new EnumMap<>(ExecutionMode.class);
+    map.put(TRANSACTION, Pattern.compile(decorate.transactionRegex()).matcher(""));
+    map.put(QUERY, Pattern.compile(decorate.queryRegex()).matcher(""));
+    map.put(DIRECT, Pattern.compile(decorate.directRegex()).matcher(""));
+    return map;
+  }
+
+  public Decorate getDecorateAnnotation() {
+    return decorate;
+  }
+
   public String getDecoratorName() {
-    return decoratorName;
+    return decorate.value().isEmpty() ? buildDecoratorName() : decorate.value();
+  }
+
+  public Map<ExecutionMode, Matcher> getExecutionModeMatchers() {
+    return executionModeMatchers;
   }
 
   public String getInterfaceName() {
@@ -154,8 +186,16 @@ public class Compayler {
     return interfacePackage;
   }
 
-  public void setDecoratorName(String decoratorName) {
-    this.decoratorName = decoratorName;
+  public Class<?> getSuperClass() {
+    try {
+      return decorate.superClass();
+    } catch (MirroredTypeException mte) {
+      try {
+        return Class.forName(mte.getTypeMirror().toString());
+      } catch (ClassNotFoundException e) {
+        return Object.class;
+      }
+    }
   }
 
 }
