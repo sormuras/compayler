@@ -5,8 +5,6 @@ import static javax.lang.model.element.ElementKind.METHOD;
 
 import java.io.BufferedWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -15,6 +13,9 @@ import java.util.function.Predicate;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -32,27 +33,15 @@ import org.prevayler.contrib.compayler.Compayler.ExecutionMode;
 import org.prevayler.contrib.compayler.Compayler.ExecutionTime;
 import org.prevayler.contrib.compayler.Unit.Parameter;
 
+@SupportedAnnotationTypes({ "org.prevayler.contrib.compayler.Compayler.Decorate", "org.prevayler.contrib.compayler.Compayler.Execute" })
+@SupportedOptions("org.prevayler.contrib.compayler.Processor.debug")
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class Processor extends AbstractProcessor {
 
   private boolean debug;
   private Elements elements;
   private StringBuilder message;
   private Types types;
-
-  @Override
-  public Set<String> getSupportedAnnotationTypes() {
-    return new HashSet<>(Arrays.asList(Decorate.class.getCanonicalName(), Execute.class.getCanonicalName()));
-  }
-
-  @Override
-  public Set<String> getSupportedOptions() {
-    return new HashSet<>(Arrays.asList("org.prevayler.contrib.compayler.Processor.debug"));
-  }
-
-  @Override
-  public SourceVersion getSupportedSourceVersion() {
-    return SourceVersion.RELEASE_8;
-  }
 
   protected boolean hides(ExecutableElement hider, ExecutableElement hidden, TypeElement type) {
     return elements.hides(hider, hidden) || elements.overrides(hider, hidden, type);
