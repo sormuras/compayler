@@ -19,22 +19,31 @@ or [Idea](http://www.jetbrains.com/idea/webhelp/annotation-processors-support.ht
 or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html) or your favorite IDE
 
 ### Example based on [E101](https://github.com/jsampson/prevayler/tree/master/demos/tutorial/src/test/java/org/prevayler/examples/e101)
-1. Create interface `Root` and annotate it like that
-
+1. Create interface `Root` and annotate it
 ```java
     @Decorate
-    interface Root extends Closeable {
+    interface Root extends Closeable, Serializable {
       Person createPerson(String identity);
       Person deletePerson(String identity);
       @Execute(QUERY) Person getPerson(String identity);
       @Execute(DIRECT) boolean isEmpty();
       void updatePersonName(String identity, String name);
-    }
-```
-
+    }```
 2. Implement the Root interface with your business logic in `RootSystem`. Here, you can unit test the system
 without caring for persistence.
-
+```java
+public class RootSystem implements Root {
+  private static final long serialVersionUID = 1l;
+  private Map<String, Person> persons = new HashMap<>();
+  @Override
+  public Person createPerson(String identity) {
+    Person entity = new Person();
+    entity.setIdentity(identity);
+    persons.put(entity.getIdentity(), entity);
+    return entity;
+  }
+  ...
+```
 3. Finally, use generated `RootDecorator` over prevaylent system `RootSystem`
 ```java
     Prevayler prevayler = createPrevayler(new RootSystem(), new File("e101"));
