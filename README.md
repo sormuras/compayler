@@ -23,16 +23,16 @@ or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html) or your favori
 
 ### Example based on [E101](https://github.com/jsampson/prevayler/tree/master/demos/tutorial/src/test/java/org/prevayler/examples/e101)
 1. Create interface `Root` and annotate it
-```java
-@Decorate
-interface Root extends Closeable, Serializable {
-  Person createPerson(String identity);
-  Person deletePerson(String identity);
-  @Execute(QUERY) Person getPerson(String identity);
-  @Execute(DIRECT) boolean isEmpty();
-  void updatePersonName(String identity, String name);
-}
-```
+		```java
+		@Decorate
+		interface Root extends Closeable, Serializable {
+		  Person createPerson(String identity);
+		  Person deletePerson(String identity);
+		  @Execute(QUERY) Person getPerson(String identity);
+		  @Execute(DIRECT) boolean isEmpty();
+		  void updatePersonName(String identity, String name);
+		}
+		```
 2. Implement the Root interface with your business logic in `RootSystem`. Here, you can unit test the system
 without caring for persistence because there is reference to Prevayler classes.
 ```java
