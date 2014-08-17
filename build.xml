@@ -6,8 +6,10 @@
 		<format property="timestamp" pattern="yyyyMMddHHmm" />
 	</tstamp>
 
-	<property name="version.number" value="1.0.0" />
+	<property name="version.number" value="1.0" />
 	<property name="dir.out" value="bin/ant" />
+	<property name="compayler.jar" value="${dir.out}/compayler-${version.number}.jar" />
+	<property name="compayler-sources.jar" value="${dir.out}/compayler-${version.number}-sources.jar" />
 
 	<target name="clean">
 		<delete dir="${dir.out}" />
@@ -29,7 +31,7 @@
 
 		<buildnumber file="build.num" />
 
-		<jar destfile="${dir.out}/compayler.jar">
+		<jar destfile="${compayler.jar}">
 			<fileset dir="${dir.out}/classes" />
 			<manifest>
 				<attribute name="Implementation-Version" value="${version.number}-b${build.number}" />
@@ -38,11 +40,14 @@
 				<provider classname="org.prevayler.contrib.compayler.Processor" />
 			</service>
 		</jar>
+		<jar destfile="${compayler-sources.jar}" defaultexcludes="no">
+			<fileset dir="src/core" />
+		</jar>
 	</target>
 
 	<target name="test" depends="compile" description="execute all tests">
 		<path id="junit.class.path">
-			<pathelement path="${dir.out}/compayler.jar" />
+			<pathelement path="${compayler.jar}" />
 			<pathelement path="${dir.out}/junit/classes" />
 			<pathelement path="lib/prevayler-core-2.6.jar" />
 			<pathelement path="lib/junit-4.11.jar" />

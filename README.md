@@ -14,7 +14,7 @@ or [Idea](http://www.jetbrains.com/idea/webhelp/annotation-processors-support.ht
 or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html)...
 
 ### Example based on [E101](https://github.com/jsampson/prevayler/tree/master/demos/tutorial/src/test/java/org/prevayler/examples/e101)
-
+```java
     @Decorate
     interface Root extends Closeable {
       Person createPerson(String identity);
@@ -23,7 +23,7 @@ or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html)...
       @Execute(DIRECT) boolean isEmpty();
       void updatePersonName(String identity, String name);
     }
-
+```
 Use generated decorator over prevaylent system instance, here RootSystem
 
     Prevayler prevayler = createPrevayler(new RootSystem(), new File("e101"));
