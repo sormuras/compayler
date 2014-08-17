@@ -6,6 +6,7 @@
 		<format property="timestamp" pattern="yyyyMMddHHmm" />
 	</tstamp>
 
+	<property name="version.number" value="1.0.0" />
 	<property name="dir.out" value="bin/ant" />
 
 	<target name="clean">
@@ -26,8 +27,13 @@
 			<src path="src/core" />
 		</javac>
 
+		<buildnumber file="build.num" />
+
 		<jar destfile="${dir.out}/compayler.jar">
 			<fileset dir="${dir.out}/classes" />
+			<manifest>
+				<attribute name="Implementation-Version" value="${version.number}-b${build.number}" />
+			</manifest>
 			<service type="javax.annotation.processing.Processor">
 				<provider classname="org.prevayler.contrib.compayler.Processor" />
 			</service>

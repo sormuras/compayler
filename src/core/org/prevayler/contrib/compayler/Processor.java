@@ -109,6 +109,9 @@ public class Processor extends AbstractProcessor {
 
     String packageName = elements.getPackageOf(type).getQualifiedName().toString();
     Compayler compayler = new Compayler(decorate, packageName, type.getQualifiedName().toString(), type.getSimpleName().toString());
+    if (debug) {
+      message.append("Using Compayler ").append(compayler.getVersion()).append("\n");
+    }
 
     List<Unit> units = methods.stream().map(method -> processMethod(type, method, compayler)).collect(toList());
 

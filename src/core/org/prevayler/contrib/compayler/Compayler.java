@@ -198,4 +198,8 @@ public class Compayler {
     }
   }
 
+  public String getVersion() {
+    return getClass().getPackage().getImplementationVersion();
+  }
+
 }
