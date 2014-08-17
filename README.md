@@ -2,13 +2,15 @@
 
 ***Prevayler Decorator Compiler (Java 8)***
 
-With Compayler for Prevayler you can achive some major goals
+With the Prevayler Decorator Compiler you can achive these goals
 
 1. Encapsulate all transactions executing on a prevalent system in one place, namely an interface.
 
-2. Easily unit test the system implementation without caring for persistence.
+1. Easily unit test the system implementation without caring for persistence.
 
-3. Let the compiler do the tedious work of writing the transaction source code.
+1. Let the compiler do the tedious work of writing the transaction source code.
+
+1. Never instantiate a transaction object by yourself, just call your interface methods.
 
 ## Generate decorator class via annotation processor
 
@@ -33,7 +35,7 @@ or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html) or your favori
       void updatePersonName(String identity, String name);
     }
 ```
-* Implement the Root interface with your business logic in `RootSystem`. Here, you can unit test the system
+* Implement the `Root` interface with your business logic in `RootSystem`. Here, you can unit test the system
 without caring for persistence because there is reference to Prevayler classes.
 ```java
     class RootSystem implements Root {
@@ -49,7 +51,7 @@ without caring for persistence because there is reference to Prevayler classes.
       ...
     }
 ```
-* Finally, use generated `RootDecorator` over prevaylent system `RootSystem`
+* Finally, use generated `RootDecorator` over `Prevayler` over `RootSystem`
 ```java
     Prevayler prevayler = createPrevayler(new RootSystem(), new File("e101"));
     try (Root root = new RootDecorator(prevayler)) {
@@ -58,9 +60,9 @@ without caring for persistence because there is reference to Prevayler classes.
       root.updatePersonName(person.getIdentity(), nameOfPerson);
       assertEquals(nameOfPerson, person.getName());
       Person queryResponse = root.getPerson(person.getIdentity());
-      assertSame("person and queryResponse are supposed to be the same object instance!", person, queryResponse);
+      assertSame("person and response not same object?!", person, queryResponse);
       Person removed = root.deletePerson(person.getIdentity());
-      assertSame("person and removed are supposed to be the same object instance!", person, removed);
-      assertTrue("there are not supposed to be any persons in the root at this point!", root.isEmpty());
+      assertSame("person and removed not same object?!", person, removed);
+      assertTrue("root not empty?!", root.isEmpty());
     }
 ```
