@@ -26,7 +26,8 @@ or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html)...
 
 Use generated decorator over prevaylent system instance, here RootSystem
 
-    try (Root root = new RootDecorator(PrevaylerFactory.createPrevayler(new RootSystem(), new File("e101")))) {
+    Prevayler prevayler = createPrevayler(new RootSystem(), new File("e101"));
+    try (Root root = new RootDecorator(prevayler)) {
       Person person = root.createPerson(UUID.randomUUID().toString());
       String nameOfPerson = "John Doe";
       root.updatePersonName(person.getIdentity(), nameOfPerson);
