@@ -4,19 +4,23 @@
 
 With the Prevayler Decorator Compiler you can achive these goals
 
-1. Encapsulate all transactions executing on a prevalent system in one place, namely an interface.
+* Encapsulate all transactions executing on a prevalent system in one place, namely an interface.
 
-1. Easily unit test the system implementation without caring for persistence.
+* Easily unit test the system implementation without caring for persistence.
 
-1. Let the compiler do the tedious work of writing the transaction source code.
+* Let the compiler do the tedious work of writing the transaction source code.
 
-1. Never instantiate a transaction object by yourself, just call your interface methods.
+* Never instantiate a transaction object by yourself, just call your interface methods.
+
+* Review/tweak the generated decorator source code.
+
+* Less overhead compared to a runtime/reflection based solution
 
 ## Generate decorator class via annotation processor
 
-First, add compayler-X.Y.jar close to prevayler.jar and configure your build setup to execute annotation
+Add compayler-X.Y.jar close to prevayler.jar and configure your build setup to execute annotation
 processors. Then annotate your prevalent interface with `@Compayler.Decorate` and get the decorator class
-with all serializable transaction and query classes *for free* and at compile time.
+with all serializable transaction and query classes *for free* and ahead of compile time.
 
 See documentation for [javac](http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html)
 or [Eclipse](http://www.eclipse.org/jdt/apt/introToAPT.php)
@@ -36,7 +40,7 @@ or [Netbeans](https://netbeans.org/kb/docs/java/annotations.html) or your favori
     }
 ```
 * Implement the `Root` interface with your business logic in `RootSystem`. Here, you can unit test the system
-without caring for persistence because there is reference to Prevayler classes.
+without caring for persistence because there is no reference to Prevayler classes.
 ```java
     class RootSystem implements Root {
       private static final long serialVersionUID = 170l;
