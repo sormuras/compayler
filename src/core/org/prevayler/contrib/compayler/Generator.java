@@ -367,6 +367,7 @@ public class Generator {
     add("private static final long serialVersionUID = %dL;", uid != null ? uid : generateChecksum(unit));
     addExecutableClassFieldsAndConstructor(unit);
     addExecutableImplementation(unit);
+    addExecutableToString(unit);
     dec();
     add("");
     add("}");
@@ -399,6 +400,28 @@ public class Generator {
     add("public %s {", action.toString(unit.getReturns(), compayler.getInterfaceName()));
     inc();
     add("%sprevalentSystem.%s;", action == Action.TRANSACTION ? "" : "return ", methodCall);
+    dec();
+    add("}");
+  }
+
+  protected void addExecutableToString(Unit unit) {
+    add("");
+    add("@Override");
+    add("public String toString() {");
+    inc();
+    add("StringBuilder builder = new StringBuilder();");
+    add("builder.append(\"%s\");", generateClassName(unit));
+    if (!unit.getParameters().isEmpty()) {
+      add("builder.append(\" [\");");
+      unit.getParameters().forEach(p -> {
+        add("builder.append(\"%s\").append(\"=\").append(%s);", p.getName(), p.getName());
+        if (!p.isLast()) {
+          add("builder.append(\", \");");
+        }
+      });
+      add("builder.append(\"]\");");
+    }
+    add("return builder.toString();");
     dec();
     add("}");
   }

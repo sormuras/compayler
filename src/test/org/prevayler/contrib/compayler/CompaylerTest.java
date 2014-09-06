@@ -44,21 +44,27 @@ public class CompaylerTest {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void testAppendableDecoratorName() throws Exception {
-    Compayler compayler = new Compayler(Appendable.class);
-    assertEquals("appendable.AppendableDecorator", compayler.getDecoratorName());
-    assertEquals(Object.class, compayler.getSuperClass());
-  }
+  public void testDecoratorConstructor() throws Exception {
+    Compayler compayler;
 
-  @Test
-  public void testSimpleDecoratorName() throws Exception {
-    Compayler compayler = new Compayler(Simple.class);
+    compayler = new Compayler(Simple.class);
     assertEquals("com.back.sun.Sidec", compayler.getDecoratorName());
     assertEquals(Observable.class, compayler.getSuperClass());
+    assertNotNull(compayler.getDecorateAnnotation());
+
+    compayler = new Compayler(Simplicissimus.class);
+    assertEquals("org.prevayler.contrib.compayler.SimplicissimusDecorator", compayler.getDecoratorName());
+    assertEquals(Object.class, compayler.getSuperClass());
+    assertNotNull(compayler.getDecorateAnnotation());
+
+    compayler = new Compayler(Appendable.class);
+    assertEquals("appendable.AppendableDecorator", compayler.getDecoratorName());
+    assertEquals(Object.class, compayler.getSuperClass());
+    assertNotNull(compayler.getDecorateAnnotation()); 
   }
 
   @Test
-  public void testSimpleDecoratorNew() throws Exception {
+  public void testSimpleDecorator() throws Exception {
     assumeTrue("Ant not running.", Boolean.getBoolean("ant.running")); // quit if NOT inside ant/junit execution
     Simple simple = decorate(Simple.class, new SimpleImpl(), temp.newFolder());
     assertNotNull(simple);

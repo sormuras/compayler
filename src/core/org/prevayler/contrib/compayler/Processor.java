@@ -140,6 +140,7 @@ public class Processor extends AbstractProcessor {
       VariableElement lastParameter = parameters.get(parameters.size() - 1);
       for (VariableElement variable : parameters) {
         Parameter parameter = unit.createParameter();
+        parameter.setLast(variable == lastParameter);
         parameter.setName(variable.getSimpleName().toString());
         parameter.setType(variable.asType().toString());
         parameter.setTime(variable.getAnnotation(ExecutionTime.class) != null);

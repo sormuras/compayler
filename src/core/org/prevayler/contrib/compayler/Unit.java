@@ -12,6 +12,7 @@ public class Unit {
 
   public class Parameter {
 
+    private boolean last;
     private String name;
     private boolean time;
     private String type;
@@ -24,6 +25,10 @@ public class Unit {
     public String getType() {
       return type;
     }
+    
+    public boolean isLast() {
+      return last;
+    }
 
     public boolean isTime() {
       return time;
@@ -31,6 +36,10 @@ public class Unit {
 
     public boolean isVars() {
       return vars;
+    }
+    
+    public void setLast(boolean last) {
+      this.last = last;
     }
 
     public void setName(String name) {
