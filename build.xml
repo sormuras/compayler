@@ -65,7 +65,7 @@
 		<junit printsummary="yes" fork="yes" haltonfailure="no">
 			<sysproperty key="ant.running" value="true" />
 			<classpath refid="junit.class.path" />
-			<formatter type="plain" />
+			<formatter type="xml" />
 			<batchtest todir="${dir.out}/junit/reports">
 				<fileset dir="src/test">
 					<include name="**/*Test.java" />

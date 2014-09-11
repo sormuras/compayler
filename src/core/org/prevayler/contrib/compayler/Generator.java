@@ -513,13 +513,12 @@ public class Generator {
   protected String generateParameterSignature(Unit unit) {
     StringBuilder builder = new StringBuilder();
     builder.append('(');
-    int index = 0;
     for (Parameter param : unit.getParameters()) {
-      if (index > 0)
-        builder.append(", ");
       builder.append(param.getType());
       builder.append(' ').append(param.getName());
-      index++;
+      if (param.isLast())
+        break;
+      builder.append(", ");
     }
     builder.append(')');
     return builder.toString();
