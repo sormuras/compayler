@@ -1,5 +1,6 @@
 package org.prevayler.contrib.compayler;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,6 +95,7 @@ public class Unit {
 
   private boolean chainable;
   private boolean defaults;
+  private final long id = new SecureRandom().nextLong();
   private ExecutionMode mode = ExecutionMode.TRANSACTION;
   private String name;
   private List<Parameter> parameters = new ArrayList<>();
@@ -101,13 +103,16 @@ public class Unit {
   private Long serialVersionUID = Long.valueOf(0L);
   private List<String> throwns = new ArrayList<>();
   private boolean unique;
-
   private boolean varargs;
 
   public Parameter createParameter() {
     Parameter parameter = new Parameter();
     parameters.add(parameter);
     return parameter;
+  }
+  
+  public long getId() {
+    return id;
   }
 
   public ExecutionMode getMode() {
@@ -205,6 +210,8 @@ public class Unit {
     builder.append(unique);
     builder.append(", varargs=");
     builder.append(varargs);
+    builder.append(", id=0x");
+    builder.append(Long.toHexString(id));
     builder.append("]");
     return builder.toString();
   }
