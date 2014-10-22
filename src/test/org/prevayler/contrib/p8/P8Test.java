@@ -7,9 +7,6 @@ import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.prevayler.Prevayler;
-import org.prevayler.Transaction;
-import org.prevayler.contrib.compayler.TestTool;
 
 public class P8Test {
 
@@ -46,29 +43,6 @@ public class P8Test {
       assertEquals(5, prevayler.age());
       assertEquals("12345", prevayler.prevalentSystem().toString());
       assertEquals(Integer.valueOf(5), prevayler.executeQuery((builder, date) -> builder.length()));
-    }
-  }
-
-  private <P> void testNaivMicroBenchmark(Prevayler<StringBuilder> prevayler) {
-    for (int i = 0; i < 1000 * 1000; i++) {
-      prevayler.execute((Transaction<StringBuilder>) (builder, date) -> builder.append("1"));
-    }
-  }
-
-  @Test
-  public void testNaivMicroBenchmarkWithDefaultPrevayler() throws Exception {
-    Prevayler<StringBuilder> prevayler = TestTool.prevayler(new StringBuilder(), temp.newFolder());
-    try {
-      testNaivMicroBenchmark(prevayler);
-    } finally {
-      prevayler.close();
-    }
-  }
-
-  @Test
-  public void testNaivMicroBenchmarkWithP8() throws Exception {
-    try (P8<StringBuilder> prevayler = new P8<>(new StringBuilder(), temp.newFolder())) {
-      testNaivMicroBenchmark(prevayler);
     }
   }
 
