@@ -41,13 +41,13 @@ public class TestTool {
   public static <P> Prevayler<P> prevayler(P prevalentSystem, File folder, ClassLoader loader) throws Exception {
     PrevaylerDirectory directory = new PrevaylerDirectory(folder);
     Monitor monitor = new SimpleMonitor(System.err);
-    Journal journal = new PersistentJournal(directory, 0, 0, true, "journal", monitor);
+    Journal journal = new PersistentJournal(directory, 0, 0, false, "journal", monitor);
     Serializer serializer = new JavaSerializer(loader);
     Map<String, Serializer> map = Collections.singletonMap("snapshot", serializer);
     GenericSnapshotManager<P> snapshotManager = new GenericSnapshotManager<>(map, "snapshot", prevalentSystem, directory, serializer);
     Clock clock = new MachineClock();
     TransactionPublisher publisher = new CentralPublisher(clock, journal);
-    boolean transactionDeepCopyMode = true;
+    boolean transactionDeepCopyMode = false;
     return new PrevaylerImpl<>(snapshotManager, publisher, serializer, transactionDeepCopyMode);
   }
 
