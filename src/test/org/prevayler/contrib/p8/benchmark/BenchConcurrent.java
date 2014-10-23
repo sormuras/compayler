@@ -78,6 +78,8 @@ public class BenchConcurrent {
   @Test
   public void testP8() throws Exception {
     File folder = temp.newFolder();
+    test(new SynchronizedPrevayler<>(new P8<>(new StringBuilder(), folder, "snap", "journal", 500 * 1000 * 1000)), 1);
+
     // XYSeries series = new XYSeries("P8-synced");
     for (int i = 1; i <= 50; i++) {
       // if (i > 10 && i % 20 != 0)
@@ -96,6 +98,8 @@ public class BenchConcurrent {
   @Test
   public void testPrevayler() throws Exception {
     File folder = temp.newFolder();
+    test(TestTool.prevayler(new StringBuilder(), folder), 1);
+
     // XYSeries series = new XYSeries("Prevayler");
     for (int i = 1; i <= 50; i++) {
       // if (i > 10 && i % 20 != 0)
