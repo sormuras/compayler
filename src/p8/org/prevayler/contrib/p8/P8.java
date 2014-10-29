@@ -197,7 +197,7 @@ public class P8<P> implements Prevayler<P>, Closeable {
     deleteIfExists(snapshotLink);
     createLink(snapshotLink, taken.toPath());
 
-    journal.clear();
+    journal.clear();    
 
     return snapshotLink;
   }

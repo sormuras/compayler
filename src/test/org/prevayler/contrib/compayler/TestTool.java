@@ -15,9 +15,11 @@ import org.prevayler.implementation.PrevaylerImpl;
 import org.prevayler.implementation.clock.MachineClock;
 import org.prevayler.implementation.journal.Journal;
 import org.prevayler.implementation.journal.PersistentJournal;
+import org.prevayler.implementation.journal.TransientJournal;
 import org.prevayler.implementation.publishing.CentralPublisher;
 import org.prevayler.implementation.publishing.TransactionPublisher;
 import org.prevayler.implementation.snapshot.GenericSnapshotManager;
+import org.prevayler.implementation.snapshot.NullSnapshotManager;
 
 public class TestTool {
 
@@ -45,6 +47,19 @@ public class TestTool {
     Serializer serializer = new JavaSerializer(loader);
     Map<String, Serializer> map = Collections.singletonMap("snapshot", serializer);
     GenericSnapshotManager<P> snapshotManager = new GenericSnapshotManager<>(map, "snapshot", prevalentSystem, directory, serializer);
+    Clock clock = new MachineClock();
+    TransactionPublisher publisher = new CentralPublisher(clock, journal);
+    boolean transactionDeepCopyMode = false;
+    return new PrevaylerImpl<>(snapshotManager, publisher, serializer, transactionDeepCopyMode);
+  }
+
+  /**
+   * @return default prevayler using given class loader and given journaling folder
+   */
+  public static <P> Prevayler<P> prevaylerTransient(P prevalentSystem) throws Exception {
+    Journal journal = new TransientJournal();
+    Serializer serializer = new JavaSerializer(prevalentSystem.getClass().getClassLoader());
+    GenericSnapshotManager<P> snapshotManager = new NullSnapshotManager<P>(prevalentSystem, "No snap, no bite.");
     Clock clock = new MachineClock();
     TransactionPublisher publisher = new CentralPublisher(clock, journal);
     boolean transactionDeepCopyMode = false;

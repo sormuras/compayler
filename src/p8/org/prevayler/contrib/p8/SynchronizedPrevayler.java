@@ -90,5 +90,10 @@ public class SynchronizedPrevayler<P> implements Prevayler<P>, AutoCloseable {
       lock.readLock().unlock();
     }
   }
+  
+  @Override
+  public String toString() {
+    return "Synchronized(" + prevayler.toString() + ")";
+  }
 
 }
