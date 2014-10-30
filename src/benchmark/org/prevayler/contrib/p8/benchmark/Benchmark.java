@@ -23,8 +23,6 @@ import org.prevayler.contrib.p8.VolatilePrevayler;
 import de.codeturm.util.chartgo.Chart;
 import de.codeturm.util.chartgo.Chart.Background;
 import de.codeturm.util.chartgo.Chart.ChartType;
-import de.codeturm.util.chartgo.Group;
-import de.codeturm.util.chartgo.Point;
 
 public class Benchmark {
 
@@ -89,8 +87,8 @@ public class Benchmark {
     return folder;
   }
 
-  public Group test(String name, Creator creator) throws Exception {
-    Group dataGroup = new Group(name);
+  public Chart.Group test(String name, Creator creator) throws Exception {
+    Chart.Group dataGroup = new Chart.Group(name);
     StringBuilder builder = new StringBuilder(1000 * 1000);
 
     for (int numberOfThreads = threadsMin; numberOfThreads <= threadsMax; numberOfThreads++) {
@@ -117,7 +115,7 @@ public class Benchmark {
         ops += result;
       }
 
-      dataGroup.points.add(new Point(numberOfThreads, Math.floor(ops / rounds / 1000)));
+      dataGroup.points.add(new Chart.Point(numberOfThreads, Math.floor(ops / rounds / 1000)));
     }
 
     chart.getGroups().add(dataGroup);
