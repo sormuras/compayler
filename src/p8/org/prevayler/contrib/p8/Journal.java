@@ -11,19 +11,18 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.concurrent.TimeUnit;
 
 public class Journal<P> implements Closeable, Flushable {
 
   /**
-   * Force flush every 11 seconds...
-   */
-  public static final long DEFAULT_NANOS_BETWEEN_FORCE_FLUSH = TimeUnit.NANOSECONDS.convert(11L, TimeUnit.SECONDS);
-
-  /**
-   * Nano timestamp of last forced flush.
+   * Nano timestamp of last flush.
    */
   private long forcedFlushNanoTime = System.nanoTime();
+
+  /**
+   * Nanos between forced flushes.
+   */
+  private long forceNextFlushAfterNanos = Long.MAX_VALUE;
 
   /**
    * Direct byte buffer whose content is the memory-mapped journal file.
@@ -65,7 +64,7 @@ public class Journal<P> implements Closeable, Flushable {
    */
   private int sliceTransactionCounter;
 
-  public Journal(P8<P> prevayler, File journalFile, long size) throws Exception {
+  public Journal(P8<P> prevayler, File journalFile, long size, long nanos) throws Exception {
     this.prevayler = prevayler;
 
     this.memoryFile = new RandomAccessFile(journalFile, "rw");
@@ -74,12 +73,13 @@ public class Journal<P> implements Closeable, Flushable {
     }
 
     this.memory = memoryFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, size);
+    this.forceNextFlushAfterNanos = nanos;
 
-    replay();
+    build();
     slice();
   }
 
-  private void replay() throws Exception {
+  protected void build() throws Exception {
     this.memorySliceCounter = memory.getInt();
     this.memoryTransactionCounter = memory.getLong();
 
@@ -114,7 +114,7 @@ public class Journal<P> implements Closeable, Flushable {
     slice.putInt(0, ++sliceTransactionCounter);
     memory.putLong(4, ++memoryTransactionCounter);
 
-    if (System.nanoTime() - forcedFlushNanoTime >= DEFAULT_NANOS_BETWEEN_FORCE_FLUSH)
+    if (System.nanoTime() - forcedFlushNanoTime >= getForceNextFlushAfterNanos())
       flush();
   }
 
@@ -133,7 +133,25 @@ public class Journal<P> implements Closeable, Flushable {
     }
   }
 
-  private void slice() throws IOException {
+  @Override
+  public void flush() {
+    memory.force();
+    forcedFlushNanoTime = System.nanoTime();
+  }
+
+  public long getForceNextFlushAfterNanos() {
+    return forceNextFlushAfterNanos;
+  }
+
+  public long getMemoryTransactionCounter() {
+    return memoryTransactionCounter;
+  }
+
+  public void setForceNextFlushAfterNanos(long forceNextFlushAfterNanos) {
+    this.forceNextFlushAfterNanos = forceNextFlushAfterNanos;
+  }
+
+  protected void slice() throws IOException {
     slice = memory.slice();
     slice.putInt(sliceTransactionCounter = 0);
 
@@ -147,16 +165,6 @@ public class Journal<P> implements Closeable, Flushable {
 
   public double usage() {
     return 100d - slice.remaining() * 100d / memory.capacity();
-  }
-
-  @Override
-  public void flush() {
-    memory.force();
-    forcedFlushNanoTime = System.nanoTime();
-  }
-
-  public long getMemoryTransactionCounter() {
-    return memoryTransactionCounter;
   }
 
 }

@@ -14,6 +14,7 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import org.prevayler.Clock;
 import org.prevayler.Prevayler;
@@ -24,6 +25,11 @@ import org.prevayler.TransactionWithQuery;
 import org.prevayler.implementation.clock.MachineClock;
 
 public class P8<P> implements Prevayler<P>, Closeable {
+  
+  /**
+   * By default, force flush journal every 11 seconds.
+   */
+  public static final long DEFAULT_NANOS_BETWEEN_FORCE_FLUSH = TimeUnit.NANOSECONDS.convert(11L, TimeUnit.SECONDS);
 
   /**
    * Base folder for snapshot and journal files.
@@ -56,21 +62,21 @@ public class P8<P> implements Prevayler<P>, Closeable {
   private final File snapshotFile;
 
   public P8(P prevalentSystem, File base) throws Exception {
-    this(prevalentSystem, base, "snap.shot", "sliced.journal", 100 * 1024 * 1024);
+    this(prevalentSystem, base, 100 * 1024 * 1024, DEFAULT_NANOS_BETWEEN_FORCE_FLUSH);
   }
 
-  public P8(P prevalentSystem, File base, String snapshotName, String journalName, long journalSize) throws Exception {
+  public P8(P prevalentSystem, File base, long journalSize, long journalNanos) throws Exception {
     this.base = base;
 
     base.mkdirs();
 
     this.clock = new MachineClock();
 
-    this.snapshotFile = new File(base, snapshotName);
+    this.snapshotFile = new File(base, "snap.shot");
 
     this.prevalentSystem = reloadFromSnapshot(snapshotFile, prevalentSystem);
 
-    this.journal = new Journal<>(this, new File(base, journalName), journalSize);
+    this.journal = new Journal<>(this, new File(base, "sliced.journal"), journalSize, journalNanos);
   }
 
   public long age() {
@@ -197,7 +203,7 @@ public class P8<P> implements Prevayler<P>, Closeable {
     deleteIfExists(snapshotLink);
     createLink(snapshotLink, taken.toPath());
 
-    journal.clear();    
+    journal.clear();
 
     return snapshotLink;
   }

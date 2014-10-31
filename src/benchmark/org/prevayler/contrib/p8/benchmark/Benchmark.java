@@ -34,7 +34,7 @@ public class Benchmark {
     benchmark.test("Prevayler (Transient)", (builder, folder, numberOfThreads) -> TestTool.prevaylerTransient(builder));
 
     benchmark.test("P8 (raw/RW-locked)", (builder, folder, numberOfThreads) -> {
-      P8<StringBuilder> p8 = new P8<>(builder, folder, "snap", "journal", 10 * 1000 * 1000);
+      P8<StringBuilder> p8 = new P8<>(builder, folder, 10 * 1000 * 1000, -1L);
       return numberOfThreads == 1 ? p8 : new SynchronizedPrevayler<>(p8);
     });
 
