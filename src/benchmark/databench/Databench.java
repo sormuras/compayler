@@ -13,6 +13,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.prevayler.contrib.p8.ReadWriteLockPrevayler;
+import org.prevayler.contrib.p8.StampedLockPrevayler;
+import org.prevayler.contrib.p8.SynchronizedPrevayler;
+
 import databench.prevayler.P8Subject;
 import databench.prevayler.PrevaylerSubject;
 
@@ -98,16 +102,22 @@ public class Databench {
 
     Databench main = new Databench();
 
-    if (Boolean.parseBoolean(System.getProperty("transient", "false"))) {
-      main.time("Volatile", (folder, threads) -> new P8Subject(null, threads, -1L));
+    if (Boolean.parseBoolean(System.getProperty("run.transient", "false"))) {
+      main.time("Volatile", (folder, threads) -> new P8Subject(null, threads, p -> new StampedLockPrevayler<>(p)));
       main.time("Transient", (folder, threads) -> new PrevaylerSubject(null, threads));
     }
 
-    if (Boolean.parseBoolean(System.getProperty("persistent", "true"))) {
+    if (Boolean.parseBoolean(System.getProperty("run.persistent", "true"))) {
       main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE));
       main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS)));
       main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L));
       main.time("Prevayler", (folder, threads) -> new PrevaylerSubject(folder, threads));
+    }
+    
+    if (Boolean.parseBoolean(System.getProperty("run.concurrent", "false"))) {
+      main.time("P8(synchro)", (folder, threads) -> new P8Subject(folder, 0, p -> new SynchronizedPrevayler<>(p)));
+      main.time("P8(readwrt)", (folder, threads) -> new P8Subject(folder, 0, p -> new ReadWriteLockPrevayler<>(p)));
+      main.time("P8(stamped)", (folder, threads) -> new P8Subject(folder, 0, p -> new StampedLockPrevayler<>(p)));
     }
 
     System.out.println();
@@ -134,7 +144,7 @@ public class Databench {
     System.out.println("#   r  o  | " + name + " |");
     System.out.println("#   e  u  +-" + new String(new char[name.length()]).replace("\0", "-") + "-+");
     System.out.println("#   a  n ");
-    System.out.println("#_  d  d (one character is a block of " + workername + " operations)");
+    System.out.println("#_  d  d (one character is a block of 1-" + workername + " operations)");
     Watch watch = Watch.start();
     for (int threads = threadsMin; threads <= threadsMax; threads++) {
       time(name, factory, threads);

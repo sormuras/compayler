@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.p8.P8;
-import org.prevayler.contrib.p8.SynchronizedPrevayler;
+import org.prevayler.contrib.p8.StampedLockPrevayler;
 import org.prevayler.contrib.p8.VolatilePrevayler;
 
 import databench.AccountStatus;
@@ -15,20 +15,33 @@ import databench.Bank;
 
 public class P8Subject implements Bank<Integer> {
 
+  @FunctionalInterface
+  public interface Wrapper {
+    Prevayler<Map<Integer, PrevaylerAccount>> warp(Prevayler<Map<Integer, PrevaylerAccount>> prevayler);
+  }
+
   private static final long serialVersionUID = 1L;
 
   private final Prevayler<Map<Integer, PrevaylerAccount>> prevayler;
 
   public P8Subject(File folder, int threads, long flushNanos) {
+    this(folder, threads, flushNanos, StampedLockPrevayler<Map<Integer, PrevaylerAccount>>::new);
+  }
+
+  public P8Subject(File folder, int threads, Wrapper wrapper) {
+    this(folder, threads, P8.DEFAULT_NANOS_BETWEEN_FORCE_FLUSH, wrapper);
+  }
+
+  public P8Subject(File folder, int threads, long flushNanos, Wrapper wrapper) {
     try {
-      Map<Integer, PrevaylerAccount> prevalentSystem = new HashMap<>();
-      if (folder == null) {
-        VolatilePrevayler<Map<Integer, PrevaylerAccount>> vola = new VolatilePrevayler<>(prevalentSystem, false, null);
-        this.prevayler = threads == 1 ? vola : new SynchronizedPrevayler<>(vola);
-      } else {
-        P8<Map<Integer, PrevaylerAccount>> p8 = new P8<>(prevalentSystem, folder, 100 * 1024 * 1024, flushNanos);
-        this.prevayler = threads == 1 ? p8 : new SynchronizedPrevayler<>(p8);
+      Map<Integer, PrevaylerAccount> map = new HashMap<>();
+      Prevayler<Map<Integer, PrevaylerAccount>> prevayler = null;
+      prevayler = folder == null ? new VolatilePrevayler<>(map, false, null) : new P8<>(map, folder, 100 * 1024 * 1024, flushNanos);
+      if (threads == 0) {
+        this.prevayler = wrapper.warp(prevayler);
+        return;
       }
+      this.prevayler = threads == 1 ? prevayler : wrapper.warp(prevayler);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
