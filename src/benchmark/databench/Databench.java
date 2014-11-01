@@ -103,7 +103,7 @@ public class Databench {
       main.time("Transient", (folder, threads) -> new PrevaylerSubject(null, threads));
     }
 
-    if (Boolean.parseBoolean(System.getProperty("persistent", "false"))) {
+    if (Boolean.parseBoolean(System.getProperty("persistent", "true"))) {
       main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE));
       main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS)));
       main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L));
@@ -124,7 +124,7 @@ public class Databench {
   public final int roundsSingle = Integer.parseUnsignedInt(System.getProperty("rounds.single", "6"));
   public final int roundsMulti = Integer.parseUnsignedInt(System.getProperty("rounds.multi", "3"));
   public final int workername = Integer.parseUnsignedInt(System.getProperty("worker.name", "50000"));
-  public final int workertime = Integer.parseUnsignedInt(System.getProperty("worker.time", "5"));
+  public final int workertime = Integer.parseUnsignedInt(System.getProperty("worker.time", "3"));
 
   public void time(String name, Factory factory) throws Exception {
     System.out.println();
