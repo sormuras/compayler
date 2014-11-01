@@ -51,11 +51,11 @@ public class Databench {
 
       while (!thread.isInterrupted()) {
 
-        if (operations % 50000 == 0)
+        if (operations % workername == 0)
           System.out.print(name);
 
         try {
-          if (random.nextBoolean() && random.nextBoolean())
+          if (random.nextInt(100) < percentage)
             bank.transfer(any(), any(), any());
           else
             bank.getAccountStatus(any());
@@ -83,61 +83,86 @@ public class Databench {
       "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "_" };
 
   public static void main(String[] args) throws Exception {
-    System.out.println(System.getenv("PROCESSOR_IDENTIFIER"));
-    System.out.println(System.getenv("PROCESSOR_ARCHITECTURE"));
-    System.out.println(System.getenv("NUMBER_OF_PROCESSORS"));
-    System.out.println(System.getProperty("os.name"));
-    System.out.println(System.getProperty("os.version"));
-    System.out.println(System.getProperty("os.arch"));
+    Runtime r = Runtime.getRuntime();
+    System.out.println("BEGIN");
+    System.out.println(" o PROCESSOR_IDENTIFIER   : " + System.getenv("PROCESSOR_IDENTIFIER"));
+    System.out.println(" o PROCESSOR_ARCHITECTURE : " + System.getenv("PROCESSOR_ARCHITECTURE"));
+    System.out.println(" o NUMBER_OF_PROCESSORS   : " + System.getenv("NUMBER_OF_PROCESSORS"));
+    System.out.println(" o os.name                : " + System.getProperty("os.name"));
+    System.out.println(" o os.version             : " + System.getProperty("os.version"));
+    System.out.println(" o os.arch                : " + System.getProperty("os.arch"));
+    System.out.println(" o memory used            :  " + (r.totalMemory() - r.freeMemory()) + " bytes");
+    System.out.println(" o memory free            : " + r.freeMemory() + " bytes");
+    System.out.println(" o memory total           : " + r.totalMemory() + " bytes");
+    System.out.println(" o memory max             : " + r.maxMemory() + " bytes");
 
     Databench main = new Databench();
 
-    main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE));
-    main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS)));
-    main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L));
-    main.time("Prevayler", (folder, threads) -> new PrevaylerSubject(folder, threads));
-  }
-
-  public final int numberOfBankAccounts = Integer.parseUnsignedInt(System.getProperty("numberOfBankAccounts", "10000"));
-  public final Result result = new Result();
-  public final boolean yield = Boolean.parseBoolean(System.getProperty("yield", "true"));
-  public final AtomicBoolean ignoreRuntimeExceptionAndBreak = new AtomicBoolean(false);
-
-  public void time(String name, Factory factory) throws Exception {
-    Watch watch = Watch.start();
-
-    for (int threads = 1; threads <= 2; threads++) {
-      System.out.println("\n" + threads + " thread(s)...");
-      time(name, factory, threads);
+    if (Boolean.parseBoolean(System.getProperty("transient", "false"))) {
+      main.time("Volatile", (folder, threads) -> new P8Subject(null, threads, -1L));
+      main.time("Transient", (folder, threads) -> new PrevaylerSubject(null, threads));
     }
 
+    if (Boolean.parseBoolean(System.getProperty("persistent", "false"))) {
+      main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE));
+      main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS)));
+      main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L));
+      main.time("Prevayler", (folder, threads) -> new PrevaylerSubject(folder, threads));
+    }
+
+    System.out.println();
+    System.out.println("END.");
+  }
+
+  public final int numberOfBankAccounts = Integer.parseUnsignedInt(System.getProperty("numberOfBankAccounts", "1000000"));
+  public final Result result = new Result();
+  public final boolean yield = Boolean.parseBoolean(System.getProperty("yield", "false"));
+  public final AtomicBoolean ignoreRuntimeExceptionAndBreak = new AtomicBoolean(false);
+  public final int threadsMax = Integer.parseUnsignedInt(System.getProperty("threads.max", "8"));
+  public final int threadsMin = Integer.parseUnsignedInt(System.getProperty("threads.min", "1"));
+  public final int percentage = Integer.parseUnsignedInt(System.getProperty("percentage", "20"));
+  public final int roundsSingle = Integer.parseUnsignedInt(System.getProperty("rounds.single", "6"));
+  public final int roundsMulti = Integer.parseUnsignedInt(System.getProperty("rounds.multi", "3"));
+  public final int workername = Integer.parseUnsignedInt(System.getProperty("worker.name", "50000"));
+  public final int workertime = Integer.parseUnsignedInt(System.getProperty("worker.time", "5"));
+
+  public void time(String name, Factory factory) throws Exception {
+    System.out.println();
+    System.out.println("#########################################################################");
+    System.out.println("#   t");
+    System.out.println("#   h  r  +-" + new String(new char[name.length()]).replace("\0", "-") + "-+");
+    System.out.println("#   r  o  | " + name + " |");
+    System.out.println("#   e  u  +-" + new String(new char[name.length()]).replace("\0", "-") + "-+");
+    System.out.println("#   a  n ");
+    System.out.println("#_  d  d (one character is a block of " + workername + " operations)");
+    Watch watch = Watch.start();
+    for (int threads = threadsMin; threads <= threadsMax; threads++) {
+      time(name, factory, threads);
+    }
     result.entireDuration = watch.nanosEllapsed();
     System.out.println("#");
     System.out.println("#  Result for " + name);
     System.out.println("#   o entire duration: " + result.entireDuration);
     System.out.println("#   o  setup duration: " + result.setupDuration);
-    System.out.println("#");
+    System.out.println("#########################################################################");
   }
 
   public void time(String name, Factory factory, int threads) throws Exception {
-    for (int round = 1; round <= (threads == 1 ? 2 : 1); round++) {
-      File folder = time(name, factory, threads, round);
-      Arrays.asList(folder.listFiles()).forEach(System.out::println);
-      Thread.sleep(1500);
-      System.gc();
-      Thread.sleep(1500);
-      System.gc();
-      Thread.sleep(1500);
-      System.gc();
-      Thread.sleep(1500);
-      for (File f : folder.listFiles())
-        Files.delete(f.toPath());
-      Arrays.asList(folder.listFiles()).forEach(System.out::println);
-      Files.deleteIfExists(folder.toPath());
+    int lastRound = threads == 1 ? roundsSingle : roundsMulti;
+    for (int round = 1; round <= lastRound; round++) {
+      File folder = time(name, factory, threads, round, round == lastRound);
+
+      while (folder.exists()) {
+        System.gc();
+        Arrays.asList(folder.listFiles()).forEach(f -> f.delete());
+        if (folder.delete())
+          break;
+        Thread.sleep(1000);
+      }
     }
   }
 
-  public File time(String name, Factory factory, int threads, int round) throws Exception {
+  public File time(String name, Factory factory, int threads, int round, boolean lastRound) throws Exception {
     Watch watch = Watch.start();
 
     File folder = Files.createTempDirectory("databench-" + name + "-" + threads + "-" + round + ".").toFile();
@@ -150,17 +175,17 @@ public class Databench {
     ExecutorService execs = Executors.newFixedThreadPool(threads);
     ArrayList<Worker> workers = new ArrayList<>(threads);
     for (int i = 0; i < threads; i++)
-      workers.add(new Worker(bank, NAMES[i % NAMES.length]));
+      workers.add(new Worker(bank, NAMES[26 + i % NAMES.length]));
 
     long operations = 0L;
     long duration = Long.MAX_VALUE;
     try {
       long start = System.nanoTime();
 
-      System.out.print("(");
-      execs.invokeAll(workers, 5, TimeUnit.SECONDS);
+      System.out.print(format("#%s%3d %2d (", lastRound ? "_" : " ", threads, round));
+      execs.invokeAll(workers, workertime, TimeUnit.SECONDS);
       ignoreRuntimeExceptionAndBreak.set(true);
-      System.out.println(")");
+      System.out.print(")");
 
       duration = System.nanoTime() - start;
 
@@ -178,8 +203,7 @@ public class Databench {
 
     double opspers = (double) operations / duration * TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
 
-    String message = "[%4d] %12d ops in %12d nanos: %12.2f op/s - %s";
-    System.out.println(format(message, threads, operations, duration, opspers, bank));
+    System.out.println(format("%12.2f op/s", opspers));
 
     return folder;
   }

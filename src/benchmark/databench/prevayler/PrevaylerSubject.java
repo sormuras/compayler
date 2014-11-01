@@ -71,7 +71,7 @@ public class PrevaylerSubject implements Bank<Integer> {
   public PrevaylerSubject(File folder, int threads) {
     try {
       Map<Integer, PrevaylerAccount> prevalentSystem = new HashMap<>();
-      this.prevayler = prevayler(prevalentSystem, folder);
+      this.prevayler = folder != null ? prevayler(prevalentSystem, folder) : prevaylerTransient(prevalentSystem);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -100,6 +100,11 @@ public class PrevaylerSubject implements Bank<Integer> {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public String toString() {
+    return prevayler.toString();
   }
 
   public void transfer(Integer from, Integer to, int amount) {
