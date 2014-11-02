@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.compayler.TestTool;
 import org.prevayler.contrib.p8.P8;
-import org.prevayler.contrib.p8.SynchronizedPrevayler;
+import org.prevayler.contrib.p8.StampedLockPrevayler;
 import org.prevayler.contrib.p8.VolatilePrevayler;
 
 import de.codeturm.util.chartgo.Chart;
@@ -29,21 +29,22 @@ public class Benchmark {
   public static void main(String[] args) throws Exception {
     Benchmark benchmark = new Benchmark();
 
-    benchmark.test("Prevayler (Default)", (builder, folder, numberOfThreads) -> TestTool.prevayler(builder, folder));
+    benchmark.test("Prevayler (Default)", (builder, folder, numberOfThreads) -> TestTool.prevayler(builder, folder), false);
 
-    benchmark.test("Prevayler (Transient)", (builder, folder, numberOfThreads) -> TestTool.prevaylerTransient(builder));
+    benchmark.test("Prevayler (Transient)", (builder, folder, numberOfThreads) -> TestTool.prevaylerTransient(builder), false);
 
-    benchmark.test("P8 (raw/RW-locked)", (builder, folder, numberOfThreads) -> {
+    benchmark.test("P8 (raw/StampLock)", (builder, folder, numberOfThreads) -> {
       P8<StringBuilder> p8 = new P8<>(builder, folder, 10 * 1000 * 1000, Long.MAX_VALUE);
-      return numberOfThreads == 1 ? p8 : new SynchronizedPrevayler<>(p8);
-    });
+      return numberOfThreads == 1 ? p8 : new StampedLockPrevayler<>(p8);
+    }, true);
 
-    benchmark.test("Volatile (Transient)", (builder, folder, numberOfThreads) -> new VolatilePrevayler<>(builder));
+    benchmark.test("Volatile (Transient)", (builder, folder, numberOfThreads) -> new VolatilePrevayler<>(builder), false);
 
     benchmark.chart.go();
   }
 
   private final Chart chart;
+  private final boolean consistency;
   private final File folder;
   private final int rounds;
   private final int warmup;
@@ -55,6 +56,7 @@ public class Benchmark {
   public Benchmark() {
     this.chart = createChart();
     this.folder = createFolder(System.getProperty("folder", ""));
+    this.consistency = Boolean.parseBoolean(System.getProperty("consistency", "true"));
     this.rounds = Integer.parseUnsignedInt(System.getProperty("rounds", "10"));
     this.warmup = Integer.parseUnsignedInt(System.getProperty("warmup", "3"));
     this.threadsMin = Integer.parseUnsignedInt(System.getProperty("threads.min", "1"));
@@ -87,7 +89,7 @@ public class Benchmark {
     return folder;
   }
 
-  public Chart.Group test(String name, Creator creator) throws Exception {
+  public Chart.Group test(String name, Creator creator, boolean persistent) throws Exception {
     Chart.Group dataGroup = new Chart.Group(name);
     StringBuilder builder = new StringBuilder(1000 * 1000);
 
@@ -97,17 +99,34 @@ public class Benchmark {
 
       double ops = 0d;
       for (int round = 0; round < warmup + rounds; round++) {
-
-        System.gc();
         builder.setLength(0);
-        Arrays.asList(folder.listFiles()).forEach(f -> f.delete());
-        assert folder.listFiles().length == 0 : Arrays.asList(folder.listFiles());
-        System.gc();
+        while (folder.exists()) {
+          System.gc();
+          Arrays.asList(folder.listFiles()).forEach(f -> f.delete());
+          if (folder.delete())
+            break;
+          Thread.sleep(1000);
+        }
 
         Prevayler<StringBuilder> prevayler = creator.create(builder, folder, numberOfThreads);
         assert prevayler != null;
 
         double result = test(prevayler, numberOfThreads);
+
+        if (consistency && persistent) {
+          String expectedString = prevayler.prevalentSystem().toString();
+          try {
+            prevayler = creator.create(new StringBuilder(), folder, numberOfThreads);
+            String actualString = prevayler.prevalentSystem().toString();
+            if (expectedString.hashCode() != actualString.hashCode()) {
+              System.err.println("Hash code mismatch checking consistency!");
+              System.err.println(expectedString.hashCode() + " != " + actualString.hashCode());
+              System.err.println(expectedString.length() + " ?= " + actualString.length());
+            }
+          } finally {
+            prevayler.close();
+          }
+        }
 
         if (round < warmup)
           continue;
