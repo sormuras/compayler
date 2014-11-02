@@ -6,11 +6,11 @@ import org.prevayler.Transaction;
 
 public enum Operation implements Transaction<StringBuilder> {
 
-  A;
+  A, B;
 
   @Override
   public void executeOn(StringBuilder prevalentSystem, Date executionTime) {
-    prevalentSystem.append("A");
+    prevalentSystem.append(name());
   }
 
 }

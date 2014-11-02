@@ -123,6 +123,8 @@ public class Benchmark {
               System.err.println(expectedString.hashCode() + " != " + actualString.hashCode());
               System.err.println(expectedString.length() + " ?= " + actualString.length());
             }
+            // System.out.println("      expected: " + expectedString.substring(0, 80) + "...");
+            // System.out.println("        actual: " + actualString.substring(0, 80) + "...");
           } finally {
             prevayler.close();
           }
