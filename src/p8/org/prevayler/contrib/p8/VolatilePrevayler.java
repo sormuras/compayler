@@ -74,7 +74,7 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
 
   @Override
   public File takeSnapshot() throws Exception {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("This is a volatile prevayler. No snap, no shot.");
   }
 
   protected <T> T copy(T object) {
@@ -109,7 +109,7 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
       throw new RuntimeException("Deserialization failed!", e);
     }
   }
-  
+
   @Override
   public String toString() {
     return "VolatilePrevayler";

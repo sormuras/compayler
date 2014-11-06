@@ -105,7 +105,11 @@ public class Journal<P> implements Closeable, Flushable {
 
   @Override
   public void close() throws IOException {
-    sliceStream.close();
+    try {
+      sliceStream.close();
+    } catch (IOException e) {
+      // ignore
+    }
     memory.force();
     memoryFile.close();
   }
@@ -128,8 +132,8 @@ public class Journal<P> implements Closeable, Flushable {
       return object;
     } catch (BufferOverflowException e) {
       throw new Error("Increase initial journal file size!", e);
-    } catch (Exception e) {
-      throw new Error(e);
+    } catch (IOException e) {
+      throw new IllegalStateException("Could not copy transaction of " + object.getClass().getSimpleName(), e);
     }
   }
 
