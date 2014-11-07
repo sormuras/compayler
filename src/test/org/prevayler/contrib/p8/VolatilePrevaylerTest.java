@@ -7,6 +7,7 @@ import java.util.Date;
 import org.junit.Test;
 import org.prevayler.Prevayler;
 import org.prevayler.TransactionWithQuery;
+import org.prevayler.contrib.p8.util.VolatilePrevayler;
 
 public class VolatilePrevaylerTest {
 

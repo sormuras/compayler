@@ -1,18 +1,13 @@
 package org.prevayler.contrib.p8;
 
 import static java.lang.String.format;
-import static java.nio.file.Files.createLink;
-import static java.nio.file.Files.deleteIfExists;
+import static org.prevayler.contrib.p8.util.Serialization.toPrevalentSystem;
+import static org.prevayler.contrib.p8.util.Serialization.toSnapshot;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +20,7 @@ import org.prevayler.TransactionWithQuery;
 import org.prevayler.implementation.clock.MachineClock;
 
 public class P8<P> implements Prevayler<P>, Closeable {
-  
+
   /**
    * By default, force flush journal every 11 seconds.
    */
@@ -54,7 +49,7 @@ public class P8<P> implements Prevayler<P>, Closeable {
   /**
    * Number of transactions that led to current system snapshot.
    */
-  private long snapshotTransactionCounter;
+  private long snapshotAge;
 
   /**
    * Snapshot file pointer.
@@ -74,13 +69,13 @@ public class P8<P> implements Prevayler<P>, Closeable {
 
     this.snapshotFile = new File(base, "snap.shot");
 
-    this.prevalentSystem = reloadFromSnapshot(snapshotFile, prevalentSystem);
+    this.prevalentSystem = toPrevalentSystem(snapshotFile, prevalentSystem, null, i -> snapshotAge = i.readLong());
 
     this.journal = new Journal<>(this, new File(base, "sliced.journal"), journalSize, journalNanos);
   }
 
   public long age() {
-    return snapshotTransactionCounter + journal.getMemoryTransactionCounter();
+    return snapshotAge + journal.getAge();
   }
 
   @Override
@@ -172,40 +167,11 @@ public class P8<P> implements Prevayler<P>, Closeable {
     return prevalentSystem;
   }
 
-  public P reloadFromSnapshot(File snapshotFile, P initialPrevalentSystem) {
-    if (!snapshotFile.exists())
-      return initialPrevalentSystem;
-
-    try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(snapshotFile))) {
-      snapshotTransactionCounter = stream.readLong();
-      @SuppressWarnings("unchecked")
-      P storedSystem = (P) stream.readObject();
-      return storedSystem;
-    } catch (Exception e) {
-      throw new Error(e);
-    }
-  }
-
   @Override
   public File takeSnapshot() throws Exception {
-    return takeSnapshot(snapshotFile).toFile();
-  }
-
-  public Path takeSnapshot(File snapshotFile) throws Exception {
-    File taken = new File(base, "snap-" + Instant.now().toString().replace(':', '-') + ".shot");
-
-    try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(taken))) {
-      out.writeLong(snapshotTransactionCounter = age());
-      out.writeObject(prevalentSystem);
-    }
-
-    Path snapshotLink = snapshotFile.toPath();
-    deleteIfExists(snapshotLink);
-    createLink(snapshotLink, taken.toPath());
-
+    Path snapshot = toSnapshot(prevalentSystem, base, snapshotFile, out -> out.writeLong(snapshotAge = age()));
     journal.clear();
-
-    return snapshotLink;
+    return snapshot.toFile();
   }
 
   @Override

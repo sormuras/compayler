@@ -1,7 +1,3 @@
-//Prevayler(TM) - The Free-Software Prevalence Layer.
-//Copyright (C) 2001-2003 Klaus Wuestefeld
-//This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
 package org.prevayler.contrib.p8.ported;
 
 import java.util.Date;
@@ -11,7 +7,7 @@ import org.junit.Test;
 import org.prevayler.Prevayler;
 import org.prevayler.Query;
 import org.prevayler.TransactionWithQuery;
-import org.prevayler.contrib.p8.VolatilePrevayler;
+import org.prevayler.contrib.p8.util.VolatilePrevayler;
 
 public class QueryExecutionTest extends FileIOBase {
 

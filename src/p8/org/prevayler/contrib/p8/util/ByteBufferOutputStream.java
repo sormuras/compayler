@@ -1,4 +1,4 @@
-package org.prevayler.contrib.p8;
+package org.prevayler.contrib.p8.util;
 
 import java.io.IOException;
 import java.io.OutputStream;

@@ -12,7 +12,15 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.prevayler.contrib.p8.util.ByteBufferInputStream;
+import org.prevayler.contrib.p8.util.ByteBufferOutputStream;
+
 public class Journal<P> implements Closeable, Flushable {
+  
+  /**
+   * Amount of all transaction in the journal file. That is the sum of all transactions of all slices.
+   */
+  private long age;
 
   /**
    * Nano timestamp of last flush.
@@ -38,11 +46,6 @@ public class Journal<P> implements Closeable, Flushable {
    * Amount of all slices in the journal file.
    */
   private int memorySliceCounter;
-
-  /**
-   * Amount of all transaction in the journal file. That is the sum of all transactions of all slices.
-   */
-  private long memoryTransactionCounter;
 
   /**
    * Associated prevayler instance.
@@ -81,7 +84,7 @@ public class Journal<P> implements Closeable, Flushable {
 
   protected void build() throws Exception {
     this.memorySliceCounter = memory.getInt();
-    this.memoryTransactionCounter = memory.getLong();
+    this.age = memory.getLong();
 
     for (int sliceNumber = 0; sliceNumber < memorySliceCounter; sliceNumber++) {
       long transactions = memory.getInt();
@@ -98,7 +101,7 @@ public class Journal<P> implements Closeable, Flushable {
   public void clear() throws IOException {
     memory.clear(); // TODO Erase buffer?
     memory.putInt(memorySliceCounter = 0);
-    memory.putLong(memoryTransactionCounter = 0);
+    memory.putLong(age = 0);
 
     slice();
   }
@@ -116,7 +119,7 @@ public class Journal<P> implements Closeable, Flushable {
 
   public void commit() {
     slice.putInt(0, ++sliceTransactionCounter);
-    memory.putLong(4, ++memoryTransactionCounter);
+    memory.putLong(4, ++age);
 
     if (System.nanoTime() - forcedFlushNanoTime >= getForceNextFlushAfterNanos())
       flush();
@@ -143,12 +146,12 @@ public class Journal<P> implements Closeable, Flushable {
     forcedFlushNanoTime = System.nanoTime();
   }
 
-  public long getForceNextFlushAfterNanos() {
-    return forceNextFlushAfterNanos;
+  public long getAge() {
+    return age;
   }
 
-  public long getMemoryTransactionCounter() {
-    return memoryTransactionCounter;
+  public long getForceNextFlushAfterNanos() {
+    return forceNextFlushAfterNanos;
   }
 
   public void setForceNextFlushAfterNanos(long forceNextFlushAfterNanos) {

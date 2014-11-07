@@ -1,11 +1,8 @@
-package org.prevayler.contrib.p8;
+package org.prevayler.contrib.p8.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
 import org.prevayler.Clock;
@@ -14,7 +11,6 @@ import org.prevayler.Query;
 import org.prevayler.SureTransactionWithQuery;
 import org.prevayler.Transaction;
 import org.prevayler.TransactionWithQuery;
-import org.prevayler.foundation.ObjectInputStreamWithClassLoader;
 import org.prevayler.implementation.clock.MachineClock;
 
 public class VolatilePrevayler<P> implements Prevayler<P> {
@@ -80,34 +76,14 @@ public class VolatilePrevayler<P> implements Prevayler<P> {
   protected <T> T copy(T object) {
     if (!deepCopy)
       return object;
-    byte[] bytes = toBytes(object);
+    byte[] bytes = Serialization.toBytes(object, byteArrayOutputStream);
     @SuppressWarnings("unchecked")
-    T result = (T) toObject(bytes);
-    byte[] results = toBytes(result);
+    T result = (T) Serialization.toObject(bytes, classLoader);
+    byte[] results = Serialization.toBytes(object, byteArrayOutputStream);
     if (Arrays.equals(bytes, results)) {
       return result;
     }
     throw new IllegalStateException("Object binary form mismatch. Serialization is broken?! " + object);
-  }
-
-  protected byte[] toBytes(Object object) {
-    byteArrayOutputStream.reset();
-    try (ObjectOutputStream out = new ObjectOutputStream(byteArrayOutputStream)) {
-      out.writeObject(object);
-      return byteArrayOutputStream.toByteArray();
-    } catch (Exception e) {
-      throw new RuntimeException("Serialization failed!", e);
-    }
-  }
-
-  protected Object toObject(byte[] bytes) {
-    try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-    // or new org.apache.commons.io.input.ClassLoaderObjectInputStream(classLoader, byteArrayInputStream)
-        ObjectInputStream in = new ObjectInputStreamWithClassLoader(byteArrayInputStream, classLoader)) {
-      return in.readObject();
-    } catch (Exception e) {
-      throw new RuntimeException("Deserialization failed!", e);
-    }
   }
 
   @Override

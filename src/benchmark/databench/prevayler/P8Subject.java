@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.p8.P8;
-import org.prevayler.contrib.p8.VolatilePrevayler;
 import org.prevayler.contrib.p8.concurrent.StampedLockPrevayler;
+import org.prevayler.contrib.p8.util.VolatilePrevayler;
 
 import databench.AccountStatus;
 import databench.Bank;
