@@ -13,9 +13,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.prevayler.contrib.p8.ReadWriteLockPrevayler;
-import org.prevayler.contrib.p8.StampedLockPrevayler;
-import org.prevayler.contrib.p8.SynchronizedPrevayler;
+import org.prevayler.contrib.p8.concurrent.ReadWriteLockPrevayler;
+import org.prevayler.contrib.p8.concurrent.StampedLockPrevayler;
+import org.prevayler.contrib.p8.concurrent.SynchronizedPrevayler;
 
 import databench.prevayler.P8Subject;
 import databench.prevayler.PrevaylerSubject;

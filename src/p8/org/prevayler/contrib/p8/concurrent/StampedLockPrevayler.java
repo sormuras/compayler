@@ -1,4 +1,4 @@
-package org.prevayler.contrib.p8;
+package org.prevayler.contrib.p8.concurrent;
 
 import java.io.File;
 import java.io.IOException;

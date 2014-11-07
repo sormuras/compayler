@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.compayler.TestTool;
 import org.prevayler.contrib.p8.P8;
-import org.prevayler.contrib.p8.StampedLockPrevayler;
 import org.prevayler.contrib.p8.VolatilePrevayler;
+import org.prevayler.contrib.p8.concurrent.StampedLockPrevayler;
 
 import de.codeturm.util.chartgo.Chart;
 import de.codeturm.util.chartgo.Chart.Background;
