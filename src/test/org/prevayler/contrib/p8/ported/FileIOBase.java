@@ -42,9 +42,9 @@ public abstract class FileIOBase extends Assert {
     assertTrue("File does not exist: " + file, file.exists());
     if (!file.delete()) {
       System.gc();
-      Cool.sleep(1234);
+      Cool.sleep(666);
       if (file.exists() && !file.delete()) {
-        Cool.sleep(1234);
+        Cool.sleep(666);
         System.gc();
         assertTrue("Unable to delete " + file, file.delete());
       }

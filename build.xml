@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
-<project basedir="." name="Compayler" default="test">
+<project basedir="." name="Compayler and P8" default="test">
 
 	<tstamp>
 		<format property="timestamp" pattern="yyyyMMddHHmm" />
@@ -20,13 +20,13 @@
 		<mkdir dir="${dir.out}" />
 	</target>
 
-	<target name="compile" depends="init" description="compile and jar core sources">
+	<target name="compile" depends="init" description="compile and jar compayler and P8 sources">
 		<mkdir dir="${dir.out}/classes" />
 		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
 			<classpath>
 				<pathelement path="lib/prevayler-core-2.6.jar" />
 			</classpath>
-			<src path="src/core" />
+			<src path="src/compayler" />
 			<src path="src/p8" />
 		</javac>
 
@@ -42,7 +42,7 @@
 			</service>
 		</jar>
 		<jar destfile="${compayler-sources.jar}" defaultexcludes="no">
-			<fileset dir="src/core" />
+			<fileset dir="src/compayler" />
 			<fileset dir="src/p8" />
 		</jar>
 	</target>

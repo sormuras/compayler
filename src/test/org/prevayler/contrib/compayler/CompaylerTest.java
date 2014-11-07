@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.prevayler.contrib.compayler.TestTool.decorate;
 
+import java.io.Closeable;
 import java.util.Observable;
 
 import org.junit.Rule;
@@ -68,10 +69,12 @@ public class CompaylerTest {
     assumeTrue("Ant not running.", Boolean.getBoolean("ant.running")); // quit if NOT inside ant/junit execution
     Simple simple = decorate(Simple.class, new SimpleImpl(), temp.newFolder());
     assertNotNull(simple);
+    assertTrue(simple instanceof Closeable);
     assertTrue(simple instanceof Observable);
     assertEquals(0, simple.getSum());
     assertEquals(123, simple.add(123));
     assertEquals(123, simple.getSum());
+    ((Closeable) simple).close();
   }
 
 }
