@@ -4,18 +4,28 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 public class P8Test {
 
   @Rule
   public final TemporaryFolder temp = new TemporaryFolder();
 
+  @Rule
+  public final TestName testName = new TestName();
+
+  @After
+  public void after() {
+    System.gc(); // release mmap handle
+  }
+
   @Test
   public void testAgeIsSnapshotInvariant() throws Exception {
-    File folder = temp.newFolder();
+    File folder = temp.newFolder(testName.getMethodName());
 
     try (P8<StringBuilder> prevayler = new P8<>(new StringBuilder(), folder)) {
       assertEquals(0, prevayler.age());
