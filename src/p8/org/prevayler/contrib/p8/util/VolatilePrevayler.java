@@ -13,7 +13,7 @@ import org.prevayler.Transaction;
 import org.prevayler.TransactionWithQuery;
 import org.prevayler.implementation.clock.MachineClock;
 
-public class VolatilePrevayler<P> implements Prevayler<P> {
+public class VolatilePrevayler<P> implements Prevayler<P>, AutoCloseable {
 
   private final ByteArrayOutputStream byteArrayOutputStream;
   private final ClassLoader classLoader;

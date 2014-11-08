@@ -17,6 +17,7 @@ public class QueryExecutionTest extends FileIOBase {
     Prevayler<LinkedList<?>> prevayler = new VolatilePrevayler<>(prevalentSystem);
     Integer result = prevayler.execute(query());
     assertEquals(0, result.intValue());
+    prevayler.close();
   }
 
   @SuppressWarnings("serial")
@@ -35,6 +36,7 @@ public class QueryExecutionTest extends FileIOBase {
     String result = prevayler.execute(transactionWithQuery());
     assertEquals("abc", result);
     assertEquals("added element", prevalentSystem.get(0));
+    prevayler.close();
   }
 
   private static TransactionWithQuery<LinkedList<String>, String> transactionWithQuery() {
