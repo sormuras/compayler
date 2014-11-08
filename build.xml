@@ -10,6 +10,7 @@
 	<property name="dir.out" value="bin/ant" />
 	<property name="compayler.jar" value="${dir.out}/compayler-${version.number}.jar" />
 	<property name="compayler-sources.jar" value="${dir.out}/compayler-${version.number}-sources.jar" />
+	<property name="compayler-benchmark.jar" value="${dir.out}/compayler-${version.number}-benchmark.jar" />
 
 	<target name="clean">
 		<delete dir="${dir.out}" />
@@ -45,6 +46,53 @@
 			<fileset dir="src/compayler" />
 			<fileset dir="src/p8" />
 		</jar>
+	</target>
+
+	<target name="benchmark" depends="compile" description="build executable benchmark jars">
+		<mkdir dir="${dir.out}/benchmark" />
+		<javac destdir="${dir.out}/benchmark" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
+			<classpath>
+				<pathelement path="${dir.out}/classes" />
+				<pathelement path="lib/prevayler-core-2.6.jar" />
+			</classpath>
+			<src path="src/benchmark" />
+		</javac>
+		<jar destfile="${compayler-benchmark.jar}">
+			<fileset dir="${dir.out}/classes" />
+			<fileset dir="${dir.out}/benchmark" />
+			<zipgroupfileset file="lib/prevayler-core-2.6.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="databench.Databench" />
+			</manifest>
+		</jar>
+		<echo file="${dir.out}/benchmark-bank.bat">
+set run.transient=false${line.separator}
+set run.persistent=true${line.separator}
+set run.concurrent=false${line.separator}
+${line.separator}
+set numberOfBankAccounts=1000000${line.separator}
+set percentage=20${line.separator}
+set threads.min=1${line.separator}
+set threads.max=8${line.separator}
+set rounds.single=6${line.separator}
+set rounds.multi=3${line.separator}
+set worker.name=50000${line.separator}
+set worker.time=3${line.separator}
+set worker.yield=false${line.separator}
+${line.separator}
+java -jar compayler-${version.number}-benchmark.jar
+		</echo>
+		<echo file="${dir.out}/benchmark-simple.bat">
+set consistency=true${line.separator}
+set rounds=10${line.separator}
+set warmup=3${line.separator}
+set threads.min=1${line.separator}
+set threads.max=80${line.separator}
+set threads.skip.start=16${line.separator}
+set threads.skip.step=10${line.separator}
+${line.separator}
+java -classpath compayler-${version.number}-benchmark.jar org.prevayler.contrib.p8.benchmark.Benchmark
+		</echo>
 	</target>
 
 	<target name="test" depends="compile" description="execute all tests">

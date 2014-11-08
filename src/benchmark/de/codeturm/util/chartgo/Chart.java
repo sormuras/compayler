@@ -128,6 +128,11 @@ public class Chart {
       getGroups().add(new Group(null, array));
     }
   }
+  
+  public Chart add(Group group) {
+    groups.add(group);
+    return this;
+  }
 
   public Background getBackground() {
     return background;
@@ -392,6 +397,7 @@ public class Chart {
     }
 
     String queryString = query.charAt(0) == '&' ? query.substring(1) : query.toString();
+    queryString = queryString.replace("%20", "+");
 
     try {
       String userInfo = null;
