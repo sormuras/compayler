@@ -78,6 +78,8 @@ public class Unit {
 
   }
 
+  private static final SecureRandom random = new SecureRandom();
+
   public static void sort(List<Unit> units) {
     Collections.sort(units, (u1, u2) -> u1.toString().compareTo(u2.toString()));
   }
@@ -92,8 +94,6 @@ public class Unit {
     });
     units.forEach(unit -> unit.setUnique(map.get(unit.getName())));
   }
-
-  private static final SecureRandom random = new SecureRandom();
 
   private boolean chainable;
   private boolean defaults;
