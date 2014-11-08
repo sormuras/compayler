@@ -26,7 +26,7 @@ public class Unit {
     public String getType() {
       return type;
     }
-    
+
     public boolean isLast() {
       return last;
     }
@@ -38,7 +38,7 @@ public class Unit {
     public boolean isVars() {
       return vars;
     }
-    
+
     public void setLast(boolean last) {
       this.last = last;
     }
@@ -93,9 +93,11 @@ public class Unit {
     units.forEach(unit -> unit.setUnique(map.get(unit.getName())));
   }
 
+  private static final SecureRandom random = new SecureRandom();
+
   private boolean chainable;
   private boolean defaults;
-  private final long id = new SecureRandom().nextLong();
+  private final long id = random.nextLong();
   private ExecutionMode mode = ExecutionMode.TRANSACTION;
   private String name;
   private List<Parameter> parameters = new ArrayList<>();
@@ -110,7 +112,7 @@ public class Unit {
     parameters.add(parameter);
     return parameter;
   }
-  
+
   public long getId() {
     return id;
   }
