@@ -1,6 +1,8 @@
 package databench;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.awt.GraphicsEnvironment;
 import java.io.Console;
@@ -161,8 +163,8 @@ public class Databench {
 
     if (Boolean.parseBoolean(get("run.persistent", "true"))) {
       chart.add(main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE)));
-      chart.add(main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS))));
-      chart.add( main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L)));
+      chart.add(main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, NANOSECONDS.convert(1, SECONDS))));
+      chart.add(main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L)));
       chart.add(main.time("Prevayler", (folder, threads) -> new PrevaylerSubject(folder, threads)));
     }
 

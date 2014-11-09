@@ -27,7 +27,7 @@ public class Chart {
     }
 
   }
-  
+
   public static class Group {
 
     public String name = "";
@@ -46,7 +46,7 @@ public class Chart {
     }
 
   }
-  
+
   public static class Point {
 
     public Double x;
@@ -128,7 +128,7 @@ public class Chart {
       getGroups().add(new Group(null, array));
     }
   }
-  
+
   public Chart add(Group group) {
     groups.add(group);
     return this;
@@ -231,13 +231,12 @@ public class Chart {
   }
 
   public void go() {
-
-    if (!System.getProperty("os.name").startsWith("Windows")) {
-      return;
-    }
-
     try {
       String url = toURI().toURL().toExternalForm();
+      if (!System.getProperty("os.name").startsWith("Windows")) {
+        System.out.println(url);
+        return;
+      }
       if (url.length() > 2048)
         System.err.println("URL too long! " + url.length());
       else
@@ -245,7 +244,6 @@ public class Chart {
     } catch (Exception e) {
       // ignore
     }
-
   }
 
   public void setBackground(Background background) {
