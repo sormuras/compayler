@@ -21,6 +21,9 @@ public class ByteBufferInputStream extends InputStream {
   }
 
   public int read(byte[] bytes, int off, int len) {
+    if (!buffer.hasRemaining())
+      return -1;
+
     len = min(len, buffer.remaining());
     buffer.get(bytes, off, len);
     return len;
