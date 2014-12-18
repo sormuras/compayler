@@ -17,6 +17,7 @@ import org.prevayler.Query;
 import org.prevayler.SureTransactionWithQuery;
 import org.prevayler.Transaction;
 import org.prevayler.TransactionWithQuery;
+import org.prevayler.contrib.p8.StashingJournal.MemoryHolder;
 import org.prevayler.implementation.clock.MachineClock;
 
 public class P8<P> implements Prevayler<P>, Closeable {
@@ -39,7 +40,7 @@ public class P8<P> implements Prevayler<P>, Closeable {
   /**
    * Journaler.
    */
-  private final Journal<P> journal;
+  private final J8 journal;
 
   /**
    * Underlying prevalent system.
@@ -60,7 +61,15 @@ public class P8<P> implements Prevayler<P>, Closeable {
     this(prevalentSystem, base, 100 * 1024 * 1024, DEFAULT_NANOS_BETWEEN_FORCE_FLUSH);
   }
 
+  public P8(P prevalentSystem, File base, boolean stash) throws Exception {
+    this(prevalentSystem, base, 100 * 1024 * 1024, DEFAULT_NANOS_BETWEEN_FORCE_FLUSH, stash);
+  }
+
   public P8(P prevalentSystem, File base, long journalSize, long journalNanos) throws Exception {
+    this(prevalentSystem, base, journalSize, journalNanos, false);
+  }
+
+  public P8(P prevalentSystem, File base, long journalSize, long journalNanos, boolean stash) throws Exception {
     this.base = base;
 
     base.mkdirs();
@@ -71,7 +80,13 @@ public class P8<P> implements Prevayler<P>, Closeable {
 
     this.prevalentSystem = toPrevalentSystem(snapshotFile, prevalentSystem, null, i -> snapshotAge = i.readLong());
 
-    this.journal = new Journal<>(this, new File(base, "sliced.journal"), journalSize, journalNanos);
+    if (stash) {
+      MemoryHolder holder = new MemoryHolder(this, new File(base, "sliced.journal"), journalSize);
+      this.journal = new StashingJournal(holder);
+    } else {
+      this.journal = new Journal<>(this, new File(base, "sliced.journal"), journalSize, journalNanos);
+    }
+
   }
 
   public long age() {

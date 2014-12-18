@@ -1,8 +1,6 @@
 package org.prevayler.contrib.p8;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.Flushable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -15,8 +13,8 @@ import java.nio.channels.FileChannel;
 import org.prevayler.contrib.p8.util.ByteBufferInputStream;
 import org.prevayler.contrib.p8.util.ByteBufferOutputStream;
 
-public class Journal<P> implements Closeable, Flushable {
-  
+public class Journal<P> implements J8 {
+
   /**
    * Amount of all transaction in the journal file. That is the sum of all transactions of all slices.
    */
@@ -98,12 +96,17 @@ public class Journal<P> implements Closeable, Flushable {
     }
   }
 
-  public void clear() throws IOException {
+  @Override
+  public void clear() {
     memory.clear(); // TODO Erase buffer?
     memory.putInt(memorySliceCounter = 0);
     memory.putLong(age = 0);
 
-    slice();
+    try {
+      slice();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -117,14 +120,18 @@ public class Journal<P> implements Closeable, Flushable {
     memoryFile.close();
   }
 
-  public void commit() {
+  @Override
+  public int commit() {
     slice.putInt(0, ++sliceTransactionCounter);
     memory.putLong(4, ++age);
 
     if (System.nanoTime() - forcedFlushNanoTime >= getForceNextFlushAfterNanos())
       flush();
+
+    return -1;
   }
 
+  @Override
   public <T> T copy(T object, long time) {
     try {
       sliceStream.writeLong(time);
@@ -146,6 +153,7 @@ public class Journal<P> implements Closeable, Flushable {
     forcedFlushNanoTime = System.nanoTime();
   }
 
+  @Override
   public long getAge() {
     return age;
   }
@@ -170,6 +178,7 @@ public class Journal<P> implements Closeable, Flushable {
     flush();
   }
 
+  @Override
   public double usage() {
     return 100d - slice.remaining() * 100d / memory.capacity();
   }

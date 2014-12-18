@@ -131,6 +131,17 @@ public class Stash implements Closeable {
       return entry;
     }
 
+    public void clear() {
+
+      for (int i = 0; i < entries.length; i++)
+        if (entries[i] != null) {
+          remove(entries[i].type);
+          entries[i] = null;
+        }
+
+      nextSlot.set(0);
+    }
+
   }
 
   public enum State {
@@ -231,6 +242,12 @@ public class Stash implements Closeable {
     throw new IllegalStateException("Expected state " + expected.name() + ", but was: " + this.state.name());
   }
 
+  public void clear() {
+    memory.clear(); // TODO Erase buffer?
+    memory.putLong(age = 0);
+    table.clear();
+  }
+
   @Override
   public void close() throws IOException {
     if (getState() == State.STASHED)
@@ -258,6 +275,10 @@ public class Stash implements Closeable {
    */
   protected Constructor<?> get(int id) {
     return table.entries[id].constructor();
+  }
+
+  public long getAge() {
+    return age;
   }
 
   public State getState() {
