@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ByteBufferOutputStream extends OutputStream {
 
-  private AtomicBoolean closed;
+  private final AtomicBoolean closed;
   private final ByteBuffer buffer;
 
   public ByteBufferOutputStream(ByteBuffer buffer) {
@@ -16,20 +16,20 @@ public class ByteBufferOutputStream extends OutputStream {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     closed.set(true);
-  }
-
-  public void write(int b) throws IOException {
-    if (closed.get())
-      throw new IOException("Can not write byte to closed stream!");
-    buffer.put((byte) b);
   }
 
   public void write(byte[] bytes, int off, int len) throws IOException {
     if (closed.get())
       throw new IOException("Can not write " + len + " bytes to closed stream!");
     buffer.put(bytes, off, len);
+  }
+
+  public void write(int b) throws IOException {
+    if (closed.get())
+      throw new IOException("Can not write byte to closed stream!");
+    buffer.put((byte) b);
   }
 
 }
