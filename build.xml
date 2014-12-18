@@ -112,7 +112,7 @@ java -classpath compayler-${version.number}-benchmark.jar org.prevayler.contrib.
 		</javac>
 
 		<mkdir dir="${dir.out}/junit/reports" />
-		<junit printsummary="yes" fork="yes" haltonfailure="no" showoutput="yes">
+		<junit printsummary="yes" fork="yes" haltonfailure="no" showoutput="yes" failureproperty="test.failed">
 			<sysproperty key="ant.running" value="true" />
 			<classpath refid="junit.class.path" />
 			<formatter type="xml" />
@@ -126,6 +126,7 @@ java -classpath compayler-${version.number}-benchmark.jar org.prevayler.contrib.
 				</fileset>
 			</batchtest>
 		</junit>
+		<fail message="Test failure detected, check test results." if="test.failed" />
 	</target>
 
 </project>
