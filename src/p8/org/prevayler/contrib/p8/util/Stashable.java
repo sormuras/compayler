@@ -275,7 +275,9 @@ public interface Stashable {
    * @return target buffer
    */
   static ByteBuffer stash(ByteBuffer target, Stashable stashable) {
-    assert stashable == null || check(stashable.getClass());
+    if (stashable == null)
+      return target.put((byte) 0);
+    assert check(stashable.getClass());
     return stash(target, stashable, stashable::stash);
   }
 

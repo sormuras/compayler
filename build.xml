@@ -23,7 +23,7 @@
 
 	<target name="compile" depends="init" description="compile and jar compayler and P8 sources">
 		<mkdir dir="${dir.out}/classes" />
-		<javac destdir="${dir.out}/classes" debug="no" deprecation="no" optimize="yes" encoding="UTF-8" includeantruntime="no">
+		<javac destdir="${dir.out}/classes" debug="yes" deprecation="no" optimize="no" encoding="UTF-8" includeantruntime="no">
 			<classpath>
 				<pathelement path="lib/prevayler-core-2.6.jar" />
 			</classpath>
@@ -112,10 +112,13 @@ java -classpath compayler-${version.number}-benchmark.jar org.prevayler.contrib.
 		</javac>
 
 		<mkdir dir="${dir.out}/junit/reports" />
-		<junit printsummary="yes" fork="yes" haltonfailure="no">
+		<junit printsummary="yes" fork="yes" haltonfailure="no" showoutput="yes">
 			<sysproperty key="ant.running" value="true" />
 			<classpath refid="junit.class.path" />
 			<formatter type="xml" />
+			<assertions>
+				<enable />
+			</assertions>
 			<batchtest todir="${dir.out}/junit/reports">
 				<fileset dir="src/test">
 					<include name="**/*Test.java" />
