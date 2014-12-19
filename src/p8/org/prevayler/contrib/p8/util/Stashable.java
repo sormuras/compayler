@@ -96,11 +96,12 @@ public interface Stashable {
       throw new NullPointerException("Can't check(null)!");
     if (!Stashable.class.isAssignableFrom(candidate))
       throw new IllegalArgumentException(candidate + " doesn't implement " + Stashable.class + "!");
-    try {
-      candidate.getDeclaredConstructor(ByteBuffer.class);
-    } catch (NoSuchMethodException e) {
-      throw new IllegalArgumentException(candidate + " doesn't provide constructor with " + ByteBuffer.class + " as single parameter!", e);
-    }
+    if (!candidate.isEnum())
+      try {
+        candidate.getDeclaredConstructor(ByteBuffer.class);
+      } catch (NoSuchMethodException e) {
+        throw new IllegalArgumentException(candidate + " doesn't provide constructor with " + ByteBuffer.class + " as single parameter!", e);
+      }
     return true;
   }
 
@@ -127,6 +128,9 @@ public interface Stashable {
    */
   static <S extends Stashable> Constructor<S> constructor(Class<S> type, MethodHandles.Lookup lookup) {
     assert Stashable.check(type);
+    if (type.isEnum()) {
+      return (source) -> type.getEnumConstants()[source.get()];
+    }
     boolean noMethodsDeclared = Constructor.class.getDeclaredMethods().length == 0;
     MethodType constructorType = MethodType.methodType(void.class, ByteBuffer.class);
     MethodType returnType = MethodType.methodType(Constructor.class);

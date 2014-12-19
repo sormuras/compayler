@@ -62,6 +62,11 @@ public class Benchmark {
       return numberOfThreads == 1 ? p8 : new StampedLockPrevayler<>(p8);
     }, true);
 
+    benchmark.test("P8 (Stash/StampLock)", (builder, folder, numberOfThreads) -> {
+      P8<StringBuilder> p8 = new P8<>(builder, folder, 10 * 1000 * 1000, Long.MAX_VALUE, true);
+      return numberOfThreads == 1 ? p8 : new StampedLockPrevayler<>(p8);
+    }, true);
+
     benchmark.test("Volatile (Transient)", (builder, folder, numberOfThreads) -> new VolatilePrevayler<>(builder), false);
 
     benchmark.chart.go();
@@ -166,7 +171,7 @@ public class Benchmark {
       producers.forEach(completionService::submit);
 
       while (remainingFutures > 0) {
-        completionService.take();
+        completionService.take().get();
         remainingFutures--;
       }
 
@@ -220,8 +225,8 @@ public class Benchmark {
               System.err.println(expectedString.hashCode() + " != " + actualString.hashCode());
               System.err.println(expectedString.length() + " ?= " + actualString.length());
             }
-            // System.out.println("      expected: " + expectedString.substring(0, 80) + "...");
-            // System.out.println("        actual: " + actualString.substring(0, 80) + "...");
+            // System.out.println("      expected: " + expectedString.substring(0, Math.min(80, expectedString.length())) + "...");
+            // System.out.println("        actual: " + actualString.substring(0, Math.min(80, actualString.length())) + "...");
           } finally {
             prevayler.close();
           }

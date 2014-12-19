@@ -4,20 +4,20 @@ import java.util.ArrayList;
 
 public class PrevaylerAccount {
 
-	private Integer balance = 0;
-	private ArrayList<Integer> transferValues = new ArrayList<Integer>();
+  private Integer balance = 0;
+  private ArrayList<Integer> transferValues = new ArrayList<Integer>();
 
-	public Integer getBalance() {
-		return balance;
-	}
+  public Integer getBalance() {
+    return balance;
+  }
 
-	public ArrayList<Integer> getTransferValues() {
-		return transferValues;
-	}
+  public ArrayList<Integer> getTransferValues() {
+    return transferValues;
+  }
 
-	public void transfer(int value) {
-		transferValues.add(value);
-		balance += value;
-	}
+  public void transfer(int value) {
+    transferValues.add(value);
+    balance += value;
+  }
 
 }

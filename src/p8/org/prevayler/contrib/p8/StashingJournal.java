@@ -74,7 +74,7 @@ public class StashingJournal extends Stash implements J8 {
   @SuppressWarnings("unchecked")
   @Override
   public <T> T copy(T object, long time) {
-    return (T) super.stash((Stashable) object, time, false);
+    return (T) stash((Stashable) object, time, false);
   }
 
 }

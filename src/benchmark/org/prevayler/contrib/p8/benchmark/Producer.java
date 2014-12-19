@@ -18,7 +18,7 @@ public class Producer implements Callable<Producer> {
 
   @Override
   public Producer call() throws Exception {
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 600000; i++) {
       prevayler.execute(random.nextBoolean() ? Operation.A : Operation.B);
       operationCounter++;
     }

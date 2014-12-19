@@ -36,7 +36,8 @@ public class P8Subject implements Bank<Integer> {
     try {
       Map<Integer, PrevaylerAccount> map = new HashMap<>();
       Prevayler<Map<Integer, PrevaylerAccount>> prevayler = null;
-      prevayler = folder == null ? new VolatilePrevayler<>(map, false, null) : new P8<>(map, folder, 100 * 1024 * 1024, flushNanos);
+      boolean stash = flushNanos == 0x57A5L;
+      prevayler = folder == null ? new VolatilePrevayler<>(map, false, null) : new P8<>(map, folder, 100 * 1024 * 1024, flushNanos, stash);
       if (threads == 0) {
         this.prevayler = wrapper.warp(prevayler);
         return;

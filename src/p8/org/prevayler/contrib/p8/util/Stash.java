@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.prevayler.contrib.p8.util.Stashable.Constructor;
@@ -294,7 +293,6 @@ public class Stash implements Closeable {
   }
 
   public <S extends Stashable> S stash(S stashable, long time, boolean commit) {
-    Objects.requireNonNull(stashable, "stashable must not be null!");
     checkState(State.READY);
     try {
       int id = get(stashable.getClass()).slot();

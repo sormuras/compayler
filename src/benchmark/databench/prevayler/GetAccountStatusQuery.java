@@ -8,30 +8,28 @@ import org.prevayler.Query;
 
 import databench.AccountStatus;
 
-final class GetAccountStatusQuery implements
-		Query<Map<Integer, PrevaylerAccount>, AccountStatus> {
+public final class GetAccountStatusQuery implements Query<Map<Integer, PrevaylerAccount>, AccountStatus> {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	private final Integer id;
+  private final Integer id;
 
-	public GetAccountStatusQuery(Integer id) {
-		this.id = id;
-	}
+  public GetAccountStatusQuery(Integer id) {
+    this.id = id;
+  }
 
-	@Override
-	public AccountStatus query(Map<Integer, PrevaylerAccount> accounts,
-			Date time) {
-		PrevaylerAccount account = accounts.get(id);
-		ArrayList<Integer> transferValues = account.getTransferValues();
-		return new AccountStatus(account.getBalance(), toArray(transferValues));
-	}
+  @Override
+  public AccountStatus query(Map<Integer, PrevaylerAccount> accounts, Date time) {
+    PrevaylerAccount account = accounts.get(id);
+    ArrayList<Integer> transferValues = account.getTransferValues();
+    return new AccountStatus(account.getBalance(), toArray(transferValues));
+  }
 
-	private int[] toArray(ArrayList<Integer> transferValues) {
-		int[] array = new int[transferValues.size()];
-		for (int i = 0; i < transferValues.size(); i++)
-			array[i] = transferValues.get(i);
-		return array;
-	}
+  private int[] toArray(ArrayList<Integer> transferValues) {
+    int[] array = new int[transferValues.size()];
+    for (int i = 0; i < transferValues.size(); i++)
+      array[i] = transferValues.get(i);
+    return array;
+  }
 
 }
