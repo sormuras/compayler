@@ -5,6 +5,7 @@ import java.io.File;
 
 import junit.framework.AssertionFailedError;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.p8.P8;
@@ -86,6 +87,7 @@ public class PersistenceTest extends FileIOBase {
   }
 
   @Test
+  @Ignore
   public void testDiskSyncPerformance() throws Exception {
     long false1 = doDiskSyncPerformanceRun(false);
     long true1 = doDiskSyncPerformanceRun(true);
