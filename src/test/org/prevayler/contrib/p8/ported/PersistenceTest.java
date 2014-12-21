@@ -1,11 +1,12 @@
 package org.prevayler.contrib.p8.ported;
 
+import static org.junit.Assume.assumeFalse;
+
 import java.io.Closeable;
 import java.io.File;
 
 import junit.framework.AssertionFailedError;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.prevayler.Prevayler;
 import org.prevayler.contrib.p8.P8;
@@ -87,8 +88,8 @@ public class PersistenceTest extends FileIOBase {
   }
 
   @Test
-  @Ignore
   public void testDiskSyncPerformance() throws Exception {
+    assumeFalse("Ant running.", Boolean.getBoolean("ant.running")); // quit if inside ant/junit execution
     long false1 = doDiskSyncPerformanceRun(false);
     long true1 = doDiskSyncPerformanceRun(true);
     long false2 = doDiskSyncPerformanceRun(false);
