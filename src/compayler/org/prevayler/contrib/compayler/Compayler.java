@@ -138,10 +138,9 @@ public class Compayler {
   private final String interfacePackage;
   private final String interfaceSimple;
 
-  public Compayler(Class<?> interfaceClass) {
-    this(interfaceClass.getAnnotation(Decorate.class), interfaceClass.getPackage().getName(), interfaceClass.getName(), interfaceClass
-        .getSimpleName());
-    assert interfaceClass.isInterface() : "Interface expected, but got " + interfaceClass;
+  public Compayler(Class<?> type) {
+    this(type.getAnnotation(Decorate.class), type.getPackage().getName(), type.getName(), type.getSimpleName());
+    assert type.isInterface() : "Interface expected, but got " + type;
     assert decorate != null : "Not even a default @Decorate annotation found?!";
   }
 

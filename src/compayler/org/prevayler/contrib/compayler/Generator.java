@@ -435,9 +435,7 @@ public class Generator {
 
   protected long generateChecksum(Unit unit) {
     crc32.reset();
-    for (Parameter param : unit.getParameters()) {
-      crc32.update(param.getType().getBytes());
-    }
+    unit.getParameters().forEach(p -> crc32.update(p.getType().getBytes()));
     crc32.update(unit.getName().getBytes());
     return crc32.getValue();
   }
