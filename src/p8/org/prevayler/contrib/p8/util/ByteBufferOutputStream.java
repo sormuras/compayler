@@ -22,7 +22,7 @@ public class ByteBufferOutputStream extends OutputStream {
 
   public void write(byte[] bytes, int off, int len) throws IOException {
     if (closed.get())
-      throw new IOException("Can not write " + len + " bytes to closed stream!");
+      throw new IOException("Can not write " + len + " bytes to closed stream! " + Thread.currentThread());
     buffer.put(bytes, off, len);
   }
 

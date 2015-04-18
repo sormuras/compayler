@@ -1,6 +1,8 @@
 package databench;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.awt.GraphicsEnvironment;
 import java.io.Console;
@@ -15,7 +17,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.prevayler.contrib.p8.concurrent.ReadWriteLockPrevayler;
 import org.prevayler.contrib.p8.concurrent.StampedLockPrevayler;
@@ -69,9 +70,9 @@ public class Databench {
     @Override
     public Worker call() throws Exception {
 
-      Thread thread = Thread.currentThread();
+      long maxNanoTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(workertime);
 
-      while (!thread.isInterrupted()) {
+      while (System.nanoTime() < maxNanoTime) {
 
         if (operations % workername == 0)
           System.out.print(name);
@@ -82,10 +83,6 @@ public class Databench {
           else
             bank.getAccountStatus(any());
         } catch (Throwable t) {
-          if (ignoreThrowableAndBreak.get()) {
-            System.err.println(t + " caused by " + t.getCause());
-            break;
-          }
           t.printStackTrace();
           System.exit(1);
         }
@@ -162,9 +159,9 @@ public class Databench {
     }
 
     if (Boolean.parseBoolean(get("run.persistent", "true"))) {
-      // chart.add(main.time("P8(stash)", (folder, threads) -> new P8Subject(folder, threads, 0x57A5L)));
-      // chart.add(main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE)));
-      // chart.add(main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, NANOSECONDS.convert(1, SECONDS))));
+      chart.add(main.time("P8(stash)", (folder, threads) -> new P8Subject(folder, threads, 0x57A5L)));
+      chart.add(main.time("P8(never)", (folder, threads) -> new P8Subject(folder, threads, Long.MAX_VALUE)));
+      chart.add(main.time("P8(1 sec)", (folder, threads) -> new P8Subject(folder, threads, NANOSECONDS.convert(1, SECONDS))));
       // chart.add(main.time("P8(force)", (folder, threads) -> new P8Subject(folder, threads, 0L)));
       chart.add(main.time("Prevayler", (folder, threads) -> new PrevaylerSubject(folder, threads)));
     }
@@ -181,7 +178,6 @@ public class Databench {
     System.out.println("END.");
   }
 
-  public final AtomicBoolean ignoreThrowableAndBreak = new AtomicBoolean(false);
   public final int numberOfBankAccounts = Integer.parseUnsignedInt(get("numberOfBankAccounts", "1000000"));
   public final int percentage = Integer.parseUnsignedInt(get("percentage", "20"));
   public final int roundsMulti = Integer.parseUnsignedInt(get("rounds.multi", "3"));
@@ -231,8 +227,7 @@ public class Databench {
       long start = System.nanoTime();
 
       System.out.print(format("#%s%3d %2d (", lastRound ? "_" : " ", threads, round));
-      execs.invokeAll(workers, workertime, TimeUnit.SECONDS);
-      ignoreThrowableAndBreak.set(false);
+      execs.invokeAll(workers);
       System.out.print(")");
 
       duration = System.nanoTime() - start;
